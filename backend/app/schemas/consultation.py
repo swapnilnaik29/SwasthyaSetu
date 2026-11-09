@@ -6,8 +6,9 @@ from pydantic import BaseModel, Field, ConfigDict
 class ConsultationCreate(BaseModel):
     patient_id: str
     doctor_id: Optional[str] = None
-    doctor_language: Optional[str] = Field("en-IN", pattern="^(en-IN|hi-IN|mr-IN)$")
-    patient_language: Optional[str] = Field("hi-IN", pattern="^(en-IN|hi-IN|mr-IN)$")
+    doctor_language: Optional[str] = "en-IN"
+    patient_language: Optional[str] = "hi-IN"
+    mode: Optional[str] = "NORMAL"  # "NORMAL" or "AMBIENT_BACKGROUND"
 
 
 class ConsultationOut(BaseModel):
@@ -20,6 +21,7 @@ class ConsultationOut(BaseModel):
     ended_at: Optional[datetime] = None
     doctor_language: str
     patient_language: str
+    mode: str = "NORMAL"
     status: str
     created_at: datetime
 

@@ -11,7 +11,8 @@ class Doctor(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     credentials: Mapped[str] = mapped_column(String(255), default="MBBS, MD")
-    preferred_language: Mapped[str] = mapped_column(String(10), default="en-IN")  # en-IN, hi-IN, mr-IN
+    preferred_language: Mapped[str] = mapped_column(String(10), default="en-IN")  # primary language
+    spoken_languages: Mapped[str] = mapped_column(String(255), default="en-IN,mr-IN")  # comma-separated languages doctor speaks/understands
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

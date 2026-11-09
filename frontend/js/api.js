@@ -96,14 +96,42 @@ class ApiService {
     return this.request(`/api/v1/patients/${patientId}/consultations`);
   }
 
+  // Conversational AI Patient Intake
+  async submitConversationalIntake(intakeData) {
+    return this.request('/api/v1/patients/intake', {
+      method: 'POST',
+      body: JSON.stringify(intakeData),
+    });
+  }
+
+  // Direct Audio Synthesis & Transcription (Intake Assistant)
+  async synthesizeSpeech(text, language = 'hi-IN') {
+    return this.request('/api/v1/audio/synthesize', {
+      method: 'POST',
+      body: JSON.stringify({ text, language }),
+    });
+  }
+
+  async transcribeAudio(audioBlob, language = 'hi-IN', filename = 'intake.wav') {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, filename);
+    formData.append('language', language);
+
+    return this.request('/api/v1/audio/transcribe', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
   // Consultations
-  async createConsultation(patientId, doctorLang = 'en-IN', patientLang = 'hi-IN') {
+  async createConsultation(patientId, doctorLang = 'en-IN', patientLang = 'hi-IN', mode = 'NORMAL') {
     return this.request('/api/v1/consultations', {
       method: 'POST',
       body: JSON.stringify({
         patient_id: patientId,
         doctor_language: doctorLang,
         patient_language: patientLang,
+        mode: mode,
       }),
     });
   }

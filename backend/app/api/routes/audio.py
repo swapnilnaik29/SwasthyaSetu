@@ -1,7 +1,9 @@
 import time
 import uuid
-from typing import Dict, Tuple
-from fastapi import APIRouter, HTTPException, Response
+from typing import Dict, Tuple, Optional
+from fastapi import APIRouter, HTTPException, Response, UploadFile, File, Form
+from pydantic import BaseModel
+from app.services.speech.factory import get_stt_service, get_tts_service
 
 router = APIRouter(prefix="/audio", tags=["Audio"])
 
@@ -23,9 +25,46 @@ def store_transient_audio(audio_bytes: bytes, ttl_seconds: int = 900) -> str:
     return audio_id
 
 
+class SynthesizeRequest(BaseModel):
+    text: str
+    language: str = "hi-IN"
+    voice: Optional[str] = None
+
+
+@router.post("/synthesize")
+async def synthesize_text(payload: SynthesizeRequest):
+    """Direct TTS synthesis for conversational intake assistant."""
+    tts = get_tts_service()
+    try:
+        wav_bytes = await tts.synthesize(payload.text, payload.language, payload.voice)
+        audio_id = store_transient_audio(wav_bytes)
+        return {"audio_id": audio_id, "audio_url": f"/api/v1/audio/{audio_id}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS synthesis failed: {str(e)}")
+
+
+@router.post("/transcribe")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    language: str = Form("hi-IN"),
+):
+    """Direct STT transcription for conversational intake assistant."""
+    stt = get_stt_service()
+    try:
+        audio_bytes = await audio.read()
+        transcript, metadata = await stt.transcribe(
+            audio_bytes=audio_bytes,
+            language=language,
+            filename=audio.filename or "intake.wav",
+        )
+        return {"transcript": transcript, "metadata": metadata}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"STT transcription failed: {str(e)}")
+
+
 @router.get("/{audio_id}")
 async def get_audio_playback(audio_id: str):
-    """Serve synthesized TTS audio for Flutter mobile playback."""
+    """Serve synthesized TTS audio for browser playback."""
     entry = _AUDIO_STORE.get(audio_id)
     if not entry:
         raise HTTPException(status_code=404, detail="Audio resource expired or not found")

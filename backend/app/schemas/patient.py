@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 import re
 
@@ -7,9 +7,16 @@ import re
 class PatientCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     age: Optional[int] = Field(None, ge=0, le=130)
+    gender: Optional[str] = None
     date_of_birth: Optional[str] = None
     mobile_number: str = Field(..., min_length=10, max_length=15)
-    preferred_language: str = Field(default="hi-IN", pattern="^(en-IN|hi-IN|mr-IN)$")
+    preferred_language: str = Field(default="hi-IN")
+    chief_complaint: Optional[str] = None
+    symptoms_duration: Optional[str] = None
+    known_allergies: Optional[str] = None
+    current_medications: Optional[str] = None
+    past_medical_history: Optional[str] = None
+    intake_summary_english: Optional[str] = None
 
     @field_validator("mobile_number")
     @classmethod
@@ -25,9 +32,16 @@ class PatientCreate(BaseModel):
 class PatientUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     age: Optional[int] = Field(None, ge=0, le=130)
+    gender: Optional[str] = None
     date_of_birth: Optional[str] = None
     mobile_number: Optional[str] = None
-    preferred_language: Optional[str] = Field(None, pattern="^(en-IN|hi-IN|mr-IN)$")
+    preferred_language: Optional[str] = None
+    chief_complaint: Optional[str] = None
+    symptoms_duration: Optional[str] = None
+    known_allergies: Optional[str] = None
+    current_medications: Optional[str] = None
+    past_medical_history: Optional[str] = None
+    intake_summary_english: Optional[str] = None
 
 
 class PatientOut(BaseModel):
@@ -36,8 +50,29 @@ class PatientOut(BaseModel):
     id: str
     name: str
     age: Optional[int] = None
+    gender: Optional[str] = None
     date_of_birth: Optional[str] = None
     mobile_number: str
     preferred_language: str
+    chief_complaint: Optional[str] = None
+    symptoms_duration: Optional[str] = None
+    known_allergies: Optional[str] = None
+    current_medications: Optional[str] = None
+    past_medical_history: Optional[str] = None
+    intake_summary_english: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+
+class PatientIntakeSubmission(BaseModel):
+    name: str = Field(..., min_length=2)
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    mobile_number: str = Field(default="9999999999")
+    preferred_language: str = Field(default="hi-IN")
+    chief_complaint: Optional[str] = None
+    symptoms_duration: Optional[str] = None
+    past_medical_history: Optional[str] = None
+    known_allergies: Optional[str] = None
+    current_medications: Optional[str] = None
+    raw_responses: Optional[Dict[str, Any]] = None

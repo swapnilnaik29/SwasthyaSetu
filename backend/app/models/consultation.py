@@ -17,6 +17,7 @@ class Consultation(Base):
     ended_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     doctor_language: Mapped[str] = mapped_column(String(10), default="en-IN")
     patient_language: Mapped[str] = mapped_column(String(10), default="hi-IN")
+    mode: Mapped[str] = mapped_column(String(30), default="NORMAL")  # NORMAL (turn-by-turn) or AMBIENT_BACKGROUND
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE")  # ACTIVE, COMPLETED, CANCELLED
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

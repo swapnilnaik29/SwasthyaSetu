@@ -57,6 +57,7 @@ async def create_consultation(
         doctor_id=doctor.id,
         doctor_language=consultation_in.doctor_language or doctor.preferred_language or "en-IN",
         patient_language=consultation_in.patient_language or patient.preferred_language or "hi-IN",
+        mode=consultation_in.mode or "NORMAL",
         status="ACTIVE",
     )
     db.add(consultation)
@@ -174,18 +175,19 @@ async def process_consultation_turn(
     await db.commit()
     await db.refresh(transcript)
 
-    # Step 4: Text-to-Speech synthesis in recipient language
+    # Step 4: Text-to-Speech synthesis in recipient language (skipped in ambient background scribe mode)
     audio_url = None
-    try:
-        tts_service = get_tts_service()
-        tts_audio_bytes = await tts_service.synthesize(
-            text=recipient_translation,
-            language=target_language,
-        )
-        audio_id = store_transient_audio(tts_audio_bytes)
-        audio_url = f"{settings.API_V1_PREFIX}/audio/{audio_id}"
-    except Exception as e:
-        logger.error(f"TTS synthesis error for turn {transcript.id}: {str(e)}")
+    if getattr(consultation, "mode", "NORMAL") != "AMBIENT_BACKGROUND":
+        try:
+            tts_service = get_tts_service()
+            tts_audio_bytes = await tts_service.synthesize(
+                text=recipient_translation,
+                language=target_language,
+            )
+            audio_id = store_transient_audio(tts_audio_bytes)
+            audio_url = f"{settings.API_V1_PREFIX}/audio/{audio_id}"
+        except Exception as e:
+            logger.error(f"TTS synthesis error for turn {transcript.id}: {str(e)}")
 
     return TurnProcessResult(
         transcript_id=transcript.id,

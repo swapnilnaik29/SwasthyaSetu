@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 
 async def seed_demo_data():
-    """Seeds default doctor and demo fictional patients for hackathon presentation."""
+    """Seeds default doctor profile for hackathon presentation."""
     async with AsyncSessionLocal() as session:
         # Check doctor
         res = await session.execute(select(Doctor))
@@ -20,37 +20,11 @@ async def seed_demo_data():
                 name="Dr. Priya Sharma",
                 credentials="MBBS, MD (General Medicine)",
                 preferred_language="en-IN",
+                spoken_languages="en-IN,mr-IN,hi-IN",
             )
             session.add(doc)
             await session.commit()
             logger.info("Seeded default doctor profile.")
-
-        # Check patients
-        res_pat = await session.execute(select(Patient))
-        if not res_pat.scalars().first():
-            demo_patients = [
-                Patient(
-                    name="Ramesh Kumar",
-                    age=38,
-                    mobile_number="9876543210",
-                    preferred_language="hi-IN",
-                ),
-                Patient(
-                    name="Sunita Patil",
-                    age=45,
-                    mobile_number="9812345678",
-                    preferred_language="mr-IN",
-                ),
-                Patient(
-                    name="Vikram Singh",
-                    age=29,
-                    mobile_number="9988776655",
-                    preferred_language="hi-IN",
-                ),
-            ]
-            session.add_all(demo_patients)
-            await session.commit()
-            logger.info("Seeded fictional demo patients.")
 
 
 @asynccontextmanager

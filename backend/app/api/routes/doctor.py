@@ -17,6 +17,7 @@ async def get_or_create_default_doctor(db: AsyncSession) -> Doctor:
             name="Dr. Priya Sharma",
             credentials="MBBS, MD (General Medicine)",
             preferred_language="en-IN",
+            spoken_languages="en-IN,mr-IN",
         )
         db.add(doc)
         await db.commit()
@@ -26,18 +27,19 @@ async def get_or_create_default_doctor(db: AsyncSession) -> Doctor:
 
 @router.get("/settings", response_model=DoctorOut)
 async def get_doctor_settings(db: AsyncSession = Depends(get_db)):
-    """Retrieve current doctor profile and preferred language."""
+    """Retrieve current doctor profile, preferred language, and spoken languages."""
     doctor = await get_or_create_default_doctor(db)
     return doctor
 
 
 @router.put("/settings", response_model=DoctorOut)
 async def update_doctor_settings(settings_in: DoctorSettings, db: AsyncSession = Depends(get_db)):
-    """Update doctor profile and preferred language."""
+    """Update doctor profile, preferred language, and spoken languages."""
     doctor = await get_or_create_default_doctor(db)
     doctor.name = settings_in.name
     doctor.credentials = settings_in.credentials
     doctor.preferred_language = settings_in.preferred_language
+    doctor.spoken_languages = settings_in.spoken_languages
     await db.commit()
     await db.refresh(doctor)
     return doctor
