@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from app.db.session import get_db
 from app.models.patient import Patient
+from app.models.doctor import Doctor
 from app.models.consultation import Consultation
 from app.models.clinical_record import ClinicalRecord
 from app.models.consultation_draft import ConsultationDraft
+from app.api.routes.doctor import get_or_create_default_doctor
 from app.schemas.patient import (
     PatientCreate,
     PatientUpdate,
@@ -268,14 +270,48 @@ async def validate_intake_step(req: IntakeValidationRequest):
         )
     except Exception as e:
         logger.warning(f"Intake validation fallback ({e})")
+        is_mr = "mr" in req.language.lower()
+        if req.step_id == "name":
+            # Guard against symptom speech or non-name phrases during fallback
+            if any(m in lower_u for m in symptom_markers) or len(clean_text.split()) > 4:
+                return IntakeValidationResponse(
+                    is_valid=False,
+                    extracted_value=None,
+                    parsed_fields={},
+                    reprompt_native="हे आपले लक्षण वाटते. कृपया आधी आपले पूर्ण नाव सांगा." if is_mr else "यह आपकी तकलीफ़ लग रही है। कृपया पहले अपना शुभ नाम बताएं।",
+                    reprompt_english="This seems like a symptom. Please tell me your full name first.",
+                )
+            # Clean common conversational filler
+            name_clean = re.sub(r"^(?:माझे नाव|माझं नाव|मेरा नाम|नाम|i am|my name is)\s*", "", clean_text, flags=re.IGNORECASE)
+            name_clean = re.sub(r"\s*(?:आहे|है|boltoy|bolte|speaking)$", "", name_clean, flags=re.IGNORECASE).strip()
+            return IntakeValidationResponse(
+                is_valid=True,
+                extracted_value=name_clean or clean_text,
+                parsed_fields={"name": name_clean or clean_text},
+            )
         if req.step_id == "age_gender":
-            is_mr = "mr" in req.language.lower()
             return IntakeValidationResponse(
                 is_valid=False,
                 extracted_value=None,
                 parsed_fields={},
                 reprompt_native="कृपया आपले वय आणि लिंग पुन्हा सांगा." if is_mr else "कृपया अपनी उम्र और लिंग दोबारा बताएं।",
                 reprompt_english="Please repeat your age and gender.",
+            )
+        if req.step_id == "phone":
+            digits = re.sub(r"\D", "", clean_text)
+            if len(digits) >= 10:
+                p10 = digits[-10:]
+                return IntakeValidationResponse(
+                    is_valid=True,
+                    extracted_value=p10,
+                    parsed_fields={"mobile_number": p10, "phone": p10},
+                )
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={},
+                reprompt_native="कृपया १० अंकी मोबाईल नंबर सांगा." if is_mr else "कृपया 10 अंकों का मोबाइल नंबर बताएं।",
+                reprompt_english="Please provide a valid 10-digit mobile number.",
             )
         return IntakeValidationResponse(
             is_valid=True,
@@ -409,13 +445,23 @@ async def get_patient_reports(
         if payload:
             try:
                 structured = StructuredDraftPayload(**payload)
+                # Look up doctor matching settings/consultation
+                doc = None
+                if rec and rec.approved_by:
+                    doc = await db.get(Doctor, rec.approved_by)
+                if not doc and c.doctor_id:
+                    doc = await db.get(Doctor, c.doctor_id)
+                if not doc:
+                    doc = await get_or_create_default_doctor(db)
+                actual_doctor_name = doc.name if doc else "Dr. Priya Sharma"
+
                 reports.append(
                     MedicalReportOut(
                         consultation_id=c.id,
                         patient_id=patient.id,
                         patient_name=patient.name,
                         date=c.started_at,
-                        doctor_name="Dr. Priya Sharma",
+                        doctor_name=actual_doctor_name,
                         status=status,
                         doctor_diagnosis=structured.doctor_diagnosis,
                         doctor_notes=structured.doctor_notes,
@@ -423,6 +469,8 @@ async def get_patient_reports(
                         symptoms=structured.patient_reported_symptoms,
                         prescriptions=structured.prescriptions,
                         follow_up_recommendation=structured.follow_up_recommendation,
+                        follow_up_days=structured.follow_up_days,
+                        recommended_next_visit_date=structured.recommended_next_visit_date,
                         medical_history=structured.medical_history,
                         allergies=structured.allergies,
                     )

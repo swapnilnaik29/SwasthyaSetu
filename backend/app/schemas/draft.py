@@ -38,6 +38,8 @@ class StructuredDraftPayload(BaseModel):
     vitals: Optional[VitalsPayload] = None
     prescriptions: List[PrescriptionItem] = []
     follow_up_recommendation: Optional[str] = None
+    follow_up_days: Optional[int] = 3
+    recommended_next_visit_date: Optional[str] = None
     uncertain_terms: List[str] = []
     record_status: str = "PENDING_REVIEW"
 
@@ -67,6 +69,8 @@ class MedicalReportOut(BaseModel):
     symptoms: List[SymptomItem] = []
     prescriptions: List[PrescriptionItem] = []
     follow_up_recommendation: Optional[str] = None
+    follow_up_days: Optional[int] = None
+    recommended_next_visit_date: Optional[str] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
 

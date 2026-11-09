@@ -27,13 +27,12 @@
       </div>
     </header>
 
-    <!-- Connection Status Banner -->
-    <div id="connection-banner" class="connection-banner">
+    <!-- Connection Status Banner (Friendly & Minimalist) -->
+    <div id="connection-banner" class="connection-banner" style="display: none;">
       <span class="banner-text">
-        <i class="fa-solid fa-circle-check"></i>
-        <span id="connection-status-text">Connecting to backend...</span>
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span id="connection-status-text">Connecting...</span>
       </span>
-      <span class="config-link" id="link-configure-ip">Configure IP</span>
     </div>
 
     <!-- Main Views Container -->
@@ -54,10 +53,6 @@
                 <i class="fa-solid fa-language"></i>
                 <span id="dash-doctor-lang">Primary: English (en-IN)</span>
               </div>
-              <div class="lang-pill" style="background: rgba(124, 58, 237, 0.1); color: var(--ambient-purple);" id="dash-doctor-spoken">
-                <i class="fa-solid fa-comments"></i>
-                <span>Speaks: English, Marathi, Hindi</span>
-              </div>
             </div>
           </div>
         </div>
@@ -68,7 +63,7 @@
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" id="input-patient-search" placeholder="Search patients by name or phone...">
           </div>
-          <button id="btn-add-patient" class="btn btn-primary" title="Launch Voice Onboarding">
+          <button id="btn-add-patient" class="btn btn-primary" title="Launch Patient Onboarding">
             <i class="fa-solid fa-user-plus"></i> Onboard Patient
           </button>
         </div>
@@ -76,7 +71,7 @@
         <!-- Patients List Section -->
         <div>
           <div class="section-header">
-            <h2>Registered Patients</h2>
+            <h2 id="dash-registered-title">Registered Patients</h2>
             <span class="count-badge" id="patient-count-badge">0 registered</span>
           </div>
           <div id="patient-list-container" class="patient-list">
@@ -244,33 +239,33 @@
           <!-- Live Autofill Form Card -->
           <div class="autofill-preview-card">
             <div class="autofill-header">
-              <span><i class="fa-solid fa-file-waveform" style="color: var(--primary-teal); margin-right: 6px;"></i> Live Autofilled Intake Form</span>
-              <span class="badge-chip" style="background: var(--primary-light); color: var(--primary-teal); font-size: 10px;">Syncing in Real Time</span>
+              <span id="autofill-header-title"><i class="fa-solid fa-file-waveform" style="color: var(--primary-teal); margin-right: 6px;"></i> Live Autofilled Intake Form</span>
+              <span class="badge-chip" id="autofill-sync-badge" style="background: var(--primary-light); color: var(--primary-teal); font-size: 10px;">Syncing in Real Time</span>
             </div>
 
             <div class="autofill-grid">
               <div class="autofill-item" id="item-name">
-                <div class="autofill-label">Full Name</div>
+                <div class="autofill-label" id="autofill-label-name">Full Name</div>
                 <div class="autofill-value placeholder" id="field-preview-name">Pending response...</div>
               </div>
               <div class="autofill-item" id="item-age">
-                <div class="autofill-label">Age & Gender</div>
+                <div class="autofill-label" id="autofill-label-age">Age & Gender</div>
                 <div class="autofill-value placeholder" id="field-preview-age-gender">Pending response...</div>
               </div>
               <div class="autofill-item" id="item-phone">
-                <div class="autofill-label">Mobile Number</div>
+                <div class="autofill-label" id="autofill-label-phone">Mobile Number</div>
                 <div class="autofill-value placeholder" id="field-preview-phone">Pending response...</div>
               </div>
               <div class="autofill-item" id="item-complaint">
-                <div class="autofill-label">Chief Complaint</div>
+                <div class="autofill-label" id="autofill-label-complaint">Chief Complaint</div>
                 <div class="autofill-value placeholder" id="field-preview-complaint">Pending response...</div>
               </div>
               <div class="autofill-item" id="item-history" style="grid-column: span 2;">
-                <div class="autofill-label">Past History & Chronic Conditions</div>
+                <div class="autofill-label" id="autofill-label-history">Past History & Chronic Conditions</div>
                 <div class="autofill-value placeholder" id="field-preview-history">Pending response...</div>
               </div>
               <div class="autofill-item" id="item-allergies" style="grid-column: span 2;">
-                <div class="autofill-label">Known Allergies & Regular Medications</div>
+                <div class="autofill-label" id="autofill-label-allergies">Known Allergies & Regular Medications</div>
                 <div class="autofill-value placeholder" id="field-preview-allergies">Pending response...</div>
               </div>
             </div>
@@ -355,13 +350,13 @@
           <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
           <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
             <i class="fa-solid fa-language" style="color: var(--primary-teal);"></i>
-            <strong>Preferred Language:</strong>
+            <strong id="label-pref-lang">Preferred Language:</strong>
             <span id="card-patient-lang" class="badge-chip badge-hi">Hindi</span>
           </div>
 
           <!-- Pre-Consultation Summary Snippet if present -->
           <div id="card-patient-intake-box" style="display: none; margin-top: 12px; padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-teal); font-size: 12px;">
-            <strong>Intake Summary:</strong> <span id="card-patient-intake-text"></span>
+            <strong id="label-intake-summary">Intake Summary:</strong> <span id="card-patient-intake-text"></span>
           </div>
         </div>
 
@@ -372,7 +367,7 @@
 
         <div>
           <div class="section-header">
-            <h2><i class="fa-solid fa-notes-medical" style="color: var(--primary-teal); margin-right: 6px;"></i> Medical History & Reports</h2>
+            <h2 id="header-medical-history"><i class="fa-solid fa-notes-medical" style="color: var(--primary-teal); margin-right: 6px;"></i> Medical History & Reports</h2>
             <span class="count-badge" id="consultation-count-badge">0 saved reports</span>
           </div>
           <div id="consultation-history-list" class="patient-list">
@@ -381,7 +376,7 @@
         </div>
       </section>
 
-      <!-- VIEW 3: LIVE TURN-BASED OR AMBIENT CONSULTATION -->
+      <!-- VIEW 3: LIVE TURN-BASED CONSULTATION -->
       <section id="view-consultation" class="view-section" style="padding: 12px; gap: 12px; flex: 1;">
         <!-- Top consultation bar -->
         <div class="consultation-header-bar card" style="padding: 12px 16px;">
@@ -394,26 +389,14 @@
           </button>
         </div>
 
-        <!-- AMBIENT BACKGROUND SCRIBE BANNER (Shown when Ambient mode is active) -->
-        <div id="ambient-mode-banner" class="ambient-mode-banner" style="display: none;">
-          <div class="ambient-dot"></div>
-          <div style="flex: 1;">
-            <div style="font-size: 13px; font-weight: 800;">🎙️ Background Scribe Mode Active</div>
-            <div style="font-size: 11px; opacity: 0.9;" id="ambient-mode-sub">
-              Passively listening to shared Marathi conversation (Zero TTS interruptions). Live English report compiling.
-            </div>
-          </div>
-          <span class="badge-chip" style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 10px;">Ambient</span>
-        </div>
-
-        <!-- Language Pair Bar (for normal mode) -->
+        <!-- Language Pair Bar -->
         <div class="lang-pair-container card" id="cons-lang-pair-bar" style="padding: 8px 14px; justify-content: space-between;">
           <span class="badge-chip badge-hi" id="cons-badge-patient">Patient: Hindi</span>
           <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 12px;"></i>
           <span class="badge-chip badge-en" id="cons-badge-doctor">Doctor: English</span>
         </div>
 
-        <!-- Speaker Selector (for normal mode) -->
+        <!-- Speaker Selector -->
         <div class="speaker-toggle-container" id="cons-speaker-toggle">
           <button id="btn-speaker-patient" class="speaker-btn active patient">
             <i class="fa-solid fa-user"></i> PATIENT SPEAKS
@@ -423,16 +406,33 @@
           </button>
         </div>
 
+        <!-- Doctor Speaking Language Selector (Doctor can speak in any language) -->
+        <div id="doctor-speak-lang-bar" style="display: none; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); font-size: 12px;">
+          <span style="font-weight: 700; color: #166534;" id="label-doc-speaking-in">Doctor Speaking In:</span>
+          <select id="doctor-speak-lang" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #86efac; font-weight: 700; color: #15803d; background: #ffffff;">
+            <option value="en-IN">English</option>
+            <option value="mr-IN">Marathi (मराठी)</option>
+            <option value="hi-IN">Hindi (हिंदी)</option>
+            <option value="gu-IN">Gujarati (ગુજરાતી)</option>
+            <option value="bn-IN">Bengali (বাংলা)</option>
+            <option value="ta-IN">Tamil (தமிழ்)</option>
+            <option value="te-IN">Telugu (తెలుగు)</option>
+            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+            <option value="ml-IN">Malayalam (മലയാളം)</option>
+            <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="or-IN">Odia (ଓଡ଼ିଆ)</option>
+          </select>
+        </div>
+
         <!-- Turn Direction Banner -->
         <div id="turn-direction-banner" class="turn-direction-banner patient-turn">
           <i class="fa-solid fa-circle-arrow-right"></i>
-          <span id="turn-direction-text">Patient Speaks (Hindi) ➔ Doctor Listens (English)</span>
+          <span id="turn-direction-text">Patient Speaks ➔ Doctor Listens</span>
         </div>
 
-        <!-- Processing status indicator -->
-        <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; gap: 8px; padding: 8px; background: #e0f2fe; color: #0284c7; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700;">
-          <i class="fa-solid fa-spinner fa-spin"></i>
-          <span id="turn-processing-text">Processing turn...</span>
+        <!-- Clean Loading Symbol Indicator (No developer messages) -->
+        <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; padding: 10px;">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 22px; color: var(--primary-teal);"></i>
         </div>
 
         <!-- Transcript Timeline -->
@@ -443,26 +443,22 @@
         <!-- Recording & Control Footer -->
         <div class="recorder-footer-card">
           <div style="display: flex; align-items: center; gap: 20px;">
-            <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance Fallback">
+            <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance">
               <i class="fa-solid fa-keyboard"></i> Type
             </button>
 
             <!-- Large Microphone Button -->
-            <button id="btn-record-turn" class="recorder-btn-large" title="Hold/Tap to Speak">
+            <button id="btn-record-turn" class="recorder-btn-large" title="Tap to Speak">
               <i class="fa-solid fa-microphone"></i>
-            </button>
-
-            <button id="btn-open-presets" class="btn btn-outline btn-sm" title="Scripted Demo Presets" style="display: none;">
-              <i class="fa-solid fa-list-check"></i> Demo Presets
             </button>
           </div>
 
           <div id="record-timer" class="recording-timer" style="display: none;">
             <i class="fa-solid fa-circle fa-beat" style="font-size: 8px; margin-right: 4px;"></i>
-            <span id="timer-display">00:00</span> Recording 16kHz WAV...
+            <span id="timer-display">00:00</span>
           </div>
           <div id="record-instruction" style="font-size: 11px; color: var(--text-muted);">
-            Tap microphone to speak turn in native language (Real-time translation, Zero presets)
+            Tap microphone to speak turn in native language
           </div>
         </div>
       </section>
@@ -473,20 +469,20 @@
           <button id="btn-back-to-consultation" class="icon-btn" title="Back to Consultation">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
-          <h2 style="font-size: 18px; font-weight: 700;">Review Consultation Draft</h2>
+          <h2 id="draft-review-title" style="font-size: 18px; font-weight: 700;">Review Consultation Draft</h2>
         </div>
 
         <!-- Mandatory AI Draft Disclaimer Banner -->
         <div class="card" style="background: var(--warning-light); border-color: #fde68a; padding: 12px 16px;">
-          <div style="display: flex; align-items: center; gap: 8px; color: var(--warning-amber); font-weight: 800; font-size: 13px;">
+          <div id="ai-disclaimer-title" style="display: flex; align-items: center; gap: 8px; color: var(--warning-amber); font-weight: 800; font-size: 13px;">
             <i class="fa-solid fa-triangle-exclamation"></i> AI-GENERATED DRAFT — PENDING DOCTOR REVIEW
           </div>
-          <p style="font-size: 11px; color: #92400e; margin-top: 4px;">
+          <p id="ai-disclaimer-desc" style="font-size: 11px; color: #92400e; margin-top: 4px;">
             The AI never diagnoses or prescribes autonomously. Doctor review and confirmation are legally required.
           </p>
         </div>
 
-        <!-- Talk to AI Scribe Assistant (Dictate Vitals & Clinical Details) -->
+        <!-- Talk to AI Scribe Assistant (Dictate Vitals & Clinical Details in Any Language -> English Report) -->
         <div class="card" style="border: 1.5px solid var(--ambient-border); background: #faf5ff;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -494,8 +490,8 @@
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
               </div>
               <div>
-                <h3 style="font-size: 14px; font-weight: 800; color: #581c87;">Talk to AI Scribe Assistant</h3>
-                <p style="font-size: 11px; color: #7e22ce;">Dictate vitals (Weight, Height, BP, Pulse, Temp) or notes in English, Hindi, or Marathi</p>
+                <h3 id="talk-ai-title" style="font-size: 14px; font-weight: 800; color: #581c87;">Talk to AI Scribe Assistant</h3>
+                <p id="talk-ai-desc" style="font-size: 11px; color: #7e22ce;">Dictate vitals (Weight, Height, BP, Pulse, Temp) or notes in English, Hindi, or Marathi</p>
               </div>
             </div>
             <span class="badge-chip" style="background: var(--ambient-light); color: var(--ambient-purple); border: 1px solid var(--ambient-border); font-size: 10px;">Voice Scribe</span>
@@ -526,42 +522,60 @@
         <!-- Patient Vitals Card -->
         <div class="card">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <h3 style="font-size: 14px; font-weight: 700;">
+            <h3 id="vitals-card-title" style="font-size: 14px; font-weight: 700;">
               <i class="fa-solid fa-heart-pulse" style="color: #e11d48; margin-right: 6px;"></i> Patient Vitals
             </h3>
-            <span style="font-size: 11px; color: var(--text-muted);">Auto-filled by AI / Editable</span>
+            <span id="vitals-card-sub" style="font-size: 11px; color: var(--text-muted);">Auto-filled by AI / Editable</span>
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">Weight (kg)</label>
+              <label id="label-vitals-weight" style="font-size: 11px; font-weight: 600;">Weight (kg)</label>
               <input type="number" step="0.1" id="vitals-weight" placeholder="e.g. 70">
             </div>
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">Height (cm)</label>
+              <label id="label-vitals-height" style="font-size: 11px; font-weight: 600;">Height (cm)</label>
               <input type="number" step="0.5" id="vitals-height" placeholder="e.g. 175">
             </div>
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">Blood Pressure</label>
+              <label id="label-vitals-bp" style="font-size: 11px; font-weight: 600;">Blood Pressure</label>
               <input type="text" id="vitals-bp" placeholder="e.g. 120/80 mmHg">
             </div>
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">Pulse (bpm)</label>
+              <label id="label-vitals-pulse" style="font-size: 11px; font-weight: 600;">Pulse (bpm)</label>
               <input type="number" id="vitals-pulse" placeholder="e.g. 74">
             </div>
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">Temp (°F)</label>
+              <label id="label-vitals-temp" style="font-size: 11px; font-weight: 600;">Temp (°F)</label>
               <input type="number" step="0.1" id="vitals-temp" placeholder="e.g. 98.6">
             </div>
             <div class="form-group">
-              <label style="font-size: 11px; font-weight: 600;">SpO2 (%)</label>
+              <label id="label-vitals-spo2" style="font-size: 11px; font-weight: 600;">SpO2 (%)</label>
               <input type="number" id="vitals-spo2" placeholder="e.g. 98">
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommended Next Consultation Card (AI Analyzed) -->
+        <div class="card" style="border-left: 4px solid var(--primary-teal); background: #f0fdfa;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: #0f766e;">
+                <i class="fa-regular fa-calendar-check" style="margin-right: 6px;"></i> <span id="label-draft-next-consultation">Recommended Next Consultation</span>
+              </div>
+              <div id="draft-followup-text" style="font-size: 12px; color: #115e59; margin-top: 3px;">
+                Review after 3 days if symptoms persist
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label style="font-size: 12px; font-weight: 700; color: #0f766e;" id="label-draft-next-date">Date:</label>
+              <input type="date" id="draft-next-date" style="padding: 8px 12px; border: 1px solid #99f6e4; border-radius: 6px; font-weight: 700; color: #0f766e; background: #ffffff;">
             </div>
           </div>
         </div>
 
         <!-- Patient Symptoms (AI Extracted) -->
         <div class="card">
-          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Patient-Reported Symptoms</h3>
+          <h3 id="symptoms-card-title" style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Patient-Reported Symptoms</h3>
           <div id="draft-symptoms-list" style="display: flex; flex-direction: column; gap: 6px;">
             <!-- Rendered dynamically -->
           </div>
@@ -569,13 +583,13 @@
 
         <!-- Doctor Diagnosis & Notes Form -->
         <div class="card">
-          <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Physician Assessment</h3>
+          <h3 id="assessment-card-title" style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Physician Assessment</h3>
           <div class="form-group" style="margin-bottom: 12px;">
-            <label>Doctor Diagnosis *</label>
+            <label id="label-draft-diagnosis">Doctor Diagnosis *</label>
             <input type="text" id="draft-diagnosis" placeholder="Enter confirmed clinical diagnosis..." value="">
           </div>
           <div class="form-group">
-            <label>Doctor Clinical Notes</label>
+            <label id="label-draft-notes">Doctor Clinical Notes</label>
             <textarea id="draft-notes" rows="3" placeholder="Enter clinical observations, rest advisory, and diet instructions..."></textarea>
           </div>
         </div>
@@ -583,7 +597,7 @@
         <!-- Prescriptions Builder -->
         <div class="card">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <h3 style="font-size: 14px; font-weight: 700;">Prescriptions</h3>
+            <h3 id="prescriptions-card-title" style="font-size: 14px; font-weight: 700;">Prescriptions</h3>
             <button id="btn-add-prescription" class="btn btn-outline btn-sm">
               <i class="fa-solid fa-plus"></i> Add Medicine
             </button>
@@ -607,21 +621,32 @@
           <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--success-green); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px;">
             <i class="fa-solid fa-check"></i>
           </div>
-          <h2 style="font-size: 20px; font-weight: 800; color: #166534;">Clinical Record Approved</h2>
-          <p style="font-size: 13px; color: #15803d; margin-top: 6px;">
+          <h2 id="approval-title" style="font-size: 20px; font-weight: 800; color: #166534;">Clinical Record Approved</h2>
+          <p id="approval-subtitle" style="font-size: 13px; color: #15803d; margin-top: 6px;">
             Medical record safely archived in <strong>canonical English strictly</strong>.
           </p>
         </div>
 
         <!-- Appointment Follow-up Section -->
         <div class="card">
-          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Schedule Follow-up Appointment</h3>
+          <h3 id="followup-card-title" style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Schedule Follow-up Appointment</h3>
           <div class="form-group" style="margin-bottom: 12px;">
-            <label>Follow-up Date *</label>
+            <label id="label-followup-date">Follow-up Date *</label>
             <input type="date" id="followup-date">
           </div>
           <div class="form-group" style="margin-bottom: 16px;">
-            <label>Follow-up Instructions (Appointment Only)</label>
+            <label id="label-followup-notes">Follow-up Instructions (Appointment Only)</label>
+            <input type="text" id="followup-notes" placeholder="e.g. Review if fever persists after 3 days">
+          </div>
+          <button id="btn-schedule-followup" class="btn btn-primary" style="width: 100%;">
+            <i class="fa-solid fa-calendar-check"></i> Schedule Follow-up
+          </button>
+        </div>
+
+        <button id="btn-finish-consultation" class="btn btn-outline" style="width: 100%; padding: 14px;">
+          <i class="fa-solid fa-house"></i> Return to Dashboard
+        </button>
+      </section>
             <input type="text" id="followup-notes" placeholder="e.g. Review if fever persists after 3 days">
           </div>
           <button id="btn-schedule-followup" class="btn btn-primary" style="width: 100%;">
@@ -637,69 +662,24 @@
     </main>
   </div>
 
-  <!-- MODAL: SHARED LANGUAGE MODE SELECTOR (Background Scribe vs Normal Turn-by-Turn) -->
-  <div id="modal-mode-select" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 style="color: var(--ambient-purple); display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-headset"></i> Shared Language Detected!
-        </h3>
-        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">
-        Both you (doctor) and the patient speak <strong id="modal-shared-lang-name" style="color: var(--text-main);">Marathi</strong>. Choose how you would like to conduct this consultation:
-      </p>
-
-      <!-- Option 1: Ambient Background Scribe Mode -->
-      <div class="mode-card-option recommended" id="opt-mode-ambient">
-        <div class="mode-card-icon">
-          <i class="fa-solid fa-microphone-lines"></i>
-        </div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <div class="mode-card-title">Background Scribe Mode</div>
-            <span class="badge-chip" style="background: var(--ambient-purple); color: #ffffff; font-size: 9px;">Recommended</span>
-          </div>
-          <p class="mode-card-desc">
-            Passive continuous listening in the background. <strong>No spoken TTS audio interruptions</strong>. Speech is transcribed and logged directly into canonical English, compiling the clinical report automatically.
-          </p>
-        </div>
-      </div>
-
-      <!-- Option 2: Standard Turn-by-Turn Mode -->
-      <div class="mode-card-option" id="opt-mode-normal">
-        <div class="mode-card-icon">
-          <i class="fa-solid fa-repeat"></i>
-        </div>
-        <div>
-          <div class="mode-card-title">Standard Turn-by-Turn Mode</div>
-          <p class="mode-card-desc">
-            Interactive turn switches between Patient and Doctor with manual speech controls.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: DOCTOR & APP SETTINGS -->
   <div id="modal-settings" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Doctor & App Settings</h3>
+        <h3 id="modal-settings-title">Doctor & App Settings</h3>
         <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="form-group">
-        <label>Doctor Full Name</label>
+        <label id="label-setting-doc-name">Doctor Full Name</label>
         <input type="text" id="setting-doc-name" value="Dr. Priya Sharma">
       </div>
       <div class="form-group">
-        <label>Doctor Credentials</label>
+        <label id="label-setting-doc-creds">Doctor Credentials</label>
         <input type="text" id="setting-doc-creds" value="MBBS, MD (General Medicine)">
       </div>
       <div class="form-group">
-        <label>Doctor Primary Language (Storage & Consultation)</label>
+        <label id="label-setting-doc-lang">Doctor Primary Language (Storage & Consultation)</label>
         <select id="setting-doc-lang">
           <option value="en-IN">English (Indian) [en-IN]</option>
           <option value="mr-IN">Marathi (मराठी) [mr-IN]</option>
@@ -707,60 +687,12 @@
         </select>
       </div>
 
-      <!-- Spoken Languages by Doctor -->
-      <div class="form-group">
-        <label>Languages Spoken / Understood by Doctor (Enables Background Mode)</label>
-        <div class="spoken-chips-grid" id="spoken-languages-chips">
-          <label class="spoken-checkbox-label selected">
-            <input type="checkbox" value="en-IN" checked> English (en-IN)
-          </label>
-          <label class="spoken-checkbox-label selected">
-            <input type="checkbox" value="mr-IN" checked> Marathi (मराठी)
-          </label>
-          <label class="spoken-checkbox-label selected">
-            <input type="checkbox" value="hi-IN" checked> Hindi (हिंदी)
-          </label>
-          <label class="spoken-checkbox-label">
-            <input type="checkbox" value="gu-IN"> Gujarati (ગુજરાતી)
-          </label>
-          <label class="spoken-checkbox-label">
-            <input type="checkbox" value="bn-IN"> Bengali (বাংলা)
-          </label>
-          <label class="spoken-checkbox-label">
-            <input type="checkbox" value="ta-IN"> Tamil (தமிழ்)
-          </label>
-          <label class="spoken-checkbox-label">
-            <input type="checkbox" value="te-IN"> Telugu (తెలుగు)
-          </label>
-          <label class="spoken-checkbox-label">
-            <input type="checkbox" value="kn-IN"> Kannada (ಕನ್ನಡ)
-          </label>
-        </div>
-        <small style="color: var(--text-muted); font-size: 11px;">When patient speaks any checked language, the app offers Background Scribe Mode.</small>
-      </div>
-
-      <!-- Speech Voice Profile -->
-      <div class="card" style="background: var(--secondary-light); border-color: #bae6fd; padding: 12px;">
-        <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0284c7; font-size: 13px;">
-          <i class="fa-solid fa-volume-high"></i> Voice Configuration
-        </div>
-        <p style="font-size: 11px; color: #0369a1; margin-top: 4px;">
-          <strong>Form Filling:</strong> Female Voice (Nalini / Kaveri / Devika)<br>
-          <strong>Consultation:</strong> Male Default Voice (Deepak / Omkar / Deven)
-        </p>
-      </div>
-
-      <!-- Backend Connection -->
-      <div class="form-group">
-        <label>API Base URL (LAN IPv4)</label>
-        <input type="url" id="setting-api-url" placeholder="http://192.168.1.4:8000">
-        <small style="color: var(--text-muted); font-size: 11px;">Enter computer's private Wi-Fi LAN IP to access from mobile phones.</small>
-      </div>
-
-      <div class="form-actions">
+      <div class="form-actions" style="margin-top: 12px;">
         <button class="btn btn-outline btn-close-modal">Cancel</button>
         <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
       </div>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -843,7 +775,7 @@
           </div>
           <div>
             <h3 id="report-modal-title" style="font-size: 16px; font-weight: 800;">Official Medical Report</h3>
-            <p id="report-modal-subtitle" style="font-size: 11px; color: var(--text-muted);">Stored in SQLite Database</p>
+            <p id="report-modal-subtitle" style="font-size: 11px; color: var(--text-muted);">Verified Clinical Record</p>
           </div>
         </div>
         <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
@@ -865,6 +797,7 @@
   <!-- Scripts -->
   <script src="js/api.js"></script>
   <script src="js/audio.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

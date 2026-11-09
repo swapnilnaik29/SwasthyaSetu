@@ -355,6 +355,17 @@ function showView(viewName) {
     views[viewName].classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // Apply localized UI
+  if (viewName === 'onboard' || viewName === 'onboardPatient') {
+    if (window.applyPatientOnboardingLanguage) {
+      window.applyPatientOnboardingLanguage(onboardingState.selectedLanguage || 'hi-IN');
+    }
+  } else {
+    if (window.applyDoctorLanguage) {
+      window.applyDoctorLanguage(state.doctor?.preferred_language || 'en-IN');
+    }
+  }
 }
 
 // Modal Helpers
@@ -392,12 +403,12 @@ async function checkConnection() {
   const statusText = document.getElementById('connection-status-text');
 
   try {
-    const health = await window.api.checkHealth();
+    await window.api.checkHealth();
     if (banner) banner.classList.remove('disconnected');
-    if (statusText) statusText.textContent = `Connected to Backend (${health.database || 'SQLite WAL'}) • LAN: ${health.server_lan_ip || 'Active'}`;
+    if (statusText) statusText.textContent = `Connected • SwasthyaSetu Ready`;
   } catch (err) {
     if (banner) banner.classList.add('disconnected');
-    if (statusText) statusText.textContent = `Backend Disconnected (${window.api.getBaseUrl()}) — Tap Configure to set LAN IP`;
+    if (statusText) statusText.textContent = `Offline Mode • Local Cache Active`;
   }
 }
 
@@ -413,6 +424,11 @@ async function loadDoctorSettings() {
     if (nameEl) nameEl.textContent = doc.name;
     if (credsEl) credsEl.textContent = doc.credentials;
     if (langEl) langEl.textContent = `Primary: ${LANG_LABELS[doc.preferred_language] || doc.preferred_language}`;
+
+    // Apply doctor's cached UI language instantly
+    if (window.applyDoctorLanguage) {
+      window.applyDoctorLanguage(doc.preferred_language || 'en-IN');
+    }
 
     // Spoken languages display
     const spokenCodes = (doc.spoken_languages || 'en-IN,mr-IN,hi-IN').split(',').map(s => s.trim()).filter(Boolean);
@@ -829,6 +845,11 @@ function selectOnboardingLanguage(langCode, displayName) {
   onboardingState.data.preferred_language = langCode;
   onboardingState.currentStep = 0;
 
+  // Localize patient onboarding interface in patient's preferred language
+  if (window.applyPatientOnboardingLanguage) {
+    window.applyPatientOnboardingLanguage(langCode);
+  }
+
   // Transition from Step A to Step B
   const stepA = document.getElementById('onboard-step-language');
   const stepB = document.getElementById('onboard-step-chat');
@@ -976,7 +997,7 @@ async function processAutoVoiceIntake() {
   const micStatus = document.getElementById('intake-mic-status');
   const recTimer = document.getElementById('intake-rec-timer');
 
-  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing & validating with AI...`;
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   if (micBtn) micBtn.classList.remove('recording');
   if (recTimer) recTimer.style.display = 'none';
 
@@ -999,7 +1020,7 @@ async function processAutoVoiceIntake() {
       startAutoListening();
     }
   } catch (err) {
-    if (micStatus) micStatus.textContent = 'STT error: ' + err.message;
+    if (micStatus) micStatus.textContent = 'Microphone error: ' + err.message;
   }
 }
 
@@ -1017,7 +1038,7 @@ async function handleIntakeAnswer(answer) {
   const alertBanner = document.getElementById('intake-validation-alert');
   const alertText = document.getElementById('intake-validation-text');
 
-  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI तपासत आहे... (AI validating answer...)`;
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   if (submitBtn) submitBtn.disabled = true;
 
   try {
@@ -1166,7 +1187,7 @@ async function submitOnboardingForm() {
   const finishBtn = document.getElementById('btn-finish-intake-early');
   if (finishBtn) {
     finishBtn.disabled = true;
-    finishBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Canonicalizing with GPT-6 Luna...`;
+    finishBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   }
 
   try {
@@ -1226,48 +1247,17 @@ function renderPreConsultationSummary(patient) {
 }
 
 /* ==========================================================================
-   SHARED LANGUAGE DETECTION & CONSULTATION MODES
+   TURN-BY-TURN CONSULTATION MODE (SCRIBE MODE REMOVED)
    ========================================================================== */
 
-function checkSharedLanguage(patientLang, doctor) {
-  if (!doctor) return { isShared: false };
-
-  const doctorPrimary = doctor.preferred_language || 'en-IN';
-  const spokenList = (doctor.spoken_languages || 'en-IN,mr-IN,hi-IN')
-    .split(',')
-    .map(s => s.trim().toLowerCase())
-    .filter(Boolean);
-
-  const pLangClean = (patientLang || '').trim().toLowerCase();
-
-  const isShared = (pLangClean === doctorPrimary.toLowerCase()) || spokenList.includes(pLangClean);
-  return {
-    isShared,
-    sharedLangCode: patientLang,
-    sharedLangLabel: LANG_LABELS[patientLang] || patientLang,
-  };
-}
-
-// Start Consultation Entry Point
+// Start Consultation Entry Point - Strictly Turn-by-Turn
 function initiateConsultationStart() {
   if (!state.selectedPatient) return;
-
-  const patientLang = state.selectedPatient.preferred_language || 'hi-IN';
-  const sharedInfo = checkSharedLanguage(patientLang, state.doctor);
-
-  if (sharedInfo.isShared) {
-    const modalShared = document.getElementById('modal-shared-lang-name');
-    if (modalShared) modalShared.textContent = sharedInfo.sharedLangLabel;
-    openModal('modal-mode-select');
-  } else {
-    startConsultationWithMode('NORMAL');
-  }
+  startConsultationWithMode('NORMAL');
 }
 
 // Start Consultation with Chosen Mode
 async function startConsultationWithMode(mode = 'NORMAL') {
-  closeModal('modal-mode-select');
-
   if (!state.selectedPatient) return;
 
   const btnStart = document.getElementById('btn-start-consultation');
@@ -1283,7 +1273,7 @@ async function startConsultationWithMode(mode = 'NORMAL') {
       state.selectedPatient.id,
       doctorLang,
       patientLang,
-      mode
+      'NORMAL'
     );
 
     state.activeConsultation = consultation;
@@ -1298,10 +1288,9 @@ async function startConsultationWithMode(mode = 'NORMAL') {
     if (bPat) bPat.textContent = `Patient: ${LANG_LABELS[patientLang] || patientLang}`;
     if (bDoc) bDoc.textContent = `Doctor: ${LANG_LABELS[doctorLang] || doctorLang}`;
 
-    const ambientBanner = document.getElementById('ambient-mode-banner');
-    if (ambientBanner) {
-      ambientBanner.style.display = (mode === 'AMBIENT_BACKGROUND') ? 'flex' : 'none';
-    }
+    // Initialize doctor speaking language dropdown
+    const docSpeakSelect = document.getElementById('doctor-speak-lang');
+    if (docSpeakSelect) docSpeakSelect.value = doctorLang;
 
     switchSpeaker('PATIENT');
     renderTimeline([]);
@@ -1318,37 +1307,32 @@ async function startConsultationWithMode(mode = 'NORMAL') {
 function switchSpeaker(speaker) {
   state.activeSpeaker = speaker;
   const isPatient = speaker === 'PATIENT';
-  const isAmbient = state.activeConsultation && state.activeConsultation.mode === 'AMBIENT_BACKGROUND';
 
   const btnPatient = document.getElementById('btn-speaker-patient');
   const btnDoctor = document.getElementById('btn-speaker-doctor');
   const turnBanner = document.getElementById('turn-direction-banner');
   const turnText = document.getElementById('turn-direction-text');
+  const docSpeakBar = document.getElementById('doctor-speak-lang-bar');
 
   const pLang = state.activeConsultation ? state.activeConsultation.patient_language : 'hi-IN';
-  const dLang = state.activeConsultation ? state.activeConsultation.doctor_language : 'en-IN';
+  const dLang = state.doctor ? state.doctor.preferred_language : 'en-IN';
 
   if (isPatient) {
     if (btnPatient) btnPatient.classList.add('active');
     if (btnDoctor) btnDoctor.classList.remove('active');
     if (turnBanner) turnBanner.className = 'turn-direction-banner patient-turn';
+    if (docSpeakBar) docSpeakBar.style.display = 'none';
     if (turnText) {
-      if (isAmbient) {
-        turnText.textContent = `Patient Speaking (${LANG_LABELS[pLang] || pLang}) • App logging English clinical notes`;
-      } else {
-        turnText.textContent = `Patient Speaks (${LANG_LABELS[pLang] || pLang}) ➔ Doctor Listens (${LANG_LABELS[dLang] || dLang})`;
-      }
+      turnText.textContent = `Patient Speaks (${LANG_LABELS[pLang] || pLang}) ➔ Doctor Listens (${LANG_LABELS[dLang] || dLang})`;
     }
   } else {
     if (btnPatient) btnPatient.classList.remove('active');
     if (btnDoctor) btnDoctor.classList.add('active');
     if (turnBanner) turnBanner.className = 'turn-direction-banner doctor-turn';
+    if (docSpeakBar) docSpeakBar.style.display = 'flex';
     if (turnText) {
-      if (isAmbient) {
-        turnText.textContent = `Doctor Speaking (${LANG_LABELS[dLang] || dLang}) • App logging English clinical notes`;
-      } else {
-        turnText.textContent = `Doctor Speaks (${LANG_LABELS[dLang] || dLang}) ➔ Patient Listens (${LANG_LABELS[pLang] || pLang} Male Voice)`;
-      }
+      const docCurrentSpeak = document.getElementById('doctor-speak-lang')?.value || dLang;
+      turnText.textContent = `Doctor Speaks (${LANG_LABELS[docCurrentSpeak] || docCurrentSpeak}) ➔ Patient Listens (${LANG_LABELS[pLang] || pLang})`;
     }
   }
 }
@@ -1371,11 +1355,11 @@ async function processAudioTurn(audioBlob) {
   if (!state.activeConsultation) return;
 
   const isPatient = state.activeSpeaker === 'PATIENT';
-  const isAmbient = state.activeConsultation.mode === 'AMBIENT_BACKGROUND';
-  const sourceLang = isPatient ? state.activeConsultation.patient_language : state.activeConsultation.doctor_language;
-  const targetLang = isPatient ? state.activeConsultation.doctor_language : state.activeConsultation.patient_language;
+  const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
+  const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
+  const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
 
-  setProcessing(true, isAmbient ? 'Background Scribe: Transcribing & indexing clinical record...' : 'Transcribing with Gnani AI & translating with GPT-6 Luna...');
+  setProcessing(true);
 
   try {
     const result = await window.api.processAudioTurn(
@@ -1388,8 +1372,8 @@ async function processAudioTurn(audioBlob) {
 
     appendTurn(result);
 
-    // Auto-play synthesized audio for recipient ONLY in Normal mode (Ambient mode skips TTS)
-    if (!isAmbient && result.audio_url) {
+    // Auto-play synthesized audio for recipient
+    if (result.audio_url) {
       const fullUrl = window.api.resolveAudioUrl(result.audio_url);
       window.audioManager.playAudio(fullUrl);
     }
@@ -1406,11 +1390,11 @@ async function processTextTurn(text) {
   if (!state.activeConsultation || !text.trim()) return;
 
   const isPatient = state.activeSpeaker === 'PATIENT';
-  const isAmbient = state.activeConsultation.mode === 'AMBIENT_BACKGROUND';
-  const sourceLang = isPatient ? state.activeConsultation.patient_language : state.activeConsultation.doctor_language;
-  const targetLang = isPatient ? state.activeConsultation.doctor_language : state.activeConsultation.patient_language;
+  const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
+  const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
+  const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
 
-  setProcessing(true, 'Translating with GPT-6 Luna & querying translation cache...');
+  setProcessing(true);
 
   try {
     const result = await window.api.processTextTurn(
@@ -1423,7 +1407,7 @@ async function processTextTurn(text) {
 
     appendTurn(result);
 
-    if (!isAmbient && result.audio_url) {
+    if (result.audio_url) {
       const fullUrl = window.api.resolveAudioUrl(result.audio_url);
       window.audioManager.playAudio(fullUrl);
     }
@@ -1444,14 +1428,12 @@ function promptTurnHandoff() {
   }
 }
 
-function setProcessing(isProcessing, message = 'Processing speech turn...') {
+function setProcessing(isProcessing) {
   state.isProcessing = isProcessing;
   const banner = document.getElementById('turn-processing-banner');
-  const bannerText = document.getElementById('turn-processing-text');
   const recordBtn = document.getElementById('btn-record-turn');
 
   if (banner) banner.style.display = isProcessing ? 'flex' : 'none';
-  if (bannerText) bannerText.textContent = message;
   if (recordBtn) recordBtn.disabled = isProcessing;
 }
 
@@ -1539,7 +1521,7 @@ async function loadDraftReview() {
   const reviewBtn = document.getElementById('btn-review-draft');
   if (reviewBtn) {
     reviewBtn.disabled = true;
-    reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating AI Report...`;
+    reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   }
 
   try {
@@ -1604,10 +1586,30 @@ function renderDraftReview(draft) {
   const notesInput = document.getElementById('draft-notes');
   if (notesInput) notesInput.value = payload.doctor_notes || (payload.medical_history ? `History: ${payload.medical_history}.` : '');
 
+  // Recommended next consultation date & follow-up
+  const followUpEl = document.getElementById('draft-followup-text');
+  const nextDateInput = document.getElementById('draft-next-date');
+  if (followUpEl) {
+    followUpEl.textContent = payload.follow_up_recommendation || (payload.follow_up_days ? `Follow up in ${payload.follow_up_days} days` : 'Routine follow-up');
+  }
+  if (nextDateInput) {
+    if (payload.recommended_next_visit_date) {
+      nextDateInput.value = payload.recommended_next_visit_date;
+    } else if (payload.follow_up_days) {
+      const d = new Date();
+      d.setDate(d.getDate() + payload.follow_up_days);
+      nextDateInput.value = d.toISOString().slice(0, 10);
+    } else {
+      const d = new Date();
+      d.setDate(d.getDate() + 3);
+      nextDateInput.value = d.toISOString().slice(0, 10);
+    }
+  }
+
   renderPrescriptions(payload.prescriptions || []);
 }
 
-// Doctor AI Scribe Assistant (Dictate Vitals & Additional Details)
+// Doctor AI Scribe Assistant (Dictate Vitals & Additional Details in Any Language)
 let isDoctorAIRecording = false;
 
 async function toggleDoctorAIRecording() {
@@ -1617,7 +1619,7 @@ async function toggleDoctorAIRecording() {
   if (isDoctorAIRecording) {
     isDoctorAIRecording = false;
     if (micBtn) micBtn.classList.remove('recording');
-    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing dictation...`;
+    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
     const blob = await window.audioManager.stopRecording();
     if (!blob) {
@@ -1626,7 +1628,7 @@ async function toggleDoctorAIRecording() {
     }
 
     try {
-      const docLang = state.doctor?.primary_language || 'en-IN';
+      const docLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
       const result = await window.api.transcribeAudio(blob, docLang);
       if (result && result.transcript && result.transcript.trim()) {
         const textInput = document.getElementById('input-doctor-ai-text');
@@ -1736,7 +1738,7 @@ async function approveClinicalRecord() {
   const btn = document.getElementById('btn-approve-record');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Finalizing Official Record in Database...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   }
 
   try {
@@ -1746,6 +1748,12 @@ async function approveClinicalRecord() {
 
     const notesInput = document.getElementById('draft-notes');
     if (notesInput) payload.doctor_notes = notesInput.value.trim();
+
+    // Recommended next consultation date
+    const draftNextDate = document.getElementById('draft-next-date')?.value;
+    if (draftNextDate) {
+      payload.recommended_next_visit_date = draftNextDate;
+    }
 
     // Collect all edited vitals
     const weightVal = parseFloat(document.getElementById('vitals-weight')?.value);
@@ -1767,12 +1775,16 @@ async function approveClinicalRecord() {
     await window.api.updateDraft(state.activeConsultation.id, payload);
     await window.api.approveDraft(state.activeConsultation.id);
 
-    // Set default follow-up 3 days later
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + 3);
+    // Set follow-up date from recommendation
     const dateInput = document.getElementById('followup-date');
     if (dateInput) {
-      dateInput.value = nextDate.toISOString().slice(0, 10);
+      if (draftNextDate) {
+        dateInput.value = draftNextDate;
+      } else {
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + 3);
+        dateInput.value = nextDate.toISOString().slice(0, 10);
+      }
     }
 
     showView('approval');
@@ -1801,7 +1813,7 @@ async function saveFollowupAppointment() {
   const btn = document.getElementById('btn-schedule-followup');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scheduling...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
   }
 
   try {
@@ -1916,9 +1928,19 @@ function setupEventListeners() {
   // Start Consultation from Patient Profile View
   on('btn-start-consultation', 'click', initiateConsultationStart);
 
-  // Mode Selection Modal Choices
-  on('opt-mode-ambient', 'click', () => startConsultationWithMode('AMBIENT_BACKGROUND'));
-  on('opt-mode-normal', 'click', () => startConsultationWithMode('NORMAL'));
+  // Doctor Speaking Language Selector Change
+  const docSpeakLang = document.getElementById('doctor-speak-lang');
+  if (docSpeakLang) {
+    docSpeakLang.addEventListener('change', () => {
+      if (state.activeSpeaker === 'DOCTOR') {
+        const turnText = document.getElementById('turn-direction-text');
+        const pLang = state.activeConsultation ? state.activeConsultation.patient_language : 'hi-IN';
+        if (turnText) {
+          turnText.textContent = `Doctor Speaks (${LANG_LABELS[docSpeakLang.value] || docSpeakLang.value}) ➔ Patient Listens (${LANG_LABELS[pLang] || pLang})`;
+        }
+      }
+    });
+  }
 
   // Patient Search Debounce
   let searchTimer;
