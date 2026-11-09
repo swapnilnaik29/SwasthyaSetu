@@ -70,7 +70,6 @@ class DraftExtractorService:
                     {"role": "user", "content": user_prompt},
                 ],
                 response_format={"type": "json_object"},
-                temperature=0.0,
             )
 
             raw = response.choices[0].message.content

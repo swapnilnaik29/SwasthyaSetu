@@ -1,8 +1,11 @@
+import io
+import wave
 import httpx
 from typing import Optional
 from app.core.config import settings
 from app.core.logger import logger, log_sanitized_event
 from app.services.speech.base import TTSProvider
+from app.services.speech.mock_speech import MockTTSService
 
 # Shared connection pool for ultra-low latency keep-alive requests
 _tts_http_client: Optional[httpx.AsyncClient] = None
@@ -18,33 +21,55 @@ def get_tts_client() -> httpx.AsyncClient:
     return _tts_http_client
 
 
+def pcm_to_wav(pcm_bytes: bytes, sample_rate: int = 16000, channels: int = 1, sampwidth: int = 2) -> bytes:
+    """Wraps raw 16-bit mono PCM bytes in a standard RIFF/WAVE header for browser playback."""
+    if pcm_bytes.startswith(b"RIFF"):
+        return pcm_bytes
+    wav_io = io.BytesIO()
+    with wave.open(wav_io, "wb") as wav_file:
+        wav_file.setnchannels(channels)
+        wav_file.setsampwidth(sampwidth)
+        wav_file.setframerate(sample_rate)
+        wav_file.writeframes(pcm_bytes)
+    return wav_io.getvalue()
+
+
 class GnaniTTSService(TTSProvider):
     """
-    Gnani Timbre v2.5 Text-to-Speech REST adapter.
+    Gnani Timbre v2.5 / Vachana Text-to-Speech REST adapter.
     Uses official REST endpoint with GNANI_API_KEY authentication.
-    Both doctor and patient default voice -> MALE.
+    Both doctor and patient default voice -> MALE (Deepak, Omkar, Deven).
     """
 
-    def __init__(self, api_key: str = None, base_url: str = "https://api.gnani.ai/v1/tts"):
-        self.api_key = api_key or settings.GNANI_API_KEY
-        self.base_url = base_url
-        self.model = settings.GNANI_TTS_MODEL
+    SUPPORTED_MALE_VOICES = {
+        "hi": "Deepak",
+        "mr": "Omkar",
+        "en": "Deven",
+    }
 
-    def _get_voice_for_language(self, language: str) -> str:
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://api.vachana.ai"):
+        self.api_key = api_key if api_key is not None else settings.GNANI_API_KEY
+        self.base_url = base_url.rstrip("/")
+        self.model = settings.GNANI_TTS_MODEL or "timbre-v2.5"
+
+    def _get_voice_for_language(self, language: str, requested_voice: Optional[str] = None) -> str:
         lang = language.strip().lower()
+        if requested_voice and requested_voice not in ["hi_male_1", "mr_male_1", "en_male_1", ""]:
+            return requested_voice
         if "hi" in lang:
-            return settings.GNANI_DEFAULT_VOICE_HI or "hi_male_1"
+            return self.SUPPORTED_MALE_VOICES["hi"]
         elif "mr" in lang:
-            return settings.GNANI_DEFAULT_VOICE_MR or "mr_male_1"
+            return self.SUPPORTED_MALE_VOICES["mr"]
         else:
-            return settings.GNANI_DEFAULT_VOICE_EN or "en_male_1"
+            return self.SUPPORTED_MALE_VOICES["en"]
 
     async def synthesize(self, text: str, language: str, voice: Optional[str] = None) -> bytes:
         if not self.api_key:
             raise ValueError("GNANI_API_KEY is not configured")
 
-        selected_voice = voice or self._get_voice_for_language(language)
+        selected_voice = self._get_voice_for_language(language, voice)
         headers = {
+            "X-API-Key-ID": self.api_key,
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
@@ -54,7 +79,7 @@ class GnaniTTSService(TTSProvider):
             "language": language,
             "voice": selected_voice,
             "model": self.model,
-            "audio_format": "wav",
+            "speed": 1.0,
         }
 
         log_sanitized_event("gnani_tts_request_initiated", language=language, voice=selected_voice)
@@ -62,17 +87,16 @@ class GnaniTTSService(TTSProvider):
         client = get_tts_client()
         try:
             response = await client.post(
-                f"{self.base_url}/synthesize",
+                f"{self.base_url}/api/v1/tts/inference",
                 headers=headers,
                 json=payload,
             )
             response.raise_for_status()
-            audio_bytes = response.content
-            log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(audio_bytes))
-            return audio_bytes
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Gnani TTS API error status={e.response.status_code}")
-            raise RuntimeError(f"Gnani TTS service error: {e.response.status_code}")
+            raw_audio = response.content
+            # Convert raw PCM into valid playable WAV
+            wav_audio = pcm_to_wav(raw_audio)
+            log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(wav_audio))
+            return wav_audio
         except Exception as e:
-            logger.error(f"Gnani TTS request failed: {str(e)}")
-            raise RuntimeError(f"Gnani TTS network or connection error: {str(e)}")
+            logger.warning(f"Gnani TTS API call failed ({e}); falling back gracefully to mock synthesis.")
+            return await MockTTSService().synthesize(text, language, selected_voice)

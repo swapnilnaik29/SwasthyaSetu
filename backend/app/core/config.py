@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,6 +32,17 @@ class Settings(BaseSettings):
     # Local SQLite Database (default for ultra-low latency & zero-setup)
     DATABASE_URL: str = "sqlite+aiosqlite:///./swasthyasetu.db"
 
+    @field_validator("DATABASE_URL", mode="after")
+    @classmethod
+    def resolve_sqlite_path(cls, v: str) -> str:
+        if "sqlite+aiosqlite:///./" in v:
+            backend_dir = Path(__file__).resolve().parent.parent.parent
+            relative_name = v.replace("sqlite+aiosqlite:///./", "")
+            db_path = (backend_dir / relative_name).resolve()
+            return f"sqlite+aiosqlite:///{db_path.as_posix()}"
+        return v
+
+
     @property
     def sync_database_url(self) -> str:
         """Provide a synchronous database URL for Alembic migrations or sync operations."""
@@ -49,9 +61,9 @@ class Settings(BaseSettings):
     GNANI_TTS_MODEL: str = "timbre-v2.5"
     GNANI_STT_MODE: str = "rest"
     GNANI_TTS_MODE: str = "rest"
-    GNANI_DEFAULT_VOICE_HI: str = "hi_male_1"
-    GNANI_DEFAULT_VOICE_MR: str = "mr_male_1"
-    GNANI_DEFAULT_VOICE_EN: str = "en_male_1"
+    GNANI_DEFAULT_VOICE_HI: str = "Deepak"
+    GNANI_DEFAULT_VOICE_MR: str = "Omkar"
+    GNANI_DEFAULT_VOICE_EN: str = "Deven"
 
     # Legacy Gnani parameters if needed
     GNANI_LEGACY_TOKEN: str = ""

@@ -843,3 +843,4 @@ function setupAudioCallbacks() {
     recordLabel.textContent = `RECORDING (${timeFormatted}) — TAP TO STOP`;
   };
 }
+

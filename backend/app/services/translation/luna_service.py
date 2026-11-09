@@ -192,7 +192,6 @@ class GPT6LunaTranslationService:
                     {"role": "user", "content": user_prompt},
                 ],
                 response_format=TRANSLATION_RESPONSE_SCHEMA,
-                temperature=0.0,
             )
 
             content = response.choices[0].message.content

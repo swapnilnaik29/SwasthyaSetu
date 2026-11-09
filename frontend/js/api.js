@@ -187,3 +187,4 @@ class ApiService {
 }
 
 window.api = new ApiService();
+

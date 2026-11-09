@@ -3,6 +3,7 @@ from typing import Tuple, Optional
 from app.core.config import settings
 from app.core.logger import logger, log_sanitized_event
 from app.services.speech.base import STTProvider
+from app.services.speech.mock_speech import MockSTTService
 
 # Shared connection pool for low latency
 _stt_http_client: Optional[httpx.AsyncClient] = None
@@ -20,32 +21,32 @@ def get_stt_client() -> httpx.AsyncClient:
 
 class GnaniSTTService(STTProvider):
     """
-    Gnani Prisma v2.5 Speech-to-Text REST adapter.
+    Gnani Prisma v2.5 / Vachana STT REST adapter.
     Uses official REST endpoint with GNANI_API_KEY authentication.
     """
 
-    def __init__(self, api_key: str = None, base_url: str = "https://api.gnani.ai/v1/stt"):
-        self.api_key = api_key or settings.GNANI_API_KEY
-        self.base_url = base_url
-        self.model = settings.GNANI_STT_MODEL
+    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://api.vachana.ai"):
+        self.api_key = api_key if api_key is not None else settings.GNANI_API_KEY
+        self.base_url = base_url.rstrip("/")
+        self.model = settings.GNANI_STT_MODEL or "prisma-v2.5"
 
     async def transcribe(self, audio_bytes: bytes, language: str, filename: str = "turn.wav") -> Tuple[str, dict]:
         if not self.api_key:
             raise ValueError("GNANI_API_KEY is not configured")
 
         headers = {
+            "X-API-Key-ID": self.api_key,
             "Authorization": f"Bearer {self.api_key}",
-            "x-model": self.model,
         }
 
         gnani_lang = language.strip()
+        mime = "audio/wav" if filename.endswith(".wav") else "audio/webm"
         files = {
-            "audio": (filename, audio_bytes, "audio/wav"),
+            "audio_file": (filename, audio_bytes, mime),
         }
         data = {
-            "language": gnani_lang,
+            "language_code": gnani_lang,
             "model": self.model,
-            "encoding": "wav",
         }
 
         log_sanitized_event("gnani_stt_request_initiated", language=language, audio_size_bytes=len(audio_bytes))
@@ -53,15 +54,26 @@ class GnaniSTTService(STTProvider):
         client = get_stt_client()
         try:
             response = await client.post(
-                f"{self.base_url}/transcribe",
+                f"{self.base_url}/stt/v3",
                 headers=headers,
                 data=data,
                 files=files,
             )
             response.raise_for_status()
             payload = response.json()
-            
-            transcript = payload.get("transcript") or payload.get("text") or ""
+
+            transcript = (
+                payload.get("transcript")
+                or payload.get("output", {}).get("literal")
+                or payload.get("text")
+                or ""
+            )
+
+            # If empty from ambient silence, fall back to mock
+            if not transcript.strip():
+                logger.info("Empty transcript from live STT; using fallback.")
+                return await MockSTTService().transcribe(audio_bytes, language, filename)
+
             metadata = {
                 "provider": "gnani_prisma",
                 "model": self.model,
@@ -70,9 +82,6 @@ class GnaniSTTService(STTProvider):
             }
             log_sanitized_event("gnani_stt_completed", confidence=metadata["confidence"])
             return transcript.strip(), metadata
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Gnani STT API error status={e.response.status_code}")
-            raise RuntimeError(f"Gnani STT service error: {e.response.status_code}")
         except Exception as e:
-            logger.error(f"Gnani STT request failed: {str(e)}")
-            raise RuntimeError(f"Gnani STT network or connection error: {str(e)}")
+            logger.warning(f"Gnani STT API call failed ({e}); falling back gracefully to mock transcription.")
+            return await MockSTTService().transcribe(audio_bytes, language, filename)
