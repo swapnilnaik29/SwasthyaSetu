@@ -111,3 +111,4 @@ async def test_ambient_background_consultation_skips_tts(client):
     assert turn["canonical_english"] is not None
     # TTS audio generation MUST be skipped in ambient background scribe mode!
     assert turn["audio_url"] is None
+

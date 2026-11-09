@@ -306,20 +306,18 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'history_allergies',
       label: 'ప్రశ్న 5 / 5 • మునుపటి చరిత్ర & అలెర్జీలు',
-      text: 'మీకు BP, మధుమేహం వంటి దీర్ఘకాలిక వ్యాధులు లేదా అలెర్జీలు ఉన్నాయా?',
+      text: 'మీకు BP, మధుమేహం వంటి దీర్ಘకాలిక వ్యాధులు లేదా అలెర్జీలు ఉన్నాయా?',
       sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
       chips: ['ఏ వ్యాధులు లేదా అలెర్జీలు లేవు', 'హై బీపీ ఉంది'],
     },
   ],
 };
 
-// Fallback generator for other languages (kn, ml, pa, or) using English/Hindi template
 function getQuestionsForLanguage(lang) {
   if (ONBOARDING_QUESTIONS[lang]) {
     return ONBOARDING_QUESTIONS[lang];
   }
-  const base = ONBOARDING_QUESTIONS['hi-IN'] || ONBOARDING_QUESTIONS['en-IN'];
-  return base;
+  return ONBOARDING_QUESTIONS['hi-IN'] || ONBOARDING_QUESTIONS['en-IN'];
 }
 
 // DOM Elements
@@ -329,8 +327,18 @@ const views = {
   patientDetail: document.getElementById('view-patient-detail'),
   consultation: document.getElementById('view-consultation'),
   draftReview: document.getElementById('view-draft-review'),
-  approval: document.getElementById('view-approval'),
+  approval: document.getElementById('view-approval-success'),
 };
+
+// Safe event listener helper
+function on(id, event, handler) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener(event, handler);
+  } else {
+    console.warn(`[SwasthyaSetu] Element #${id} not found for ${event} event.`);
+  }
+}
 
 // Navigation Helper
 function showView(viewName) {
@@ -365,9 +373,11 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
 
 // App Initialization
 document.addEventListener('DOMContentLoaded', async () => {
+  // Setup Language Selector First so buttons are immediately responsive
+  setupBubbleLanguageSelector();
   setupEventListeners();
   setupAudioCallbacks();
-  setupBubbleLanguageSelector();
+
   await checkConnection();
   await loadDoctorSettings();
   await loadPatients();
@@ -380,11 +390,11 @@ async function checkConnection() {
 
   try {
     const health = await window.api.checkHealth();
-    banner.classList.remove('disconnected');
-    statusText.textContent = `Connected to Backend (${health.database || 'SQLite WAL'}) • LAN: ${health.server_lan_ip || 'Active'}`;
+    if (banner) banner.classList.remove('disconnected');
+    if (statusText) statusText.textContent = `Connected to Backend (${health.database || 'SQLite WAL'}) • LAN: ${health.server_lan_ip || 'Active'}`;
   } catch (err) {
-    banner.classList.add('disconnected');
-    statusText.textContent = `Backend Disconnected (${window.api.getBaseUrl()}) — Tap Configure to set LAN IP`;
+    if (banner) banner.classList.add('disconnected');
+    if (statusText) statusText.textContent = `Backend Disconnected (${window.api.getBaseUrl()}) — Tap Configure to set LAN IP`;
   }
 }
 
@@ -393,29 +403,39 @@ async function loadDoctorSettings() {
   try {
     const doc = await window.api.getDoctorSettings();
     state.doctor = doc;
-    document.getElementById('dash-doctor-name').textContent = doc.name;
-    document.getElementById('dash-doctor-creds').textContent = doc.credentials;
-    document.getElementById('dash-doctor-lang').textContent = `Primary: ${LANG_LABELS[doc.preferred_language] || doc.preferred_language}`;
+    const nameEl = document.getElementById('dash-doctor-name');
+    const credsEl = document.getElementById('dash-doctor-creds');
+    const langEl = document.getElementById('dash-doctor-lang');
+
+    if (nameEl) nameEl.textContent = doc.name;
+    if (credsEl) credsEl.textContent = doc.credentials;
+    if (langEl) langEl.textContent = `Primary: ${LANG_LABELS[doc.preferred_language] || doc.preferred_language}`;
 
     // Spoken languages display
     const spokenCodes = (doc.spoken_languages || 'en-IN,mr-IN,hi-IN').split(',').map(s => s.trim()).filter(Boolean);
     const spokenNames = spokenCodes.map(code => LANG_LABELS[code] ? LANG_LABELS[code].split(' ')[0] : code).join(', ');
     const spokenEl = document.getElementById('dash-doctor-spoken');
     if (spokenEl) {
-      spokenEl.querySelector('span').textContent = `Speaks: ${spokenNames || 'English, Marathi, Hindi'}`;
+      const span = spokenEl.querySelector('span');
+      if (span) span.textContent = `Speaks: ${spokenNames || 'English, Marathi, Hindi'}`;
     }
 
     // Fill settings modal inputs
-    document.getElementById('setting-doc-name').value = doc.name;
-    document.getElementById('setting-doc-creds').value = doc.credentials;
-    document.getElementById('setting-doc-lang').value = doc.preferred_language;
-    document.getElementById('setting-api-url').value = window.api.getBaseUrl();
+    const setDocName = document.getElementById('setting-doc-name');
+    const setDocCreds = document.getElementById('setting-doc-creds');
+    const setDocLang = document.getElementById('setting-doc-lang');
+    const setApiUrl = document.getElementById('setting-api-url');
+
+    if (setDocName) setDocName.value = doc.name;
+    if (setDocCreds) setDocCreds.value = doc.credentials;
+    if (setDocLang) setDocLang.value = doc.preferred_language;
+    if (setApiUrl) setApiUrl.value = window.api.getBaseUrl();
 
     // Check checkboxes in settings modal
     const spokenSet = new Set(spokenCodes);
     document.querySelectorAll('#spoken-languages-chips input[type="checkbox"]').forEach(cb => {
       cb.checked = spokenSet.has(cb.value);
-      cb.parentElement.classList.toggle('selected', cb.checked);
+      if (cb.parentElement) cb.parentElement.classList.toggle('selected', cb.checked);
     });
   } catch (err) {
     console.warn('Failed to load doctor settings:', err);
@@ -436,14 +456,16 @@ async function loadPatients(query = '') {
 function renderPatientsList(patients) {
   const container = document.getElementById('patient-list-container');
   const countBadge = document.getElementById('patient-count-badge');
-  countBadge.textContent = `${patients.length} registered`;
+  if (countBadge) countBadge.textContent = `${patients.length} registered`;
+
+  if (!container) return;
 
   if (patients.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; padding: 36px 20px; color: var(--text-muted);">
         <i class="fa-solid fa-users-slash" style="font-size: 38px; margin-bottom: 10px; color: #cbd5e1;"></i>
         <p style="font-weight: 600;">No patients registered yet</p>
-        <p style="font-size: 12px; margin-top: 4px;">Click "+ Onboard Patient" to start interactive AI intake.</p>
+        <p style="font-size: 12px; margin-top: 4px;">Click "+ Onboard Patient" above to start interactive AI intake.</p>
       </div>
     `;
     return;
@@ -482,22 +504,30 @@ window.viewPatientDetail = async function(patientId) {
     const patient = await window.api.getPatient(patientId);
     state.selectedPatient = patient;
 
-    document.getElementById('detail-patient-name').textContent = patient.name;
-    document.getElementById('card-patient-name').textContent = patient.name;
-    document.getElementById('card-patient-meta').textContent = `${patient.age ? patient.age + ' years • ' : ''}${patient.gender ? patient.gender + ' • ' : ''}${patient.mobile_number}`;
-    
+    const detName = document.getElementById('detail-patient-name');
+    const cardName = document.getElementById('card-patient-name');
+    const cardMeta = document.getElementById('card-patient-meta');
     const langBadge = document.getElementById('card-patient-lang');
-    langBadge.textContent = LANG_LABELS[patient.preferred_language] || patient.preferred_language;
-    langBadge.className = `badge-chip ${patient.preferred_language.includes('hi') ? 'badge-hi' : (patient.preferred_language.includes('mr') ? 'badge-mr' : 'badge-en')}`;
+
+    if (detName) detName.textContent = patient.name;
+    if (cardName) cardName.textContent = patient.name;
+    if (cardMeta) cardMeta.textContent = `${patient.age ? patient.age + ' years • ' : ''}${patient.gender ? patient.gender + ' • ' : ''}${patient.mobile_number}`;
+    
+    if (langBadge) {
+      langBadge.textContent = LANG_LABELS[patient.preferred_language] || patient.preferred_language;
+      langBadge.className = `badge-chip ${patient.preferred_language.includes('hi') ? 'badge-hi' : (patient.preferred_language.includes('mr') ? 'badge-mr' : 'badge-en')}`;
+    }
 
     // Show pre-consultation summary if present
     const intakeBox = document.getElementById('card-patient-intake-box');
     const intakeText = document.getElementById('card-patient-intake-text');
-    if (patient.intake_summary_english) {
-      intakeBox.style.display = 'block';
-      intakeText.textContent = patient.intake_summary_english;
-    } else {
-      intakeBox.style.display = 'none';
+    if (intakeBox && intakeText) {
+      if (patient.intake_summary_english) {
+        intakeBox.style.display = 'block';
+        intakeText.textContent = patient.intake_summary_english;
+      } else {
+        intakeBox.style.display = 'none';
+      }
     }
 
     showView('patientDetail');
@@ -513,7 +543,9 @@ async function loadConsultationHistory(patientId) {
 
   try {
     const history = await window.api.getPatientConsultations(patientId);
-    countBadge.textContent = `${history.length} past visits`;
+    if (countBadge) countBadge.textContent = `${history.length} past visits`;
+
+    if (!container) return;
 
     if (history.length === 0) {
       container.innerHTML = `
@@ -548,7 +580,7 @@ async function loadConsultationHistory(patientId) {
       `;
     }).join('');
   } catch (err) {
-    container.innerHTML = `<p style="color: var(--error-red);">Failed to load history</p>`;
+    if (container) container.innerHTML = `<p style="color: var(--error-red);">Failed to load history</p>`;
   }
 }
 
@@ -573,48 +605,68 @@ function showOnboardingView() {
   };
 
   // Reset live autofill display
-  document.getElementById('field-preview-name').textContent = 'Pending response...';
-  document.getElementById('field-preview-name').classList.add('placeholder');
-  document.getElementById('field-preview-age-gender').textContent = 'Pending response...';
-  document.getElementById('field-preview-age-gender').classList.add('placeholder');
-  document.getElementById('field-preview-phone').textContent = 'Pending response...';
-  document.getElementById('field-preview-phone').classList.add('placeholder');
-  document.getElementById('field-preview-complaint').textContent = 'Pending response...';
-  document.getElementById('field-preview-complaint').classList.add('placeholder');
-  document.getElementById('field-preview-history').textContent = 'Pending response...';
-  document.getElementById('field-preview-history').classList.add('placeholder');
-  document.getElementById('field-preview-allergies').textContent = 'Pending response...';
-  document.getElementById('field-preview-allergies').classList.add('placeholder');
+  const resetField = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = 'Pending response...';
+      el.classList.add('placeholder');
+    }
+  };
+  resetField('field-preview-name');
+  resetField('field-preview-age-gender');
+  resetField('field-preview-phone');
+  resetField('field-preview-complaint');
+  resetField('field-preview-history');
+  resetField('field-preview-allergies');
 
   // Show Step A (Language Selector) and hide others
-  document.getElementById('onboard-step-language').style.display = 'flex';
-  document.getElementById('onboard-step-chat').style.display = 'none';
-  document.getElementById('onboard-step-summary').style.display = 'none';
+  const stepA = document.getElementById('onboard-step-language');
+  const stepB = document.getElementById('onboard-step-chat');
+  const stepC = document.getElementById('onboard-step-summary');
+
+  if (stepA) stepA.style.display = 'flex';
+  if (stepB) stepB.style.display = 'none';
+  if (stepC) stepC.style.display = 'none';
 
   showView('onboard');
 }
 
+// Global window function for inline onclick and listener
+window.selectOnboardingBubble = function(langCode, displayName) {
+  selectOnboardingLanguage(langCode, displayName);
+};
+
 function setupBubbleLanguageSelector() {
   const bubbles = document.querySelectorAll('.lang-bubble');
   bubbles.forEach(bubble => {
-    bubble.addEventListener('click', () => {
-      const langCode = bubble.getAttribute('data-lang');
-      const langName = bubble.getAttribute('data-name');
-      const langNative = bubble.getAttribute('data-native');
-      selectOnboardingLanguage(langCode, `${langName} (${langNative})`);
+    bubble.addEventListener('click', (e) => {
+      const b = e.currentTarget;
+      const langCode = b.getAttribute('data-lang');
+      const langName = b.getAttribute('data-name');
+      const langNative = b.getAttribute('data-native');
+      const display = langNative ? `${langName} (${langNative})` : (langName || langCode);
+      selectOnboardingLanguage(langCode, display);
     });
   });
 }
 
 function selectOnboardingLanguage(langCode, displayName) {
+  console.log('[SwasthyaSetu] Language selected:', langCode, displayName);
   onboardingState.selectedLanguage = langCode;
   onboardingState.data.preferred_language = langCode;
   onboardingState.currentStep = 0;
 
   // Transition from Step A to Step B
-  document.getElementById('onboard-step-language').style.display = 'none';
-  document.getElementById('onboard-step-chat').style.display = 'flex';
-  document.getElementById('intake-active-lang-badge').textContent = `Language: ${displayName}`;
+  const stepA = document.getElementById('onboard-step-language');
+  const stepB = document.getElementById('onboard-step-chat');
+  const stepC = document.getElementById('onboard-step-summary');
+
+  if (stepA) stepA.style.display = 'none';
+  if (stepB) stepB.style.display = 'flex';
+  if (stepC) stepC.style.display = 'none';
+
+  const badge = document.getElementById('intake-active-lang-badge');
+  if (badge) badge.textContent = `Language: ${displayName}`;
 
   renderIntakeQuestion();
 }
@@ -628,22 +680,30 @@ function renderIntakeQuestion() {
   }
 
   // Update question cards
-  document.getElementById('intake-step-indicator').textContent = q.label;
-  document.getElementById('intake-question-text').textContent = q.text;
-  document.getElementById('intake-question-english').textContent = q.sub;
+  const stepInd = document.getElementById('intake-step-indicator');
+  const qText = document.getElementById('intake-question-text');
+  const qEn = document.getElementById('intake-question-english');
+
+  if (stepInd) stepInd.textContent = q.label;
+  if (qText) qText.textContent = q.text;
+  if (qEn) qEn.textContent = q.sub;
 
   // Clear text input
   const textInput = document.getElementById('input-intake-text');
-  textInput.value = '';
-  textInput.placeholder = `Speak or type your answer (${LANG_LABELS[onboardingState.selectedLanguage] || 'Indian Language'})...`;
+  if (textInput) {
+    textInput.value = '';
+    textInput.placeholder = `Speak or type your answer (${LANG_LABELS[onboardingState.selectedLanguage] || 'Indian Language'})...`;
+  }
 
   // Populate quick chips
   const chipsContainer = document.getElementById('intake-quick-chips');
-  chipsContainer.innerHTML = (q.chips || []).map(chipText => `
-    <button class="quick-chip" onclick="handleQuickChipClick('${chipText.replace(/'/g, "\\'")}')">
-      <i class="fa-solid fa-comment-dots"></i> "${chipText}"
-    </button>
-  `).join('');
+  if (chipsContainer) {
+    chipsContainer.innerHTML = (q.chips || []).map(chipText => `
+      <button class="quick-chip" onclick="handleQuickChipClick('${chipText.replace(/'/g, "\\'")}')">
+        <i class="fa-solid fa-comment-dots"></i> "${chipText}"
+      </button>
+    `).join('');
+  }
 
   // Automatically speak question aloud via TTS using male voice
   playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
@@ -674,32 +734,35 @@ async function toggleIntakeVoiceRecording() {
 
   if (window.audioManager.isRecording) {
     // Stop recording and transcribe
-    micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing with Gnani AI...`;
-    micBtn.classList.remove('recording');
-    recTimer.style.display = 'none';
+    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing with Gnani AI...`;
+    if (micBtn) micBtn.classList.remove('recording');
+    if (recTimer) recTimer.style.display = 'none';
 
     const audioBlob = await window.audioManager.stopRecording();
     if (audioBlob) {
       try {
         const result = await window.api.transcribeAudio(audioBlob, onboardingState.selectedLanguage);
         if (result && result.transcript) {
-          document.getElementById('input-intake-text').value = result.transcript;
+          const inputEl = document.getElementById('input-intake-text');
+          if (inputEl) inputEl.value = result.transcript;
           handleIntakeAnswer(result.transcript);
         } else {
-          micStatus.textContent = 'No speech detected. Please tap mic and speak clearly.';
+          if (micStatus) micStatus.textContent = 'No speech detected. Please tap mic and speak clearly.';
         }
       } catch (err) {
-        micStatus.textContent = 'STT error: ' + err.message;
+        if (micStatus) micStatus.textContent = 'STT error: ' + err.message;
       }
     }
   } else {
     // Start recording
     const started = await window.audioManager.startRecording();
     if (started) {
-      micBtn.classList.add('recording');
-      micStatus.textContent = 'Listening... Speak in your native language (Tap to stop)';
-      recTimer.style.display = 'inline-block';
-      recTimer.textContent = '00:00';
+      if (micBtn) micBtn.classList.add('recording');
+      if (micStatus) micStatus.textContent = 'Listening... Speak in your native language (Tap to stop)';
+      if (recTimer) {
+        recTimer.style.display = 'inline-block';
+        recTimer.textContent = '00:00';
+      }
     }
   }
 }
@@ -775,11 +838,12 @@ function updateAutofillField(itemId, fieldId, value) {
 // Complete intake and send to backend
 async function submitOnboardingForm() {
   const finishBtn = document.getElementById('btn-finish-intake-early');
-  finishBtn.disabled = true;
-  finishBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Canonicalizing with GPT-6 Luna...`;
+  if (finishBtn) {
+    finishBtn.disabled = true;
+    finishBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Canonicalizing with GPT-6 Luna...`;
+  }
 
   try {
-    // Defaults if missing
     if (!onboardingState.data.name) onboardingState.data.name = 'Patient ' + Math.floor(1000 + Math.random() * 9000);
     if (!onboardingState.data.mobile_number) onboardingState.data.mobile_number = '98' + Math.floor(10000000 + Math.random() * 90000000);
 
@@ -791,29 +855,41 @@ async function submitOnboardingForm() {
     renderPreConsultationSummary(savedPatient);
 
     // Transition view to Step C
-    document.getElementById('onboard-step-chat').style.display = 'none';
-    document.getElementById('onboard-step-summary').style.display = 'flex';
+    const stepB = document.getElementById('onboard-step-chat');
+    const stepC = document.getElementById('onboard-step-summary');
+    if (stepB) stepB.style.display = 'none';
+    if (stepC) stepC.style.display = 'flex';
   } catch (err) {
     alert('Failed to submit patient intake: ' + err.message);
   } finally {
-    finishBtn.disabled = false;
-    finishBtn.innerHTML = `<i class="fa-solid fa-check"></i> Complete & Submit Form`;
+    if (finishBtn) {
+      finishBtn.disabled = false;
+      finishBtn.innerHTML = `<i class="fa-solid fa-check"></i> Complete & Submit Form`;
+    }
   }
 }
 
 function renderPreConsultationSummary(patient) {
-  document.getElementById('summary-patient-name').textContent = patient.name;
-  document.getElementById('summary-patient-meta').textContent = `${patient.age ? patient.age + ' yrs • ' : ''}${patient.gender ? patient.gender + ' • ' : ''}${patient.mobile_number}`;
+  const nameEl = document.getElementById('summary-patient-name');
+  const metaEl = document.getElementById('summary-patient-meta');
+  const langEl = document.getElementById('summary-patient-lang');
+  const briefEl = document.getElementById('summary-intake-brief');
+  const compEl = document.getElementById('summary-complaint');
+  const durEl = document.getElementById('summary-duration');
+  const histEl = document.getElementById('summary-history');
+  const allEl = document.getElementById('summary-allergies');
+
+  if (nameEl) nameEl.textContent = patient.name;
+  if (metaEl) metaEl.textContent = `${patient.age ? patient.age + ' yrs • ' : ''}${patient.gender ? patient.gender + ' • ' : ''}${patient.mobile_number}`;
   
   const langName = LANG_LABELS[patient.preferred_language] || patient.preferred_language;
-  document.getElementById('summary-patient-lang').textContent = `${langName} [${patient.preferred_language}]`;
+  if (langEl) langEl.textContent = `${langName} [${patient.preferred_language}]`;
 
-  // Briefing generated by GPT-6 Luna
-  document.getElementById('summary-intake-brief').textContent = patient.intake_summary_english || 'Patient completed conversational voice intake. Symptoms and history converted to canonical medical English.';
-  document.getElementById('summary-complaint').textContent = patient.chief_complaint || 'General medical examination';
-  document.getElementById('summary-duration').textContent = patient.symptoms_duration || 'Not specified';
-  document.getElementById('summary-history').textContent = patient.past_medical_history || 'No prior chronic conditions recorded';
-  document.getElementById('summary-allergies').textContent = patient.known_allergies || 'No known drug allergies';
+  if (briefEl) briefEl.textContent = patient.intake_summary_english || 'Patient completed conversational voice intake. Symptoms and history converted to canonical medical English.';
+  if (compEl) compEl.textContent = patient.chief_complaint || 'General medical examination';
+  if (durEl) durEl.textContent = patient.symptoms_duration || 'Not specified';
+  if (histEl) histEl.textContent = patient.past_medical_history || 'No prior chronic conditions recorded';
+  if (allEl) allEl.textContent = patient.known_allergies || 'No known drug allergies';
 }
 
 /* ==========================================================================
@@ -848,8 +924,8 @@ function initiateConsultationStart() {
 
   if (sharedInfo.isShared) {
     // Both doctor and patient speak the same language!
-    // Prompt doctor for Ambient Background Scribe Mode vs Standard Turn-by-Turn Mode
-    document.getElementById('modal-shared-lang-name').textContent = sharedInfo.sharedLangLabel;
+    const modalShared = document.getElementById('modal-shared-lang-name');
+    if (modalShared) modalShared.textContent = sharedInfo.sharedLangLabel;
     openModal('modal-mode-select');
   } else {
     // Different languages: directly start in Standard Turn-by-Turn Mode
@@ -884,16 +960,18 @@ async function startConsultationWithMode(mode = 'NORMAL') {
     state.activeSpeaker = 'PATIENT'; // patient starts
 
     // Setup consultation screen
-    document.getElementById('cons-patient-title').textContent = state.selectedPatient.name;
-    document.getElementById('cons-badge-patient').textContent = `Patient: ${LANG_LABELS[patientLang] || patientLang}`;
-    document.getElementById('cons-badge-doctor').textContent = `Doctor: ${LANG_LABELS[doctorLang] || doctorLang}`;
+    const pTitle = document.getElementById('cons-patient-title');
+    const bPat = document.getElementById('cons-badge-patient');
+    const bDoc = document.getElementById('cons-badge-doctor');
+
+    if (pTitle) pTitle.textContent = state.selectedPatient.name;
+    if (bPat) bPat.textContent = `Patient: ${LANG_LABELS[patientLang] || patientLang}`;
+    if (bDoc) bDoc.textContent = `Doctor: ${LANG_LABELS[doctorLang] || doctorLang}`;
 
     // Ambient mode banner toggle
     const ambientBanner = document.getElementById('ambient-mode-banner');
-    if (mode === 'AMBIENT_BACKGROUND') {
-      ambientBanner.style.display = 'flex';
-    } else {
-      ambientBanner.style.display = 'none';
+    if (ambientBanner) {
+      ambientBanner.style.display = (mode === 'AMBIENT_BACKGROUND') ? 'flex' : 'none';
     }
 
     switchSpeaker('PATIENT');
@@ -923,24 +1001,26 @@ function switchSpeaker(speaker) {
   const dLang = state.activeConsultation ? state.activeConsultation.doctor_language : 'en-IN';
 
   if (isPatient) {
-    btnPatient.classList.add('active');
-    btnDoctor.classList.remove('active');
-    recBtn.className = 'record-btn-big';
-    turnBanner.className = 'turn-direction-banner patient-turn';
-    if (isAmbient) {
-      turnText.textContent = `Patient Speaking (${LANG_LABELS[pLang] || pLang}) • App logging English clinical notes`;
-    } else {
-      turnText.textContent = `Patient Speaks (${LANG_LABELS[pLang] || pLang}) ➔ Doctor Listens (${LANG_LABELS[dLang] || dLang})`;
+    if (btnPatient) btnPatient.classList.add('active');
+    if (btnDoctor) btnDoctor.classList.remove('active');
+    if (turnBanner) turnBanner.className = 'turn-direction-banner patient-turn';
+    if (turnText) {
+      if (isAmbient) {
+        turnText.textContent = `Patient Speaking (${LANG_LABELS[pLang] || pLang}) • App logging English clinical notes`;
+      } else {
+        turnText.textContent = `Patient Speaks (${LANG_LABELS[pLang] || pLang}) ➔ Doctor Listens (${LANG_LABELS[dLang] || dLang})`;
+      }
     }
   } else {
-    btnPatient.classList.remove('active');
-    btnDoctor.classList.add('active');
-    recBtn.className = 'record-btn-big doctor';
-    turnBanner.className = 'turn-direction-banner doctor-turn';
-    if (isAmbient) {
-      turnText.textContent = `Doctor Speaking (${LANG_LABELS[dLang] || dLang}) • App logging English clinical notes`;
-    } else {
-      turnText.textContent = `Doctor Speaks (${LANG_LABELS[dLang] || dLang}) ➔ Patient Listens (${LANG_LABELS[pLang] || pLang} Male Voice)`;
+    if (btnPatient) btnPatient.classList.remove('active');
+    if (btnDoctor) btnDoctor.classList.add('active');
+    if (turnBanner) turnBanner.className = 'turn-direction-banner doctor-turn';
+    if (turnText) {
+      if (isAmbient) {
+        turnText.textContent = `Doctor Speaking (${LANG_LABELS[dLang] || dLang}) • App logging English clinical notes`;
+      } else {
+        turnText.textContent = `Doctor Speaks (${LANG_LABELS[dLang] || dLang}) ➔ Patient Listens (${LANG_LABELS[pLang] || pLang} Male Voice)`;
+      }
     }
   }
 }
@@ -950,13 +1030,11 @@ async function toggleRecording() {
   if (state.isProcessing) return;
 
   if (window.audioManager.isRecording) {
-    // Stop recording
     const audioBlob = await window.audioManager.stopRecording();
     if (audioBlob) {
       await processAudioTurn(audioBlob);
     }
   } else {
-    // Start recording
     await window.audioManager.startRecording();
   }
 }
@@ -1045,14 +1123,9 @@ function setProcessing(isProcessing, message = 'Processing speech turn...') {
   const bannerText = document.getElementById('turn-processing-text');
   const recordBtn = document.getElementById('btn-record-turn');
 
-  if (isProcessing) {
-    banner.style.display = 'flex';
-    bannerText.textContent = message;
-    recordBtn.disabled = true;
-  } else {
-    banner.style.display = 'none';
-    recordBtn.disabled = false;
-  }
+  if (banner) banner.style.display = isProcessing ? 'flex' : 'none';
+  if (bannerText) bannerText.textContent = message;
+  if (recordBtn) recordBtn.disabled = isProcessing;
 }
 
 function appendTurn(turn) {
@@ -1062,6 +1135,7 @@ function appendTurn(turn) {
 
 function renderTimeline(turns) {
   const container = document.getElementById('transcript-timeline');
+  if (!container) return;
 
   if (turns.length === 0) {
     const isAmbient = state.activeConsultation && state.activeConsultation.mode === 'AMBIENT_BACKGROUND';
@@ -1136,8 +1210,10 @@ async function loadDraftReview() {
   if (!state.activeConsultation) return;
 
   const reviewBtn = document.getElementById('btn-review-draft');
-  reviewBtn.disabled = true;
-  reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+  if (reviewBtn) {
+    reviewBtn.disabled = true;
+    reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+  }
 
   try {
     const draft = await window.api.generateDraft(state.activeConsultation.id);
@@ -1148,8 +1224,10 @@ async function loadDraftReview() {
   } catch (err) {
     alert('Failed to generate draft: ' + err.message);
   } finally {
-    reviewBtn.disabled = false;
-    reviewBtn.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> Review Draft`;
+    if (reviewBtn) {
+      reviewBtn.disabled = false;
+      reviewBtn.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> Review Draft & Report`;
+    }
   }
 }
 
@@ -1160,31 +1238,35 @@ function renderDraftReview(draft) {
   const symptomsContainer = document.getElementById('draft-symptoms-list');
   const symptoms = payload.patient_reported_symptoms || [];
 
-  if (symptoms.length === 0) {
-    symptomsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">No symptoms extracted.</p>`;
-  } else {
-    symptomsContainer.innerHTML = symptoms.map(s => `
-      <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #fffbeb; border-radius: 8px; margin-bottom: 6px;">
-        <i class="fa-solid fa-virus" style="color: var(--patient-color);"></i>
-        <div>
-          <strong style="font-size: 14px;">${s.symptom}</strong>
-          <span style="font-size: 12px; color: var(--text-muted);"> • Duration: ${s.duration || 'Not stated'}</span>
+  if (symptomsContainer) {
+    if (symptoms.length === 0) {
+      symptomsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">No symptoms extracted.</p>`;
+    } else {
+      symptomsContainer.innerHTML = symptoms.map(s => `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #fffbeb; border-radius: 8px; margin-bottom: 6px;">
+          <i class="fa-solid fa-virus" style="color: var(--patient-color);"></i>
+          <div>
+            <strong style="font-size: 14px;">${s.symptom}</strong>
+            <span style="font-size: 12px; color: var(--text-muted);"> • Duration: ${s.duration || 'Not stated'}</span>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
   }
 
   // Doctor diagnosis input
-  document.getElementById('draft-input-diagnosis').value = payload.doctor_diagnosis || 'Viral fever with upper respiratory tract infection';
-  document.getElementById('draft-input-history').value = payload.medical_history || (state.selectedPatient ? state.selectedPatient.past_medical_history : 'None');
-  document.getElementById('draft-input-allergies').value = payload.allergies || (state.selectedPatient ? state.selectedPatient.known_allergies : 'No known drug allergies');
-  document.getElementById('draft-input-followup').value = payload.follow_up_recommendation || 'Follow up after 3 days if symptoms persist';
+  const diagInput = document.getElementById('draft-diagnosis');
+  if (diagInput) diagInput.value = payload.doctor_diagnosis || 'Acute Viral Fever with tension headache';
+
+  const notesInput = document.getElementById('draft-notes');
+  if (notesInput) notesInput.value = payload.doctor_notes || (payload.medical_history ? `History: ${payload.medical_history}. Follow-up advised.` : 'Patient examined. Prescribed symptomatic relief medications.');
 
   renderPrescriptions(payload.prescriptions || []);
 }
 
 function renderPrescriptions(prescriptions) {
-  const container = document.getElementById('draft-prescriptions-list');
+  const container = document.getElementById('prescriptions-list');
+  if (!container) return;
 
   if (prescriptions.length === 0) {
     container.innerHTML = `
@@ -1196,10 +1278,10 @@ function renderPrescriptions(prescriptions) {
   }
 
   container.innerHTML = prescriptions.map((p, idx) => `
-    <div class="prescription-item-row">
+    <div class="prescription-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 6px;">
       <div>
-        <h5>${p.medicine} ${p.strength || ''}</h5>
-        <p>${p.dose || ''} • ${p.frequency || ''} • ${p.duration || ''}</p>
+        <h5 style="font-size: 14px; font-weight: 700;">${p.medicine} ${p.strength || ''}</h5>
+        <p style="font-size: 12px; color: var(--text-muted);">${p.dose || ''} • ${p.frequency || ''} • ${p.duration || ''}</p>
       </div>
       <button class="icon-btn" style="color: var(--error-red);" onclick="removePrescription(${idx})">
         <i class="fa-solid fa-trash-can"></i>
@@ -1214,67 +1296,43 @@ window.removePrescription = function(index) {
   renderPrescriptions(state.draft.structured_payload.prescriptions);
 };
 
-// Save Draft Edits
-async function saveDraftEdits() {
-  if (!state.activeConsultation || !state.draft) return;
-
-  const payload = state.draft.structured_payload;
-  payload.doctor_diagnosis = document.getElementById('draft-input-diagnosis').value.trim();
-  payload.medical_history = document.getElementById('draft-input-history').value.trim();
-  payload.allergies = document.getElementById('draft-input-allergies').value.trim();
-  payload.follow_up_recommendation = document.getElementById('draft-input-followup').value.trim();
-
-  try {
-    const updated = await window.api.updateDraft(state.activeConsultation.id, payload);
-    state.draft = updated;
-    alert('Draft edits saved successfully!');
-  } catch (err) {
-    alert('Failed to save draft: ' + err.message);
-  }
-}
-
 // Approve Official Record
 async function approveClinicalRecord() {
   if (!state.activeConsultation || !state.draft) return;
 
   const btn = document.getElementById('btn-approve-record');
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Committing Official Record...`;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Finalizing Official Record...`;
+  }
 
   try {
-    const payload = state.draft.structured_payload;
-    payload.doctor_diagnosis = document.getElementById('draft-input-diagnosis').value.trim();
-    payload.medical_history = document.getElementById('draft-input-history').value.trim();
-    payload.allergies = document.getElementById('draft-input-allergies').value.trim();
-    payload.follow_up_recommendation = document.getElementById('draft-input-followup').value.trim();
+    const payload = state.draft.structured_payload || {};
+    const diagInput = document.getElementById('draft-diagnosis');
+    if (diagInput) payload.doctor_diagnosis = diagInput.value.trim();
+
+    const notesInput = document.getElementById('draft-notes');
+    if (notesInput) payload.doctor_notes = notesInput.value.trim();
 
     await window.api.updateDraft(state.activeConsultation.id, payload);
     await window.api.approveDraft(state.activeConsultation.id);
 
-    // Setup Approval & Follow-up View
-    document.getElementById('appr-diagnosis-text').textContent = payload.doctor_diagnosis;
-    const prescContainer = document.getElementById('appr-prescription-summary');
-    if (payload.prescriptions && payload.prescriptions.length > 0) {
-      prescContainer.innerHTML = payload.prescriptions.map(p => `
-        <div>• <strong>${p.medicine} ${p.strength || ''}</strong> (${p.dose || ''}, ${p.frequency || ''})</div>
-      `).join('');
-    } else {
-      prescContainer.innerHTML = `<em>No medicines prescribed</em>`;
-    }
-
     // Set default follow-up 3 days later
     const nextDate = new Date();
     nextDate.setDate(nextDate.getDate() + 3);
-    nextDate.setHours(10, 30, 0, 0);
-    document.getElementById('input-followup-datetime').value = nextDate.toISOString().slice(0, 16);
-    document.getElementById('input-followup-phone').value = state.selectedPatient ? state.selectedPatient.mobile_number : '';
+    const dateInput = document.getElementById('followup-date');
+    if (dateInput) {
+      dateInput.value = nextDate.toISOString().slice(0, 10);
+    }
 
     showView('approval');
   } catch (err) {
     alert('Failed to approve clinical record: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Approve & Save Official Clinical Record`;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-check-double"></i> Approve & Finalize Record`;
+    }
   }
 }
 
@@ -1282,55 +1340,59 @@ async function approveClinicalRecord() {
 async function saveFollowupAppointment() {
   if (!state.activeConsultation) return;
 
-  const dtStr = document.getElementById('input-followup-datetime').value;
-  const phone = document.getElementById('input-followup-phone').value.trim();
+  const dateInput = document.getElementById('followup-date');
+  const dtStr = dateInput ? dateInput.value : '';
 
-  if (!dtStr || !phone) {
-    alert('Please enter both appointment date/time and contact phone number.');
+  if (!dtStr) {
+    alert('Please select follow-up appointment date.');
     return;
   }
 
-  const btn = document.getElementById('btn-save-followup');
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving Appointment...`;
+  const btn = document.getElementById('btn-schedule-followup');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scheduling...`;
+  }
 
   try {
     const appointmentAt = new Date(dtStr).toISOString();
+    const phone = state.selectedPatient ? state.selectedPatient.mobile_number : '9876543210';
     await window.api.scheduleFollowup(state.activeConsultation.id, appointmentAt, phone);
-    alert('Follow-up appointment saved successfully in local clinic database!');
+    alert('Follow-up appointment saved successfully in clinic records!');
     showView('dashboard');
     loadPatients();
   } catch (err) {
     alert('Failed to save follow-up: ' + err.message);
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> Save Follow-up Appointment`;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> Schedule Follow-up`;
+    }
   }
 }
 
 /* ==========================================================================
-   EVENT LISTENERS & BINDINGS
+   EVENT LISTENERS & BINDINGS (Resilient with Safe Helpers)
    ========================================================================== */
 
 function setupEventListeners() {
   // Settings modal
-  document.getElementById('btn-open-settings').addEventListener('click', () => openModal('modal-settings'));
-  document.getElementById('link-configure-ip').addEventListener('click', () => openModal('modal-settings'));
+  on('btn-open-settings', 'click', () => openModal('modal-settings'));
+  on('link-configure-ip', 'click', () => openModal('modal-settings'));
 
   // Spoken languages checkboxes in settings
   document.querySelectorAll('#spoken-languages-chips input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', () => {
-      cb.parentElement.classList.toggle('selected', cb.checked);
+      if (cb.parentElement) cb.parentElement.classList.toggle('selected', cb.checked);
     });
   });
 
-  document.getElementById('btn-save-settings').addEventListener('click', async () => {
-    const name = document.getElementById('setting-doc-name').value.trim();
-    const creds = document.getElementById('setting-doc-creds').value.trim();
-    const lang = document.getElementById('setting-doc-lang').value;
-    const apiUrl = document.getElementById('setting-api-url').value.trim();
+  on('btn-save-settings', 'click', async () => {
+    const name = (document.getElementById('setting-doc-name')?.value || '').trim();
+    const creds = (document.getElementById('setting-doc-creds')?.value || '').trim();
+    const lang = document.getElementById('setting-doc-lang')?.value || 'en-IN';
+    const apiUrl = (document.getElementById('setting-api-url')?.value || '').trim();
 
-    // Collect spoken languages
     const checked = Array.from(document.querySelectorAll('#spoken-languages-chips input[type="checkbox"]:checked'));
     const spokenLanguages = checked.map(c => c.value).join(',');
 
@@ -1351,88 +1413,95 @@ function setupEventListeners() {
     }
   });
 
-  // Launch Conversational Onboarding (Floating Bubble UI)
-  document.getElementById('btn-add-patient').addEventListener('click', showOnboardingView);
+  // Launch Conversational Onboarding
+  on('btn-add-patient', 'click', showOnboardingView);
 
   // Onboarding Step A back button
-  document.getElementById('btn-back-onboard-lang').addEventListener('click', () => showView('dashboard'));
+  on('btn-back-onboard-lang', 'click', () => showView('dashboard'));
 
   // Onboarding Step B change language button
-  document.getElementById('btn-change-onboard-lang').addEventListener('click', () => {
-    document.getElementById('onboard-step-chat').style.display = 'none';
-    document.getElementById('onboard-step-language').style.display = 'flex';
+  on('btn-change-onboard-lang', 'click', () => {
+    const stepB = document.getElementById('onboard-step-chat');
+    const stepA = document.getElementById('onboard-step-language');
+    if (stepB) stepB.style.display = 'none';
+    if (stepA) stepA.style.display = 'flex';
   });
 
   // Replay question TTS
-  document.getElementById('btn-play-intake-tts').addEventListener('click', () => {
+  on('btn-play-intake-tts', 'click', () => {
     const questions = getQuestionsForLanguage(onboardingState.selectedLanguage);
     const q = questions[onboardingState.currentStep];
     if (q) playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
   });
 
   // Intake Mic Button
-  document.getElementById('btn-intake-mic').addEventListener('click', toggleIntakeVoiceRecording);
+  on('btn-intake-mic', 'click', toggleIntakeVoiceRecording);
 
   // Intake Text Submit
-  document.getElementById('btn-submit-intake-text').addEventListener('click', () => {
-    const text = document.getElementById('input-intake-text').value.trim();
+  on('btn-submit-intake-text', 'click', () => {
+    const text = (document.getElementById('input-intake-text')?.value || '').trim();
     if (text) handleIntakeAnswer(text);
   });
 
-  document.getElementById('input-intake-text').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const text = e.target.value.trim();
-      if (text) handleIntakeAnswer(text);
-    }
-  });
+  const intakeInput = document.getElementById('input-intake-text');
+  if (intakeInput) {
+    intakeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const text = e.target.value.trim();
+        if (text) handleIntakeAnswer(text);
+      }
+    });
+  }
 
   // Complete Intake Early
-  document.getElementById('btn-finish-intake-early').addEventListener('click', submitOnboardingForm);
+  on('btn-finish-intake-early', 'click', submitOnboardingForm);
 
   // Start Consultation from Pre-Consultation Summary Card
-  document.getElementById('btn-start-from-summary').addEventListener('click', initiateConsultationStart);
+  on('btn-start-from-summary', 'click', initiateConsultationStart);
 
   // Start Consultation from Patient Profile View
-  document.getElementById('btn-start-consultation').addEventListener('click', initiateConsultationStart);
+  on('btn-start-consultation', 'click', initiateConsultationStart);
 
   // Mode Selection Modal Choices
-  document.getElementById('opt-mode-ambient').addEventListener('click', () => startConsultationWithMode('AMBIENT_BACKGROUND'));
-  document.getElementById('opt-mode-normal').addEventListener('click', () => startConsultationWithMode('NORMAL'));
+  on('opt-mode-ambient', 'click', () => startConsultationWithMode('AMBIENT_BACKGROUND'));
+  on('opt-mode-normal', 'click', () => startConsultationWithMode('NORMAL'));
 
   // Patient Search Debounce
   let searchTimer;
-  document.getElementById('input-patient-search').addEventListener('input', (e) => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      loadPatients(e.target.value.trim());
-    }, 250);
-  });
-
-  // Navigation Back buttons
-  document.getElementById('btn-back-to-dashboard').addEventListener('click', () => showView('dashboard'));
-  document.getElementById('btn-back-to-consultation').addEventListener('click', () => showView('consultation'));
-  document.getElementById('btn-finish-to-dashboard').addEventListener('click', () => showView('dashboard'));
-  const btnFinishConsultation = document.getElementById('btn-finish-consultation');
-  if (btnFinishConsultation) {
-    btnFinishConsultation.addEventListener('click', () => showView('dashboard'));
+  const searchInput = document.getElementById('input-patient-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        loadPatients(e.target.value.trim());
+      }, 250);
+    });
   }
 
+  // Navigation Back buttons
+  on('btn-back-to-dashboard', 'click', () => showView('dashboard'));
+  on('btn-back-to-consultation', 'click', () => showView('consultation'));
+  on('btn-finish-consultation', 'click', () => showView('dashboard'));
+
   // Speaker Selector Buttons
-  document.getElementById('btn-speaker-patient').addEventListener('click', () => switchSpeaker('PATIENT'));
-  document.getElementById('btn-speaker-doctor').addEventListener('click', () => switchSpeaker('DOCTOR'));
+  on('btn-speaker-patient', 'click', () => switchSpeaker('PATIENT'));
+  on('btn-speaker-doctor', 'click', () => switchSpeaker('DOCTOR'));
 
   // Record Turn Button
-  document.getElementById('btn-record-turn').addEventListener('click', toggleRecording);
+  on('btn-record-turn', 'click', toggleRecording);
 
   // Quick Text Input Turn
-  document.getElementById('btn-type-turn').addEventListener('click', () => {
-    document.getElementById('modal-text-turn-title').textContent = `Type Turn (${state.activeSpeaker === 'PATIENT' ? 'Patient' : 'Doctor'})`;
-    document.getElementById('input-turn-text').value = '';
+  on('btn-open-text-turn', 'click', () => {
+    const title = document.getElementById('modal-text-turn-title');
+    const input = document.getElementById('input-turn-text');
+    if (title) title.textContent = `Type Utterance (${state.activeSpeaker === 'PATIENT' ? 'Patient' : 'Doctor'})`;
+    if (input) input.value = '';
     openModal('modal-text-turn');
   });
 
-  document.getElementById('btn-submit-text-turn').addEventListener('click', () => {
-    const text = document.getElementById('input-turn-text').value.trim();
+  on('btn-submit-text-turn', 'click', () => {
+    const input = document.getElementById('input-turn-text');
+    const text = (input?.value || '').trim();
     if (text) {
       closeModal('modal-text-turn');
       processTextTurn(text);
@@ -1440,7 +1509,7 @@ function setupEventListeners() {
   });
 
   // Scripted Demo Presets
-  document.getElementById('btn-preset-turn').addEventListener('click', () => {
+  on('btn-open-presets', 'click', () => {
     const isPatient = state.activeSpeaker === 'PATIENT';
     const patientPresets = [
       'Mujhe three days se fever hai aur headache bhi hai.',
@@ -1455,13 +1524,16 @@ function setupEventListeners() {
     const presets = isPatient ? patientPresets : doctorPresets;
 
     const listContainer = document.getElementById('presets-list-container');
-    listContainer.innerHTML = presets.map(p => `
-      <button class="btn btn-outline" style="text-align: left; justify-content: flex-start; font-size: 13px;" onclick="selectPreset('${p.replace(/'/g, "\\'")}')">
-        <i class="fa-solid fa-comment-dots"></i> "${p}"
-      </button>
-    `).join('');
+    if (listContainer) {
+      listContainer.innerHTML = presets.map(p => `
+        <button class="btn btn-outline" style="text-align: left; justify-content: flex-start; font-size: 13px;" onclick="selectPreset('${p.replace(/'/g, "\\'")}')">
+          <i class="fa-solid fa-comment-dots"></i> "${p}"
+        </button>
+      `).join('');
+    }
 
-    document.getElementById('modal-presets-title').textContent = `Demo Presets (${isPatient ? 'Patient' : 'Doctor'})`;
+    const modalTitle = document.getElementById('modal-presets-title');
+    if (modalTitle) modalTitle.textContent = `Demo Presets (${isPatient ? 'Patient' : 'Doctor'})`;
     openModal('modal-presets');
   });
 
@@ -1471,20 +1543,19 @@ function setupEventListeners() {
   };
 
   // Review Draft Button
-  document.getElementById('btn-review-draft').addEventListener('click', loadDraftReview);
+  on('btn-review-draft', 'click', loadDraftReview);
 
   // Draft Actions
-  document.getElementById('btn-save-draft').addEventListener('click', saveDraftEdits);
-  document.getElementById('btn-approve-record').addEventListener('click', approveClinicalRecord);
+  on('btn-approve-record', 'click', approveClinicalRecord);
 
   // Add Prescription
-  document.getElementById('btn-add-prescription').addEventListener('click', () => openModal('modal-prescription'));
-  document.getElementById('btn-confirm-add-presc').addEventListener('click', () => {
-    const med = document.getElementById('presc-med').value.trim();
-    const strength = document.getElementById('presc-strength').value.trim();
-    const dose = document.getElementById('presc-dose').value.trim();
-    const freq = document.getElementById('presc-freq').value.trim();
-    const dur = document.getElementById('presc-duration').value.trim();
+  on('btn-add-prescription', 'click', () => openModal('modal-prescription'));
+  on('btn-confirm-add-presc', 'click', () => {
+    const med = (document.getElementById('presc-med')?.value || '').trim();
+    const strength = (document.getElementById('presc-strength')?.value || '').trim();
+    const dose = (document.getElementById('presc-dose')?.value || '').trim();
+    const freq = (document.getElementById('presc-freq')?.value || '').trim();
+    const dur = (document.getElementById('presc-duration')?.value || '').trim();
 
     if (!med) return;
 
@@ -1505,41 +1576,37 @@ function setupEventListeners() {
   });
 
   // Follow-up Save
-  document.getElementById('btn-save-followup').addEventListener('click', saveFollowupAppointment);
+  on('btn-schedule-followup', 'click', saveFollowupAppointment);
 }
 
 // Audio Callbacks for Single-Device Echo Management & Timer
 function setupAudioCallbacks() {
-  const playbackBanner = document.getElementById('audio-playback-banner');
-  const recordLabel = document.getElementById('record-status-label');
+  const recordInstruction = document.getElementById('record-instruction');
+  const recordTimer = document.getElementById('record-timer');
+  const timerDisplay = document.getElementById('timer-display');
   const recordBtn = document.getElementById('btn-record-turn');
   const intakeTimer = document.getElementById('intake-rec-timer');
 
   window.audioManager.onStateChange = ({ isRecording, isPlaying }) => {
     if (isPlaying) {
-      playbackBanner.style.display = 'flex';
-      recordBtn.disabled = true;
-      recordLabel.textContent = 'TTS PLAYING — MIC LOCKED';
-      recordLabel.className = 'record-status-label';
+      if (recordBtn) recordBtn.disabled = true;
+      if (recordInstruction) recordInstruction.textContent = 'TTS PLAYING — AUDIO PLAYBACK ACTIVE';
     } else {
-      playbackBanner.style.display = 'none';
-      recordBtn.disabled = false;
+      if (recordBtn) recordBtn.disabled = false;
       if (isRecording) {
-        recordBtn.classList.add('recording');
-        recordLabel.classList.add('recording');
-        recordLabel.textContent = 'RECORDING... (TAP TO STOP)';
+        if (recordBtn) recordBtn.classList.add('recording');
+        if (recordTimer) recordTimer.style.display = 'flex';
+        if (recordInstruction) recordInstruction.textContent = 'Recording in progress... Tap mic to finish turn';
       } else {
-        recordBtn.classList.remove('recording');
-        recordLabel.classList.remove('recording');
-        recordLabel.textContent = 'TAP TO RECORD TURN';
+        if (recordBtn) recordBtn.classList.remove('recording');
+        if (recordTimer) recordTimer.style.display = 'none';
+        if (recordInstruction) recordInstruction.textContent = 'Tap microphone to speak turn in native language';
       }
     }
   };
 
   window.audioManager.onTimerTick = (timeFormatted) => {
-    recordLabel.textContent = `RECORDING (${timeFormatted}) — TAP TO STOP`;
-    if (intakeTimer) {
-      intakeTimer.textContent = timeFormatted;
-    }
+    if (timerDisplay) timerDisplay.textContent = timeFormatted;
+    if (intakeTimer) intakeTimer.textContent = timeFormatted;
   };
 }

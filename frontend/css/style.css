@@ -543,6 +543,10 @@ main.app-main {
   height: 116px;
 }
 
+.lang-bubble * {
+  pointer-events: none;
+}
+
 .lang-bubble .native-name {
   font-size: 16px;
   font-weight: 800;
