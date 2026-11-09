@@ -80,6 +80,12 @@ class GnaniTTSService(TTSProvider):
             "voice": selected_voice,
             "model": self.model,
             "speed": 1.0,
+            "audio_config": {
+                "sample_rate": 16000,
+                "num_channels": 1,
+                "encoding": "linear_pcm",
+                "container": "wav",
+            },
         }
 
         log_sanitized_event("gnani_tts_request_initiated", language=language, voice=selected_voice)
@@ -92,11 +98,14 @@ class GnaniTTSService(TTSProvider):
                 json=payload,
             )
             response.raise_for_status()
-            raw_audio = response.content
-            # Convert raw PCM into valid playable WAV
-            wav_audio = pcm_to_wav(raw_audio)
+            wav_audio = response.content
+            if not wav_audio.startswith(b"RIFF"):
+                wav_audio = pcm_to_wav(wav_audio)
             log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(wav_audio))
             return wav_audio
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Gnani TTS API error status={e.response.status_code}: {e.response.text}")
+            return await MockTTSService().synthesize(text, language, selected_voice)
         except Exception as e:
             logger.warning(f"Gnani TTS API call failed ({e}); falling back gracefully to mock synthesis.")
             return await MockTTSService().synthesize(text, language, selected_voice)

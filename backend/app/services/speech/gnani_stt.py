@@ -40,9 +40,15 @@ class GnaniSTTService(STTProvider):
         }
 
         gnani_lang = language.strip()
-        mime = "audio/wav" if filename.endswith(".wav") else "audio/webm"
+        if audio_bytes.startswith(b"RIFF"):
+            actual_filename = "turn.wav"
+            mime = "audio/wav"
+        else:
+            actual_filename = filename if filename.endswith((".wav", ".flac", ".mp3", ".ogg", ".aac", ".m4a")) else "turn.wav"
+            mime = "audio/wav" if actual_filename.endswith(".wav") else "audio/mp4"
+
         files = {
-            "audio_file": (filename, audio_bytes, mime),
+            "audio_file": (actual_filename, audio_bytes, mime),
         }
         data = {
             "language_code": gnani_lang,
@@ -82,6 +88,9 @@ class GnaniSTTService(STTProvider):
             }
             log_sanitized_event("gnani_stt_completed", confidence=metadata["confidence"])
             return transcript.strip(), metadata
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Gnani STT API error status={e.response.status_code}: {e.response.text}")
+            return await MockSTTService().transcribe(audio_bytes, language, filename)
         except Exception as e:
             logger.warning(f"Gnani STT API call failed ({e}); falling back gracefully to mock transcription.")
             return await MockSTTService().transcribe(audio_bytes, language, filename)
