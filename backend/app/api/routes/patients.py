@@ -7,6 +7,8 @@ from sqlalchemy import select, or_
 from app.db.session import get_db
 from app.models.patient import Patient
 from app.models.consultation import Consultation
+from app.models.clinical_record import ClinicalRecord
+from app.models.consultation_draft import ConsultationDraft
 from app.schemas.patient import (
     PatientCreate,
     PatientUpdate,
@@ -16,6 +18,7 @@ from app.schemas.patient import (
     IntakeValidationResponse,
 )
 from app.schemas.consultation import ConsultationOut
+from app.schemas.draft import MedicalReportOut, StructuredDraftPayload
 from app.core.config import settings
 from app.core.logger import logger
 from app.services.translation.luna_service import get_openai_client
@@ -360,3 +363,71 @@ async def get_patient_consultations(
     stmt = select(Consultation).where(Consultation.patient_id == patient_id).order_by(Consultation.started_at.desc())
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.get("/{patient_id}/reports", response_model=List[MedicalReportOut])
+async def get_patient_reports(
+    patient_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Fetch all medical reports for a patient:
+    Includes approved clinical records and pending consultation drafts with vitals,
+    diagnoses, clinical notes, and prescriptions.
+    """
+    patient = await db.get(Patient, patient_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    stmt = (
+        select(Consultation)
+        .where(Consultation.patient_id == patient_id)
+        .order_by(Consultation.started_at.desc())
+    )
+    result = await db.execute(stmt)
+    consultations = result.scalars().all()
+
+    reports = []
+    for c in consultations:
+        stmt_rec = select(ClinicalRecord).where(ClinicalRecord.consultation_id == c.id)
+        res_rec = await db.execute(stmt_rec)
+        rec = res_rec.scalar_one_or_none()
+
+        stmt_draft = select(ConsultationDraft).where(ConsultationDraft.consultation_id == c.id)
+        res_draft = await db.execute(stmt_draft)
+        draft = res_draft.scalar_one_or_none()
+
+        payload = None
+        status = "DRAFT"
+        if rec and rec.approved_payload:
+            payload = rec.approved_payload
+            status = "APPROVED"
+        elif draft and draft.structured_payload:
+            payload = draft.structured_payload
+            status = draft.status or "DRAFT"
+
+        if payload:
+            try:
+                structured = StructuredDraftPayload(**payload)
+                reports.append(
+                    MedicalReportOut(
+                        consultation_id=c.id,
+                        patient_id=patient.id,
+                        patient_name=patient.name,
+                        date=c.started_at,
+                        doctor_name="Dr. Priya Sharma",
+                        status=status,
+                        doctor_diagnosis=structured.doctor_diagnosis,
+                        doctor_notes=structured.doctor_notes,
+                        vitals=structured.vitals,
+                        symptoms=structured.patient_reported_symptoms,
+                        prescriptions=structured.prescriptions,
+                        follow_up_recommendation=structured.follow_up_recommendation,
+                        medical_history=structured.medical_history,
+                        allergies=structured.allergies,
+                    )
+                )
+            except Exception as e:
+                logger.warning(f"Failed to serialize report for consultation {c.id}: {e}")
+
+    return reports

@@ -114,6 +114,19 @@ class ApiService {
     return this.request(`/api/v1/patients/${patientId}/consultations`);
   }
 
+  // Patient Medical Reports (Historical diagnoses, vitals, prescriptions, clinical notes)
+  async getPatientReports(patientId) {
+    return this.request(`/api/v1/patients/${patientId}/reports`);
+  }
+
+  // Doctor AI Scribe Assistant (Dictate vitals: weight, height, BP, pulse, temp, additional clinical notes)
+  async doctorAIAssist(consultationId, message, language = 'en-IN') {
+    return this.request(`/api/v1/consultations/${consultationId}/ai-assist`, {
+      method: 'POST',
+      body: JSON.stringify({ message, language }),
+    });
+  }
+
   // Conversational AI Patient Intake
   async validateIntakeAnswer(stepId, questionText, userUtterance, language = 'hi-IN') {
     return this.request('/api/v1/patients/intake/validate', {

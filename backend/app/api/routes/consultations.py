@@ -25,6 +25,8 @@ from app.schemas.draft import (
     DraftUpdate,
     ClinicalRecordOut,
     StructuredDraftPayload,
+    DoctorAIAssistRequest,
+    DoctorAIAssistResponse,
 )
 from app.schemas.followup import FollowupCreate, FollowupOut
 from app.services.speech.factory import get_stt_service, get_tts_service
@@ -142,12 +144,11 @@ async def process_consultation_turn(
     else:
         raise HTTPException(status_code=400, detail="Either audio file or text must be provided")
 
-    if not raw_recognized_text:
-        if speaker_clean == "PATIENT":
-            raw_recognized_text = "Mujhe three days se fever hai aur headache bhi hai."
-        else:
-            raw_recognized_text = "Take paracetamol 500mg twice daily after meals for three days."
-        metadata["fallback_applied"] = True
+    if not raw_recognized_text or not raw_recognized_text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="No clear speech detected in recording. Please speak again.",
+        )
 
     # Step 2: Bidirectional translation & English canonicalization via GPT-6 Luna
     translation_service = GPT6LunaTranslationService(db)
@@ -248,6 +249,21 @@ async def generate_draft(
         for t in transcripts
     ]
 
+    # Prepend patient intake summary if present so report has full context
+    patient = await db.get(Patient, consultation.patient_id)
+    if patient and (patient.intake_summary_english or patient.chief_complaint):
+        transcript_dicts.insert(0, {
+            "id": "patient_intake_brief",
+            "speaker": "PATIENT_INTAKE",
+            "canonical_english_text": (
+                f"Intake Briefing: {patient.intake_summary_english or ''}. "
+                f"Chief Complaint: {patient.chief_complaint or ''}. "
+                f"Past History: {patient.past_medical_history or 'None'}. "
+                f"Allergies: {patient.known_allergies or 'None'}."
+            ),
+            "timestamp": consultation.started_at.isoformat(),
+        })
+
     extractor = DraftExtractorService()
     extracted_payload = await extractor.extract_draft(transcript_dicts)
 
@@ -303,6 +319,65 @@ async def update_draft(
     await db.commit()
     await db.refresh(draft)
     return draft
+
+
+@router.post("/{consultation_id}/ai-assist", response_model=DoctorAIAssistResponse)
+async def doctor_ai_assist(
+    consultation_id: str,
+    payload: DoctorAIAssistRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Doctor speaks or types additional clinical details (weight, height, BP, notes, prescriptions)
+    which AI parses and merges into the existing clinical report in real-time.
+    """
+    consultation = await db.get(Consultation, consultation_id)
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    stmt = select(ConsultationDraft).where(ConsultationDraft.consultation_id == consultation_id)
+    res = await db.execute(stmt)
+    draft = res.scalar_one_or_none()
+
+    extractor = DraftExtractorService()
+    if not draft:
+        stmt_trans = (
+            select(Transcript)
+            .where(Transcript.consultation_id == consultation_id)
+            .order_by(Transcript.timestamp.asc())
+        )
+        res_trans = await db.execute(stmt_trans)
+        transcripts = res_trans.scalars().all()
+        transcript_dicts = [
+            {"id": t.id, "speaker": t.speaker, "canonical_english_text": t.canonical_english_text}
+            for t in transcripts
+        ]
+        current_payload = await extractor.extract_draft(transcript_dicts)
+        draft = ConsultationDraft(
+            consultation_id=consultation_id,
+            structured_payload=current_payload.model_dump(),
+            status="PENDING_REVIEW",
+        )
+        db.add(draft)
+        await db.commit()
+        await db.refresh(draft)
+    else:
+        current_payload = StructuredDraftPayload(**draft.structured_payload)
+
+    updated_payload, ai_reply = await extractor.assist_with_doctor_input(
+        current_payload=current_payload,
+        doctor_message=payload.message,
+        language=payload.language or "en-IN",
+    )
+
+    draft.structured_payload = updated_payload.model_dump()
+    await db.commit()
+    await db.refresh(draft)
+
+    return DoctorAIAssistResponse(
+        updated_payload=updated_payload,
+        ai_reply=ai_reply,
+    )
 
 
 @router.post("/{consultation_id}/approve", response_model=ClinicalRecordOut)

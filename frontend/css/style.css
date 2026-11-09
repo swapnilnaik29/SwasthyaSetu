@@ -1208,3 +1208,36 @@ main.app-main {
   gap: 10px;
   margin-top: 8px;
 }
+
+/* Print Styles for Clinical Medical Report */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #modal-view-report, #modal-view-report * {
+    visibility: visible;
+  }
+  #modal-view-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    background: #ffffff !important;
+    padding: 0;
+    display: block !important;
+    z-index: 9999;
+  }
+  #modal-view-report .modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 24px;
+  }
+  #modal-view-report .form-actions,
+  #modal-view-report .btn-close-modal {
+    display: none !important;
+  }
+}

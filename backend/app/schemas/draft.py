@@ -19,16 +19,56 @@ class PrescriptionItem(BaseModel):
     instructions: Optional[str] = None
 
 
+class VitalsPayload(BaseModel):
+    weight_kg: Optional[float] = None
+    height_cm: Optional[float] = None
+    blood_pressure: Optional[str] = None  # e.g. "120/80 mmHg"
+    pulse_bpm: Optional[int] = None
+    temperature_f: Optional[float] = None
+    spo2_percent: Optional[int] = None
+
+
 class StructuredDraftPayload(BaseModel):
     patient_reported_symptoms: List[SymptomItem] = []
     duration_summary: Optional[str] = None
-    medical_history: Optional[str] = "Not stated in the conversation"
-    allergies: Optional[str] = "Not stated"
-    doctor_diagnosis: Optional[str] = "Not specified; doctor to enter or confirm"
+    medical_history: Optional[str] = None
+    allergies: Optional[str] = None
+    doctor_diagnosis: Optional[str] = None
+    doctor_notes: Optional[str] = None
+    vitals: Optional[VitalsPayload] = None
     prescriptions: List[PrescriptionItem] = []
-    follow_up_recommendation: Optional[str] = "Pending doctor input"
+    follow_up_recommendation: Optional[str] = None
     uncertain_terms: List[str] = []
     record_status: str = "PENDING_REVIEW"
+
+
+class DoctorAIAssistRequest(BaseModel):
+    message: str  # Dictated or typed message from doctor with vitals or notes
+    language: Optional[str] = "en-IN"
+
+
+class DoctorAIAssistResponse(BaseModel):
+    updated_payload: StructuredDraftPayload
+    ai_reply: str
+
+
+class MedicalReportOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    consultation_id: str
+    patient_id: str
+    patient_name: str
+    date: datetime
+    doctor_name: Optional[str] = "Dr. Priya Sharma"
+    status: str  # "APPROVED" or "DRAFT"
+    doctor_diagnosis: Optional[str] = None
+    doctor_notes: Optional[str] = None
+    vitals: Optional[VitalsPayload] = None
+    symptoms: List[SymptomItem] = []
+    prescriptions: List[PrescriptionItem] = []
+    follow_up_recommendation: Optional[str] = None
+    medical_history: Optional[str] = None
+    allergies: Optional[str] = None
 
 
 class DraftOut(BaseModel):

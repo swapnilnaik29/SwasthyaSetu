@@ -545,47 +545,213 @@ async function loadConsultationHistory(patientId) {
   const countBadge = document.getElementById('consultation-count-badge');
 
   try {
-    const history = await window.api.getPatientConsultations(patientId);
-    if (countBadge) countBadge.textContent = `${history.length} past visits`;
+    const reports = await window.api.getPatientReports(patientId);
+    state.patientReports = reports || [];
 
+    if (countBadge) countBadge.textContent = `${reports.length} saved reports`;
     if (!container) return;
 
-    if (history.length === 0) {
+    if (reports.length === 0) {
       container.innerHTML = `
         <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">
-          No previous consultations recorded for this patient.
+          <i class="fa-solid fa-folder-open" style="font-size: 24px; color: var(--border-color); display: block; margin-bottom: 8px;"></i>
+          No clinical reports recorded yet for this patient.
         </div>
       `;
       return;
     }
 
-    container.innerHTML = history.map(c => {
-      const dateStr = new Date(c.started_at).toLocaleString('en-IN', {
+    container.innerHTML = reports.map(r => {
+      const dateStr = new Date(r.date).toLocaleString('en-IN', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
-      const isCompleted = c.status === 'COMPLETED';
-      const isAmbient = c.mode === 'AMBIENT_BACKGROUND';
+      const isApproved = r.status === 'APPROVED';
+      const vitals = r.vitals || {};
+      const vitalsPills = [];
+      if (vitals.blood_pressure) vitalsPills.push(`BP: ${vitals.blood_pressure}`);
+      if (vitals.weight_kg) vitalsPills.push(`Wt: ${vitals.weight_kg}kg`);
+      if (vitals.pulse_bpm) vitalsPills.push(`Pulse: ${vitals.pulse_bpm}bpm`);
+      if (vitals.temperature_f) vitalsPills.push(`Temp: ${vitals.temperature_f}°F`);
+
+      const prescCount = r.prescriptions ? r.prescriptions.length : 0;
+
       return `
-        <div class="patient-card" style="cursor: default;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <h4 style="font-size: 14px; font-weight: 700;">${dateStr}</h4>
-              ${isAmbient ? '<span class="badge-chip badge-ambient" style="font-size: 9px;"><i class="fa-solid fa-microphone-lines"></i> Ambient Scribe</span>' : ''}
+        <div class="card" style="padding: 14px; margin-bottom: 10px; border-left: 4px solid ${isApproved ? 'var(--success-green)' : 'var(--warning-amber)'}; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h4 style="font-size: 14px; font-weight: 800; color: var(--text-main);">${r.doctor_diagnosis || 'Clinical Consultation Record'}</h4>
+                <span class="badge-chip" style="background: ${isApproved ? 'var(--success-light)' : 'var(--warning-light)'}; color: ${isApproved ? 'var(--success-green)' : 'var(--warning-amber)'}; font-size: 10px;">
+                  <i class="fa-solid ${isApproved ? 'fa-circle-check' : 'fa-clock'}"></i> ${isApproved ? 'Official Approved Record' : 'Draft in Progress'}
+                </span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
+                <i class="fa-regular fa-calendar" style="margin-right: 4px;"></i>${dateStr} • By ${r.doctor_name || 'Dr. Priya Sharma'}
+              </p>
             </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-              Doctor: ${c.doctor_language} ↔ Patient: ${c.patient_language}
-            </p>
+            <button class="btn btn-outline btn-sm" onclick="window.viewReportDetails('${r.consultation_id}')" style="white-space: nowrap; font-size: 12px; padding: 6px 12px;">
+              <i class="fa-solid fa-file-waveform"></i> View Full Report
+            </button>
           </div>
-          <span class="badge-chip" style="background: ${isCompleted ? 'var(--success-light)' : 'var(--warning-light)'}; color: ${isCompleted ? 'var(--success-green)' : 'var(--warning-amber)'}; font-size: 10px;">
-            ${c.status}
-          </span>
+
+          ${vitalsPills.length > 0 ? `
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+              ${vitalsPills.map(v => `<span class="badge-chip" style="background: #f1f5f9; color: #334155; font-size: 11px; font-weight: 600;">${v}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          ${r.doctor_notes ? `
+            <p style="font-size: 12px; color: #475569; margin-top: 6px; font-style: italic; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+              "${r.doctor_notes}"
+            </p>
+          ` : ''}
+
+          ${prescCount > 0 ? `
+            <div style="font-size: 11px; color: var(--primary-teal); font-weight: 700; margin-top: 6px;">
+              <i class="fa-solid fa-pills" style="margin-right: 4px;"></i> ${prescCount} Prescribed Medicine${prescCount > 1 ? 's' : ''}
+            </div>
+          ` : ''}
         </div>
       `;
     }).join('');
   } catch (err) {
-    if (container) container.innerHTML = `<p style="color: var(--error-red);">Failed to load history</p>`;
+    if (container) container.innerHTML = `<p style="color: var(--error-red); font-size: 13px;">Failed to fetch medical reports: ${err.message}</p>`;
   }
 }
+
+window.viewReportDetails = function(consultationId) {
+  const report = (state.patientReports || []).find(r => r.consultation_id === consultationId);
+  if (!report) {
+    alert('Report details not found.');
+    return;
+  }
+
+  const modalBody = document.getElementById('report-modal-body');
+  const modalTitle = document.getElementById('report-modal-title');
+  const modalSub = document.getElementById('report-modal-subtitle');
+
+  if (modalTitle) modalTitle.textContent = report.doctor_diagnosis || 'Clinical Medical Report';
+  if (modalSub) {
+    const dStr = new Date(report.date).toLocaleString('en-IN', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    modalSub.textContent = `Consultation Date: ${dStr} • Stored in Clinic SQLite Database`;
+  }
+
+  if (!modalBody) return;
+
+  const vitals = report.vitals || {};
+  const symptoms = report.symptoms || [];
+  const prescriptions = report.prescriptions || [];
+  const isApproved = report.status === 'APPROVED';
+
+  modalBody.innerHTML = `
+    <!-- Patient & Doctor Meta -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8fafc; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <div>
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">PATIENT DETAILS</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">${report.patient_name || state.selectedPatient?.name || 'Patient'}</div>
+        <div style="font-size: 12px; color: var(--text-muted);">${state.selectedPatient?.age ? `${state.selectedPatient.age} yrs` : ''} ${state.selectedPatient?.gender || ''} • ${state.selectedPatient?.mobile_number || ''}</div>
+      </div>
+      <div>
+        <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">ATTENDING PHYSICIAN</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--primary-teal);">${report.doctor_name || 'Dr. Priya Sharma'}</div>
+        <div style="font-size: 12px; color: var(--text-muted);">MBBS, MD (General Medicine)</div>
+      </div>
+    </div>
+
+    <!-- Official Status Badge -->
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: ${isApproved ? 'var(--success-light)' : 'var(--warning-light)'}; border-radius: var(--radius-sm); color: ${isApproved ? 'var(--success-green)' : 'var(--warning-amber)'}; font-size: 12px; font-weight: 700;">
+      <span><i class="fa-solid ${isApproved ? 'fa-shield-halved' : 'fa-clock'}"></i> ${isApproved ? 'Verified Clinical Record (Canonical English Stored)' : 'Draft Review Record'}</span>
+      <span>${isApproved ? 'Approved' : 'Pending Review'}</span>
+    </div>
+
+    <!-- Vitals -->
+    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px;">
+      <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
+        <i class="fa-solid fa-heart-pulse" style="color: #e11d48; margin-right: 4px;"></i> Patient Vitals
+      </h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; text-align: center;">
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">WEIGHT</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.weight_kg ? `${vitals.weight_kg} kg` : '-'}</div>
+        </div>
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">HEIGHT</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.height_cm ? `${vitals.height_cm} cm` : '-'}</div>
+        </div>
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">BLOOD PRESSURE</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.blood_pressure || '-'}</div>
+        </div>
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">PULSE</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.pulse_bpm ? `${vitals.pulse_bpm} bpm` : '-'}</div>
+        </div>
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">TEMP</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.temperature_f ? `${vitals.temperature_f} °F` : '-'}</div>
+        </div>
+        <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">SpO2</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.spo2_percent ? `${vitals.spo2_percent}%` : '-'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnosis & Physician Notes -->
+    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px;">
+      <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+        <i class="fa-solid fa-stethoscope" style="color: var(--primary-teal); margin-right: 4px;"></i> Confirmed Diagnosis & Clinical Notes
+      </h4>
+      <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">${report.doctor_diagnosis || 'Clinical Consultation'}</div>
+      <p style="font-size: 13px; color: #475569; line-height: 1.5; white-space: pre-wrap;">${report.doctor_notes || 'No additional notes provided.'}</p>
+    </div>
+
+    <!-- Reported Symptoms -->
+    ${symptoms.length > 0 ? `
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px;">
+        <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+          <i class="fa-solid fa-notes-medical" style="color: var(--patient-color); margin-right: 4px;"></i> Patient-Reported Symptoms
+        </h4>
+        <ul style="padding-left: 20px; font-size: 13px; color: #334155;">
+          ${symptoms.map(s => `<li><strong>${s.symptom}</strong> (Duration: ${s.duration || 'Not stated'})</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    <!-- Prescriptions -->
+    <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px;">
+      <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">
+        <i class="fa-solid fa-prescription" style="color: var(--primary-teal); margin-right: 4px;"></i> Prescribed Medications
+      </h4>
+      ${prescriptions.length === 0 ? `
+        <div style="font-size: 12px; color: var(--text-muted); font-style: italic;">No medicines prescribed for this consultation.</div>
+      ` : `
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          ${prescriptions.map((p, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; font-size: 12px;">
+              <div>
+                <strong>${idx + 1}. ${p.medicine} ${p.strength || ''}</strong>
+                <span style="color: var(--text-muted); margin-left: 6px;">${p.dose || ''} • ${p.frequency || ''} • ${p.duration || ''}</span>
+              </div>
+              <span style="color: var(--primary-teal); font-weight: 600;">${p.instructions || 'After meals'}</span>
+            </div>
+          `).join('')}
+        </div>
+      `}
+    </div>
+
+    <!-- Follow up advice -->
+    ${report.follow_up_recommendation ? `
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; color: #166534;">
+        <strong>Follow-up Recommendation:</strong> ${report.follow_up_recommendation}
+      </div>
+    ` : ''}
+  `;
+
+  openModal('modal-view-report');
+};
 
 /* ==========================================================================
    CONVERSATIONAL AI ONBOARDING WITH REAL-TIME AI VALIDATION
@@ -1373,7 +1539,7 @@ async function loadDraftReview() {
   const reviewBtn = document.getElementById('btn-review-draft');
   if (reviewBtn) {
     reviewBtn.disabled = true;
-    reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating...`;
+    reviewBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Generating AI Report...`;
   }
 
   try {
@@ -1383,17 +1549,33 @@ async function loadDraftReview() {
     renderDraftReview(draft);
     showView('draftReview');
   } catch (err) {
-    alert('Failed to generate draft: ' + err.message);
+    alert('Failed to generate AI report: ' + err.message);
   } finally {
     if (reviewBtn) {
       reviewBtn.disabled = false;
-      reviewBtn.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> Review Draft & Report`;
+      reviewBtn.innerHTML = `<i class="fa-solid fa-file-waveform"></i> Generate AI Report`;
     }
   }
 }
 
 function renderDraftReview(draft) {
   const payload = draft.structured_payload || {};
+
+  // Vitals inputs
+  const vitals = payload.vitals || {};
+  const weightInput = document.getElementById('vitals-weight');
+  const heightInput = document.getElementById('vitals-height');
+  const bpInput = document.getElementById('vitals-bp');
+  const pulseInput = document.getElementById('vitals-pulse');
+  const tempInput = document.getElementById('vitals-temp');
+  const spo2Input = document.getElementById('vitals-spo2');
+
+  if (weightInput) weightInput.value = vitals.weight_kg ?? '';
+  if (heightInput) heightInput.value = vitals.height_cm ?? '';
+  if (bpInput) bpInput.value = vitals.blood_pressure ?? '';
+  if (pulseInput) pulseInput.value = vitals.pulse_bpm ?? '';
+  if (tempInput) tempInput.value = vitals.temperature_f ?? '';
+  if (spo2Input) spo2Input.value = vitals.spo2_percent ?? '';
 
   // Symptoms
   const symptomsContainer = document.getElementById('draft-symptoms-list');
@@ -1423,6 +1605,96 @@ function renderDraftReview(draft) {
   if (notesInput) notesInput.value = payload.doctor_notes || (payload.medical_history ? `History: ${payload.medical_history}.` : '');
 
   renderPrescriptions(payload.prescriptions || []);
+}
+
+// Doctor AI Scribe Assistant (Dictate Vitals & Additional Details)
+let isDoctorAIRecording = false;
+
+async function toggleDoctorAIRecording() {
+  const micBtn = document.getElementById('btn-doctor-ai-mic');
+  const micStatus = document.getElementById('doctor-ai-mic-status');
+
+  if (isDoctorAIRecording) {
+    isDoctorAIRecording = false;
+    if (micBtn) micBtn.classList.remove('recording');
+    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing dictation...`;
+
+    const blob = await window.audioManager.stopRecording();
+    if (!blob) {
+      if (micStatus) micStatus.textContent = 'No voice detected. Tap microphone to dictate.';
+      return;
+    }
+
+    try {
+      const docLang = state.doctor?.primary_language || 'en-IN';
+      const result = await window.api.transcribeAudio(blob, docLang);
+      if (result && result.transcript && result.transcript.trim()) {
+        const textInput = document.getElementById('input-doctor-ai-text');
+        if (textInput) textInput.value = result.transcript;
+        await submitDoctorAIText(result.transcript);
+      } else {
+        if (micStatus) micStatus.textContent = 'Could not detect clear speech. Please speak again.';
+      }
+    } catch (err) {
+      if (micStatus) micStatus.textContent = 'Speech transcription error: ' + err.message;
+    }
+  } else {
+    if (window.audioManager.isPlaying) return;
+    isDoctorAIRecording = true;
+    if (micBtn) micBtn.classList.add('recording');
+    if (micStatus) micStatus.innerHTML = `<span style="color: var(--ambient-purple); font-weight: 800;">🎙️ Listening... Dictate vitals (weight, height, BP, pulse, temp) now</span>`;
+
+    window.audioManager.onSilenceDetected = async () => {
+      if (isDoctorAIRecording) {
+        await toggleDoctorAIRecording();
+      }
+    };
+
+    await window.audioManager.startRecording({
+      vad: true,
+      silenceDurationMs: 1800,
+    });
+  }
+}
+
+async function submitDoctorAIText(customText) {
+  const textInput = document.getElementById('input-doctor-ai-text');
+  const text = (customText || textInput?.value || '').trim();
+  if (!text) return;
+
+  if (!state.activeConsultation) {
+    alert('No active consultation session.');
+    return;
+  }
+
+  const micStatus = document.getElementById('doctor-ai-mic-status');
+  const feedback = document.getElementById('doctor-ai-feedback');
+  const feedbackText = document.getElementById('doctor-ai-feedback-text');
+  const sendBtn = document.getElementById('btn-submit-doctor-ai');
+
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI Scribe analyzing & updating report details...`;
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const docLang = state.doctor?.primary_language || 'en-IN';
+    const res = await window.api.doctorAIAssist(state.activeConsultation.id, text, docLang);
+    if (res && res.updated_payload) {
+      if (!state.draft) state.draft = { structured_payload: {} };
+      state.draft.structured_payload = res.updated_payload;
+      renderDraftReview(state.draft);
+
+      if (feedback && feedbackText) {
+        feedbackText.textContent = res.ai_reply || 'Vitals and details updated successfully.';
+        feedback.style.display = 'block';
+      }
+      if (textInput) textInput.value = '';
+    }
+  } catch (err) {
+    alert('AI Scribe Assist error: ' + err.message);
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    if (micStatus) micStatus.textContent = 'Tap microphone to speak or type additional vitals & notes';
+  }
 }
 
 function renderPrescriptions(prescriptions) {
@@ -1464,7 +1736,7 @@ async function approveClinicalRecord() {
   const btn = document.getElementById('btn-approve-record');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Finalizing Official Record...`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Finalizing Official Record in Database...`;
   }
 
   try {
@@ -1474,6 +1746,23 @@ async function approveClinicalRecord() {
 
     const notesInput = document.getElementById('draft-notes');
     if (notesInput) payload.doctor_notes = notesInput.value.trim();
+
+    // Collect all edited vitals
+    const weightVal = parseFloat(document.getElementById('vitals-weight')?.value);
+    const heightVal = parseFloat(document.getElementById('vitals-height')?.value);
+    const bpVal = (document.getElementById('vitals-bp')?.value || '').trim();
+    const pulseVal = parseInt(document.getElementById('vitals-pulse')?.value, 10);
+    const tempVal = parseFloat(document.getElementById('vitals-temp')?.value);
+    const spo2Val = parseInt(document.getElementById('vitals-spo2')?.value, 10);
+
+    payload.vitals = {
+      weight_kg: !isNaN(weightVal) ? weightVal : null,
+      height_cm: !isNaN(heightVal) ? heightVal : null,
+      blood_pressure: bpVal || null,
+      pulse_bpm: !isNaN(pulseVal) ? pulseVal : null,
+      temperature_f: !isNaN(tempVal) ? tempVal : null,
+      spo2_percent: !isNaN(spo2Val) ? spo2Val : null,
+    };
 
     await window.api.updateDraft(state.activeConsultation.id, payload);
     await window.api.approveDraft(state.activeConsultation.id);
@@ -1707,8 +1996,27 @@ function setupEventListeners() {
     processTextTurn(phrase);
   };
 
-  // Review Draft Button
+  // Review Draft / Generate AI Report Button
   on('btn-review-draft', 'click', loadDraftReview);
+
+  // Doctor AI Scribe Voice / Text Assistant Listeners
+  on('btn-doctor-ai-mic', 'click', toggleDoctorAIRecording);
+  on('btn-submit-doctor-ai', 'click', () => submitDoctorAIText());
+
+  const doctorAiInput = document.getElementById('input-doctor-ai-text');
+  if (doctorAiInput) {
+    doctorAiInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitDoctorAIText();
+      }
+    });
+  }
+
+  // Print Full Medical Report
+  on('btn-print-report', 'click', () => {
+    window.print();
+  });
 
   // Draft Actions
   on('btn-approve-record', 'click', approveClinicalRecord);
