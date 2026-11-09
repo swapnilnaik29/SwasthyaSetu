@@ -23,3 +23,4 @@ def log_sanitized_event(event_name: str, **kwargs):
         else:
             safe_data[k] = v
     logger.info(f"event={event_name} metadata={safe_data}")
+

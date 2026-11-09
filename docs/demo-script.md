@@ -133,3 +133,4 @@ The Consultation screen opens showing:
 7. Highlight privacy compliance to judges:
    - *"The SMS message body contains only clinic name, doctor name, and appointment date/time. Diagnoses and paracetamol are strictly absent to safeguard patient privacy over ordinary SMS."*
 8. Tap **"Return to Dashboard"** to conclude the demo.
+

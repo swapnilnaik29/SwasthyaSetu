@@ -119,3 +119,4 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 | `GET` | `/api/v1/audio/{audio_id}` | Serve synthesized TTS audio for phone playback |
 | `GET` | `/api/v1/cache/stats` | Translation cache hit/miss statistics |
 | `POST` | `/api/v1/cache/purge` | Purge translation cache |
+

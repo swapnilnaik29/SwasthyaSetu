@@ -41,3 +41,4 @@ async def update_doctor_settings(settings_in: DoctorSettings, db: AsyncSession =
     await db.commit()
     await db.refresh(doctor)
     return doctor
+

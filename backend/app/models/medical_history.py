@@ -20,3 +20,4 @@ class MedicalHistory(Base):
     )
 
     patient = relationship("Patient", back_populates="medical_histories")
+

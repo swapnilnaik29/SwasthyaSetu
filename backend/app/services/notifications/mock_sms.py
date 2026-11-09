@@ -51,3 +51,4 @@ class MockSMSProvider(SMSProvider):
             "provider_message_id": message_id,
             "provider": "mock_sms",
         }
+

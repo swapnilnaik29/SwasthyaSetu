@@ -94,3 +94,4 @@ async def get_patient_consultations(
     stmt = select(Consultation).where(Consultation.patient_id == patient_id).order_by(Consultation.started_at.desc())
     result = await db.execute(stmt)
     return result.scalars().all()
+

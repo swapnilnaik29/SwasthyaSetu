@@ -94,3 +94,4 @@ if __name__ == "__main__":
     import uvicorn
     # Bind to 0.0.0.0 for physical mobile phone testing on private LAN
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+

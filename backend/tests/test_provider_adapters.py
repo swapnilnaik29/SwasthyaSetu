@@ -41,3 +41,4 @@ async def test_gnani_adapters_require_key():
     tts = GnaniTTSService(api_key="")
     with pytest.raises(ValueError):
         await tts.synthesize("text", "hi-IN")
+

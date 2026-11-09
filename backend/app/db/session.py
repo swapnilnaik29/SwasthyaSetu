@@ -1,4 +1,3 @@
-import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
@@ -22,12 +21,16 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-# Enable foreign keys for SQLite
+# High-performance optimizations for local SQLite database
 if database_url.startswith("sqlite"):
     @event.listens_for(engine.sync_engine, "connect")
-    def set_sqlite_pragma(dbapi_connection, connection_record):
+    def set_sqlite_optimizations(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA cache_size=-64000")
+        cursor.execute("PRAGMA temp_store=MEMORY")
         cursor.close()
 
 AsyncSessionLocal = async_sessionmaker(
@@ -51,7 +54,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def init_db():
     """Initializes tables in database."""
     async with engine.begin() as conn:
-        # Import models so Base has them registered
         import app.models  # noqa
         await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database initialized successfully.")
+    logger.info("Local SQLite database initialized with high-performance WAL mode.")

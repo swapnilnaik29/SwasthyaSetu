@@ -33,3 +33,4 @@ class Consultation(Base):
     draft = relationship("ConsultationDraft", back_populates="consultation", uselist=False, cascade="all, delete-orphan")
     clinical_record = relationship("ClinicalRecord", back_populates="consultation", uselist=False, cascade="all, delete-orphan")
     followups = relationship("Followup", back_populates="consultation", cascade="all, delete-orphan")
+

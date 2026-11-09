@@ -129,3 +129,4 @@ To leverage OpenAI prompt caching and minimize token consumption:
   `"Reminder: You have an appointment with {doctor_name} at {clinic_name} on {appointment_time}. Clinic contact: {clinic_phone}."`
 - **Privacy Enforcement**:
   Automated privacy audits in `test_followup_and_sms.py` verify that medical diagnoses, drug names, and clinical history are barred from outbound SMS payloads.
+

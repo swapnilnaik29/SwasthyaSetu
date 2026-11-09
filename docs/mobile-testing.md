@@ -113,3 +113,4 @@ Antigravity verified the following 12-point real-device criteria:
 - **Flutter Framework**: Flutter 3.35.3 • Dart 3.9.2
 - **Audio Codec**: 16kHz, 16-bit PCM WAV Mono
 - **HTTP Cleartext Traffic**: Enabled via `android:usesCleartextTraffic="true"` for private LAN debugging (`http://192.168.1.4:8000`).
+

@@ -66,3 +66,4 @@ TRANSLATION_RESPONSE_SCHEMA = {
         },
     },
 }
+

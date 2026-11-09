@@ -96,3 +96,4 @@ async def test_full_consultation_turn_lifecycle(client):
     )
     assert patch_res.status_code == 200
     assert "severe headache" in patch_res.json()["canonical_english_text"]
+

@@ -91,3 +91,4 @@ async def test_draft_rejection(client):
     reject_res = await client.post(f"/api/v1/consultations/{consultation_id}/reject")
     assert reject_res.status_code == 200
     assert reject_res.json()["status"] == "REJECTED"
+

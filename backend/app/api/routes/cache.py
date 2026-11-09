@@ -26,3 +26,4 @@ async def purge_cache(
     else:
         purged = await service.purge_expired()
     return {"status": "success", "purged_count": purged}
+

@@ -30,7 +30,6 @@ from app.schemas.followup import FollowupCreate, FollowupOut
 from app.services.speech.factory import get_stt_service, get_tts_service
 from app.services.translation.luna_service import GPT6LunaTranslationService
 from app.services.records.draft_extractor import DraftExtractorService
-from app.services.notifications.factory import get_sms_provider
 from app.api.routes.doctor import get_or_create_default_doctor
 from app.api.routes.audio import store_transient_audio
 
@@ -353,30 +352,19 @@ async def schedule_followup(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Schedule follow-up appointment and dispatch minimal privacy-preserving SMS reminder.
+    Schedule follow-up appointment.
+    SMS dispatch is reserved for future app settings integration.
     """
     consultation = await db.get(Consultation, consultation_id)
     if not consultation:
         raise HTTPException(status_code=404, detail="Consultation not found")
 
-    doctor = await db.get(Doctor, consultation.doctor_id)
-    doctor_name = doctor.name if doctor else "Dr. Priya Sharma"
-
-    sms_provider = get_sms_provider()
-    sms_res = await sms_provider.send_appointment_reminder(
-        to_phone=followup_in.phone_number,
-        doctor_name=doctor_name,
-        clinic_name=settings.CLINIC_DISPLAY_NAME,
-        appointment_time=followup_in.appointment_at.strftime("%d-%b-%Y %I:%M %p"),
-        clinic_phone=settings.CLINIC_CONTACT_NUMBER,
-    )
-
     followup = Followup(
         consultation_id=consultation_id,
         appointment_at=followup_in.appointment_at,
         phone_number=followup_in.phone_number,
-        sms_status=sms_res.get("status", "SENT"),
-        provider_message_id=sms_res.get("provider_message_id"),
+        sms_status="SAVED_LOCAL (SMS reserved for future integration)",
+        provider_message_id=None,
     )
     db.add(followup)
     await db.commit()
@@ -393,3 +381,4 @@ async def list_followups(
     stmt = select(Followup).where(Followup.consultation_id == consultation_id).order_by(Followup.created_at.desc())
     res = await db.execute(stmt)
     return res.scalars().all()
+

@@ -28,3 +28,4 @@ class Transcript(Base):
     confidence_metadata: Mapped[dict] = mapped_column(JSON, nullable=True, default=dict)
 
     consultation = relationship("Consultation", back_populates="transcripts")
+

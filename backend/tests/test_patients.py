@@ -54,3 +54,4 @@ async def test_patient_validation(client):
     }
     res = await client.post("/api/v1/patients", json=bad_payload)
     assert res.status_code == 422
+

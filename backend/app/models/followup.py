@@ -21,3 +21,4 @@ class Followup(Base):
     )
 
     consultation = relationship("Consultation", back_populates="followups")
+

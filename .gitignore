@@ -62,3 +62,4 @@ backend/.env
 *.swo
 .DS_Store
 Thumbs.db
+

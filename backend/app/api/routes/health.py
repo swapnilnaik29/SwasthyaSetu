@@ -33,11 +33,12 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "status": "healthy" if db_ok else "degraded",
         "app_name": settings.APP_NAME,
         "app_env": settings.APP_ENV,
+        "database": "SQLite (Local High-Performance WAL)",
         "database_connected": db_ok,
         "openai_model": settings.OPENAI_MODEL,
         "gnani_stt_model": settings.GNANI_STT_MODEL,
         "gnani_tts_model": settings.GNANI_TTS_MODEL,
-        "sms_provider": settings.SMS_PROVIDER,
         "server_lan_ip": get_local_ip(),
         "api_v1_prefix": settings.API_V1_PREFIX,
     }
+

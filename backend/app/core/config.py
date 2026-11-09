@@ -1,6 +1,6 @@
 import os
 from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
             return [i.strip() for i in v.split(",") if i.strip()]
         return v
 
-    # Database
+    # Local SQLite Database (default for ultra-low latency & zero-setup)
     DATABASE_URL: str = "sqlite+aiosqlite:///./swasthyasetu.db"
 
     @property
@@ -43,15 +43,15 @@ class Settings(BaseSettings):
             return url.replace("postgresql://", "postgresql+psycopg://")
         return url
 
-    # Gnani Speech-to-Text & Text-to-Speech
+    # Gnani Speech-to-Text & Text-to-Speech (Default voice -> MALE)
     GNANI_API_KEY: str = ""
     GNANI_STT_MODEL: str = "prisma-v2.5"
     GNANI_TTS_MODEL: str = "timbre-v2.5"
     GNANI_STT_MODE: str = "rest"
     GNANI_TTS_MODE: str = "rest"
-    GNANI_DEFAULT_VOICE_HI: str = "hi_female_1"
-    GNANI_DEFAULT_VOICE_MR: str = "mr_female_1"
-    GNANI_DEFAULT_VOICE_EN: str = "en_female_1"
+    GNANI_DEFAULT_VOICE_HI: str = "hi_male_1"
+    GNANI_DEFAULT_VOICE_MR: str = "mr_male_1"
+    GNANI_DEFAULT_VOICE_EN: str = "en_male_1"
 
     # Legacy Gnani parameters if needed
     GNANI_LEGACY_TOKEN: str = ""
@@ -67,13 +67,6 @@ class Settings(BaseSettings):
     TRANSLATION_CACHE_TTL_DAYS: int = 90
     TRANSLATION_CACHE_ENCRYPTION_KEY: str = "dGhpcy1pcy1hLTMyLWJ5dGUtZW5jcnlwdGlvbi1rZXk="
     TRANSLATION_CACHE_HMAC_KEY: str = "swasthyasetu-hmac-secret-salt-demo-2026"
-
-    # SMS Provider
-    SMS_PROVIDER: str = "mock"
-    SMS_API_KEY: str = ""
-    SMS_API_SECRET: str = ""
-    SMS_SENDER_ID: str = "SWASTH"
-    SMS_BASE_URL: str = ""
 
     # Audio & Retention
     MAX_AUDIO_MB: int = 20

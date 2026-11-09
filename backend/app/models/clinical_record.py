@@ -28,3 +28,4 @@ class ClinicalRecord(Base):
 
     consultation = relationship("Consultation", back_populates="clinical_record")
     doctor = relationship("Doctor")
+

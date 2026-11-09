@@ -20,3 +20,4 @@ class TTSProvider(ABC):
         Returns: audio bytes (WAV or MP3)
         """
         pass
+

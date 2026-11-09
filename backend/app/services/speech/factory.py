@@ -15,3 +15,4 @@ def get_tts_service() -> TTSProvider:
     if settings.GNANI_API_KEY and settings.GNANI_TTS_MODE.lower() != "mock":
         return GnaniTTSService()
     return MockTTSService()
+

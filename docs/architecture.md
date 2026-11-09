@@ -190,3 +190,4 @@ When recording and playback occur on a single smartphone:
   * If recording is active when playback begins, recording is immediately stopped.
   * Start recording is prohibited while audio playback is active.
   * UI prominently displays: `"TTS Playing — Recording paused to prevent microphone echo"`.
+

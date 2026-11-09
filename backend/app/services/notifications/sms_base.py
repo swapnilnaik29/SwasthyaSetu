@@ -19,3 +19,4 @@ class SMSProvider(ABC):
         prescriptions, or medical history.
         """
         pass
+

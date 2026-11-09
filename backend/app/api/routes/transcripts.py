@@ -22,3 +22,4 @@ async def update_transcript(
     await db.commit()
     await db.refresh(transcript)
     return transcript
+

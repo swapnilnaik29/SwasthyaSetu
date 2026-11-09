@@ -25,3 +25,4 @@ class Patient(Base):
 
     consultations = relationship("Consultation", back_populates="patient", cascade="all, delete-orphan")
     medical_histories = relationship("MedicalHistory", back_populates="patient", cascade="all, delete-orphan")
+

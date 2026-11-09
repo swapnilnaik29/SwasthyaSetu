@@ -33,3 +33,4 @@ async def test_doctor_settings_get_and_put(client):
     updated = put_res.json()
     assert updated["name"] == "Dr. Rajesh Kulkarni"
     assert updated["preferred_language"] == "mr-IN"
+

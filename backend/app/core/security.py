@@ -92,3 +92,4 @@ def decrypt_text(encrypted_b64: str) -> str:
     ciphertext = raw[12:]
     decrypted_bytes = aesgcm.decrypt(nonce, ciphertext, None)
     return decrypted_bytes.decode("utf-8")
+

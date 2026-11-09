@@ -10,6 +10,18 @@ from app.services.translation.prompts import (
 )
 
 
+# Shared client instance to eliminate instantiation & TLS handshake latency
+_openai_client = None
+
+
+def get_openai_client(api_key: str):
+    global _openai_client
+    if _openai_client is None:
+        from openai import AsyncOpenAI
+        _openai_client = AsyncOpenAI(api_key=api_key)
+    return _openai_client
+
+
 class GPT6LunaTranslationService:
     """
     OpenAI GPT-6 Luna bidirectional contextual translation service.
@@ -155,8 +167,7 @@ class GPT6LunaTranslationService:
     ) -> Dict[str, Any]:
         """Invokes OpenAI Responses API / Structured Outputs with GPT-6 Luna."""
         try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=self.api_key)
+            client = get_openai_client(self.api_key)
 
             user_prompt = (
                 f"Speaker: {speaker}\n"
@@ -274,3 +285,4 @@ class GPT6LunaTranslationService:
             "uncertainty_flags": uncertainty_flags,
             "needs_human_review": needs_human_review,
         }
+

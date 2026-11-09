@@ -160,3 +160,4 @@ def downgrade() -> None:
     op.drop_table('translation_cache')
     op.drop_table('patients')
     op.drop_table('doctors')
+

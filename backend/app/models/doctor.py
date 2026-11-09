@@ -22,3 +22,4 @@ class Doctor(Base):
     )
 
     consultations = relationship("Consultation", back_populates="doctor", cascade="all, delete-orphan")
+
