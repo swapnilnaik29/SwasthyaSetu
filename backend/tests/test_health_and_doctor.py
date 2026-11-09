@@ -34,3 +34,12 @@ async def test_doctor_settings_get_and_put(client):
     assert updated["name"] == "Dr. Rajesh Kulkarni"
     assert updated["preferred_language"] == "mr-IN"
 
+
+@pytest.mark.asyncio
+async def test_frontend_static_serving(client):
+    response = await client.get("/")
+    assert response.status_code == 200
+    assert "SwasthyaSetu" in response.text
+    assert "text/html" in response.headers.get("content-type", "")
+
+

@@ -1,6 +1,6 @@
 # SwasthyaSetu — System Architecture & Design Specification
 
-SwasthyaSetu is a doctor-operated, single-phone multilingual healthcare communication and clinical documentation assistant designed to eliminate language barriers in doctor-patient consultations.
+SwasthyaSetu is a doctor-operated, single-device multilingual healthcare communication and clinical documentation assistant designed to eliminate language barriers in doctor-patient consultations.
 
 ---
 
@@ -8,37 +8,38 @@ SwasthyaSetu is a doctor-operated, single-phone multilingual healthcare communic
 
 ```mermaid
 graph TD
-    subgraph MobileDevice["Doctor Mobile Device (Flutter App)"]
-        UI["Doctor UI (Material 3)"]
-        MIC["Microphone Capture (Record WAV)"]
-        PLAYER["Audio Player (JustAudio TTS Playback)"]
-        CLIENT["API Client (Dio with Dynamic LAN IP)"]
+    subgraph ClientLayer["Doctor Device (Mobile / Desktop Web Client)"]
+        UI["Modern Web UI (HTML5 / CSS3 / ES6)"]
+        MIC["Audio Capture (MediaRecorder Web API)"]
+        PLAYER["Audio Playback (HTML5 Audio Element)"]
+        CLIENT["API Client (Vanilla JS Fetch with Health Probe)"]
     end
 
     subgraph BackendHost["FastAPI Backend (0.0.0.0:8000)"]
+        STATIC["StaticFiles Server (Mounts / to frontend/)"]
         ROUTER["API Routers (/api/v1)"]
         AUTH_DOC["Doctor Settings Service"]
         PAT_MGR["Patient Management"]
         CONS_ORCH["Consultation Orchestrator"]
-        CACHE["Encrypted Translation Cache Service"]
+        CACHE["Encrypted SQLite Translation Cache Service"]
         EXTRACT["Structured Draft Extractor"]
-        NOTIF["SMS Dispatch Service"]
+        NOTIF["Local Follow-up Store"]
     end
 
-    subgraph Database["PostgreSQL / SQLite Database"]
+    subgraph Database["Local High-Performance SQLite (WAL Mode)"]
         DB_TABLES["patients, doctors, consultations"]
         DB_TRANS["transcripts (Canonical English Only)"]
         DB_CACHE["translation_cache (AES-GCM Encrypted)"]
         DB_RECORDS["consultation_drafts, clinical_records, followups"]
     end
 
-    subgraph ExternalAI["External AI Providers"]
+    subgraph ExternalAI["Speech & Intelligence Providers"]
         GNANI_STT["Gnani Prisma v2.5 STT REST"]
-        GNANI_TTS["Gnani Timbre v2.5 TTS REST"]
+        GNANI_TTS["Gnani Timbre v2.5 TTS REST (Male Voices)"]
         OPENAI["OpenAI GPT-6 Luna Responses API"]
-        SMS_GW["SMS Provider / Mock Gateway"]
     end
 
+    STATIC --> UI
     MIC -->|Upload audio turn| CLIENT
     CLIENT -->|REST POST /turns| ROUTER
     ROUTER --> CONS_ORCH
@@ -51,26 +52,26 @@ graph TD
     PLAYER <--|Fetch synthesized WAV| ROUTER
     EXTRACT --> OPENAI
     EXTRACT --> DB_RECORDS
-    NOTIF --> SMS_GW
+    NOTIF --> DB_RECORDS
 ```
 
 ---
 
 ## 2. Bidirectional Turn-Based Consultation Flow
 
-The consultation operates in discrete, turn-based speech exchanges on a single doctor-held smartphone. The doctor manually designates the active speaker (**Patient** or **Doctor**) before each turn.
+The consultation operates in discrete, turn-based speech exchanges on a single doctor-held device. The doctor manually designates the active speaker (**Patient** or **Doctor**) before each turn.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Doctor
     actor Patient
-    participant App as Flutter Mobile App
+    participant App as Web Frontend (HTML/JS)
     participant API as FastAPI Backend
-    participant Cache as Translation Cache (AES-GCM)
+    participant Cache as Translation Cache (AES-GCM in SQLite)
     participant Luna as OpenAI GPT-6 Luna
     participant Gnani as Gnani AI (Prisma/Timbre)
-    participant DB as PostgreSQL Database
+    participant DB as SQLite Database
 
     Note over Doctor,App: Turn 1: Patient Speaks Hindi (Doctor understands English)
     Doctor->>App: Selects "PATIENT SPEAKS" & Taps Record
@@ -84,11 +85,11 @@ sequenceDiagram
         Cache-->>API: Decrypted cached translation
     else Cache Miss
         API->>Luna: Contextual Translation & Canonicalization (Responses API)
-        Luna-->>API: {recipient_translation: "I have fever and headache...", canonical_english: "..."}
+        Luna-->>API: {recipient_translation: "I have had fever...", canonical_english: "..."}
         API->>Cache: Encrypt & Store in translation_cache (AES-GCM)
     end
     API->>DB: INSERT into transcripts (canonical_english_text ONLY)
-    API->>Gnani: Synthesize TTS (Timbre v2.5, en-IN)
+    API->>Gnani: Synthesize TTS (Timbre v2.5, en-IN, Male Voice)
     Gnani-->>API: WAV audio bytes
     API-->>App: Turn Result (transcript_id, canonical_english, audio_url)
     App->>App: Lock Microphone & Play Synthesized Audio on Phone Speaker
@@ -99,95 +100,55 @@ sequenceDiagram
     Doctor->>App: "Take paracetamol 500mg twice daily after meals for three days."
     Doctor->>App: Taps Stop Record
     App->>API: POST /consultations/{id}/turns (audio.wav, speaker=DOCTOR, en-IN -> hi-IN)
-    API->>Gnani: Transcribe (en-IN)
-    API->>Cache: Lookup Translation Cache
-    alt Cache Miss
-        API->>Luna: Translate (en-IN -> hi-IN)
-        API->>Cache: Encrypt & Store (AES-GCM)
+    API->>Gnani: Transcribe Audio (Prisma v2.5, en-IN)
+    Gnani-->>API: "Take paracetamol 500mg twice daily after meals for three days."
+    API->>Cache: Lookup HMAC-SHA256(source + en-IN + hi-IN + luna)
+    alt Cache Hit
+        Cache-->>API: Decrypted cached translation
+    else Cache Miss
+        API->>Luna: Contextual Translation & Canonicalization
+        Luna-->>API: {recipient_translation: "पैरासिटामोल 500 मिलीग्राम...", canonical_english: "..."}
+        API->>Cache: Encrypt & Store in translation_cache (AES-GCM)
     end
     API->>DB: INSERT into transcripts (canonical_english_text ONLY)
-    API->>Gnani: Synthesize TTS in Hindi (hi_female_1)
-    Gnani-->>API: Hindi WAV audio bytes
-    API-->>App: Turn Result (recipient_translation: "पैरासिटामोल 500 मिलीग्राम...", audio_url)
-    App->>App: Lock Microphone & Play Hindi Audio to Patient
+    API->>Gnani: Synthesize TTS (Timbre v2.5, hi-IN, Male Voice: hi_male_1)
+    Gnani-->>API: Synthesized WAV audio bytes
+    API-->>App: Turn Result (audio_url: /api/v1/audio/{id})
+    App->>App: Lock Microphone & Play Hindi Audio Aloud via Phone Speaker
+    App->>Patient: Patient hears instructions clearly in Hindi
 ```
 
 ---
 
-## 3. Canonical English Storage Architecture
+## 3. High-Performance SQLite Configuration
 
-### Rationale & Legal Integrity
-In medical and hospital governance across India, medical records and prescriptions are legally canonicalized in standard English. Translating into regional languages transiently bridges the clinical gap, but persisting raw, unverified regional text into the canonical medical record introduces liability and audit discrepancies.
+To ensure sub-second response times on local devices, SQLite is configured with Write-Ahead Logging (WAL) and memory optimization PRAGMAs:
 
-### Enforcement Rules
-1. **Clinical Tables Exclusion**: The tables `transcripts`, `consultation_drafts`, and `clinical_records` strictly store canonical English text.
-2. **Transient UI Display**: Recognized regional speech is returned transiently to the active consultation screen so the doctor can audit the speech recognition live.
-3. **Encrypted Cache Exception**: The `translation_cache` table is the sole permitted exception to avoid repeat API calls. Cached non-English text is encrypted at rest using AES-GCM and indexed via keyed HMAC-SHA256.
-
----
-
-## 4. Persistent Encrypted Translation Cache
-
-```mermaid
-flowchart TD
-    Start([Speech Turn Recognized]) --> Norm[Normalize Safe Whitespace & NFC]
-    Norm --> HMAC[Compute Keyed HMAC-SHA256 Hash]
-    HMAC --> Lookup{Match in DB cache_key_hash?}
-    Lookup -- Yes (Not Expired) --> Hit[Increment hit_count & Decrypt AES-GCM]
-    Hit --> Return[Return Cached Translation (0 Model Calls)]
-    Lookup -- No / Expired --> Call[Call GPT-6 Luna Responses API]
-    Call --> Validate[Validate Strict Pydantic Schema]
-    Validate --> Encrypt[Encrypt Target Text with AES-GCM]
-    Encrypt --> Store[Store in DB with 90-day TTL]
-    Store --> Return
+```sql
+PRAGMA journal_mode = WAL;         -- Concurrent reads during writes
+PRAGMA synchronous = NORMAL;       -- Safe durability with reduced disk sync overhead
+PRAGMA cache_size = -64000;        -- 64MB memory page cache
+PRAGMA temp_store = MEMORY;        -- Temporary tables in RAM
+PRAGMA foreign_keys = ON;          -- Referential integrity
 ```
 
----
-
-## 5. Draft Generation & Approval Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Doctor
-    participant App as Mobile App
-    participant API as FastAPI Backend
-    participant Luna as GPT-6 Luna
-    participant DB as PostgreSQL Database
-    participant SMS as SMS Gateway
-
-    Doctor->>App: Taps "End Consultation & Review Draft"
-    App->>API: POST /consultations/{id}/draft
-    API->>DB: Fetch Canonical English Transcripts
-    DB-->>API: List of English turns
-    API->>Luna: Extract Structured Draft (Strict Pydantic JSON Schema)
-    Note over Luna: Extracts symptoms, durations, history.<br/>Leaves diagnosis & prescription EMPTY.
-    Luna-->>API: Structured Draft Payload
-    API->>DB: INSERT into consultation_drafts (status=PENDING_REVIEW)
-    API-->>App: Draft Data
-    App->>Doctor: Displays Draft Review Screen with "AI-Generated Pending Review" Badge
-    Doctor->>App: Edits diagnosis ("Viral Pyrexia") & adds Prescription ("Paracetamol 500mg")
-    Doctor->>App: Taps "Approve & Save Official Record"
-    App->>API: POST /consultations/{id}/approve
-    API->>DB: UPDATE consultation_drafts (status=APPROVED)
-    API->>DB: INSERT into clinical_records (approved_by, approved_at, payload)
-    API-->>App: Approved Record Confirmation
-    Doctor->>App: Picks Follow-up Date (3 days later) & Taps "Send SMS Reminder"
-    App->>API: POST /consultations/{id}/followups
-    API->>SMS: Dispatch Minimal Reminder (Clinic, Doctor, Date/Time ONLY)
-    SMS-->>API: Status: DELIVERED, message_id
-    API-->>App: Followup Created
-```
+Additionally, connection pooling (`httpx.AsyncClient` with keep-alives) is maintained across Gnani AI and OpenAI API calls, eliminating TLS handshakes on every conversational turn.
 
 ---
 
-## 6. Single-Device Audio Feedback Prevention
+## 4. Canonical English Storage Rule
 
-When recording and playback occur on a single smartphone:
-- TTS playback through phone speaker can bleed directly into the microphone.
-- **Solution implemented in `AudioService`**:
-  * Audio playback triggers an automatic recording lock (`isPlaying = true`).
-  * If recording is active when playback begins, recording is immediately stopped.
-  * Start recording is prohibited while audio playback is active.
-  * UI prominently displays: `"TTS Playing — Recording paused to prevent microphone echo"`.
+Medical records must be searchable and auditable across doctors regardless of the language spoken during the consultation. Therefore:
+1. All entries in the `transcripts` table store `canonical_english_text`. Non-English raw transcripts are never persisted in the clinical record.
+2. All entries in `consultation_drafts` and `clinical_records` store structured entities (symptoms, duration, diagnosis, medications, instructions) strictly in canonical medical English.
 
+---
+
+## 5. Security & Encryption at Rest
+
+1. **Translation Cache**:
+   - `lookup_hash`: `HMAC-SHA256(normalized_source_text + src_lang + tgt_lang + model, hmac_key)`
+   - `encrypted_translation`: AES-256-GCM encrypted ciphertext with 12-byte random nonce and 16-byte authentication tag.
+2. **Clinical Records**:
+   - Stored locally on encrypted volume or protected database file.
+   - Physician approval is strictly signed with doctor ID and timestamp.

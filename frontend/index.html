@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SwasthyaSetu — Multilingual Healthcare Communication</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Main Top Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fa-solid fa-hospital-user"></i>
+        </div>
+        <div>
+          <div class="brand-title">SwasthyaSetu</div>
+          <div class="brand-subtitle">Clinical Communication Portal</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-open-settings" class="icon-btn" title="Doctor & LAN Settings">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Connection Status Banner -->
+    <div id="connection-banner" class="connection-banner">
+      <span class="banner-text">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="connection-status-text">Connecting to backend...</span>
+      </span>
+      <span class="config-link" id="link-configure-ip">Configure IP</span>
+    </div>
+
+    <!-- Main Views Container -->
+    <main class="app-main">
+
+      <!-- VIEW 1: DASHBOARD -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- Doctor Profile Card -->
+        <div class="card doctor-profile-card">
+          <div class="avatar-circle">
+            <i class="fa-solid fa-user-doctor"></i>
+          </div>
+          <div class="doctor-info">
+            <h3 id="dash-doctor-name">Dr. Priya Sharma</h3>
+            <p id="dash-doctor-creds">MBBS, MD (General Medicine)</p>
+            <div class="lang-pill">
+              <i class="fa-solid fa-language"></i>
+              <span id="dash-doctor-lang">Preferred: English (en-IN)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & New Patient Action -->
+        <div class="search-bar-row">
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="input-patient-search" placeholder="Search patients by name or phone...">
+          </div>
+          <button id="btn-add-patient" class="btn btn-primary">
+            <i class="fa-solid fa-user-plus"></i> Add
+          </button>
+        </div>
+
+        <!-- Patients List Section -->
+        <div>
+          <div class="section-header">
+            <h2>Registered Patients</h2>
+            <span class="count-badge" id="patient-count-badge">0 registered</span>
+          </div>
+          <div id="patient-list-container" class="patient-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: PATIENT DETAIL & CONSULTATION HISTORY -->
+      <section id="view-patient-detail" class="view-section">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btn-back-to-dashboard" class="icon-btn" title="Back to Dashboard">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h2 id="detail-patient-name" style="font-size: 18px; font-weight: 700;">Patient Profile</h2>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+            <div class="avatar-circle" style="background: var(--patient-color);">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+              <h3 id="card-patient-name" style="font-size: 18px; font-weight: 700;">Patient Name</h3>
+              <p id="card-patient-meta" style="font-size: 13px; color: var(--text-muted);">Age • Phone</p>
+            </div>
+          </div>
+          <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+            <i class="fa-solid fa-language" style="color: var(--primary-teal);"></i>
+            <strong>Preferred Language:</strong>
+            <span id="card-patient-lang" class="badge-chip badge-hi">Hindi</span>
+          </div>
+        </div>
+
+        <!-- Start Consultation Button -->
+        <button id="btn-start-consultation" class="btn btn-primary" style="padding: 16px; font-size: 16px;">
+          <i class="fa-solid fa-play"></i> Start New Consultation
+        </button>
+
+        <div>
+          <div class="section-header">
+            <h2>Consultation History</h2>
+            <span class="count-badge" id="consultation-count-badge">0 past visits</span>
+          </div>
+          <div id="consultation-history-list" class="patient-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: LIVE TURN-BASED CONSULTATION -->
+      <section id="view-consultation" class="view-section" style="padding: 12px; gap: 12px; flex: 1;">
+        <!-- Top consultation bar -->
+        <div class="consultation-header-bar card" style="padding: 12px 16px;">
+          <div>
+            <h3 id="cons-patient-title" style="font-size: 15px; font-weight: 700;">Consultation</h3>
+            <span style="font-size: 11px; color: var(--success-green); font-weight: 600;">Active Session</span>
+          </div>
+          <button id="btn-review-draft" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-clipboard-check"></i> Review Draft
+          </button>
+        </div>
+
+        <!-- Language Pair Bar -->
+        <div class="lang-pair-container card" style="padding: 8px 14px; justify-content: space-between;">
+          <span class="badge-chip badge-hi" id="cons-badge-patient">Patient: Hindi</span>
+          <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 12px;"></i>
+          <span class="badge-chip badge-en" id="cons-badge-doctor">Doctor: English</span>
+        </div>
+
+        <!-- Speaker Selector (Manual turn-based selection) -->
+        <div class="speaker-toggle-container">
+          <button id="btn-speaker-patient" class="speaker-btn active patient">
+            <i class="fa-solid fa-user"></i> PATIENT SPEAKS
+          </button>
+          <button id="btn-speaker-doctor" class="speaker-btn doctor">
+            <i class="fa-solid fa-user-doctor"></i> DOCTOR SPEAKS
+          </button>
+        </div>
+
+        <!-- Turn-Wise Speaking and Listening Indicator -->
+        <div id="turn-direction-banner" class="turn-direction-banner patient-turn">
+          <i class="fa-solid fa-microphone-lines"></i>
+          <span id="turn-direction-text">Patient Speaks (Hindi) ➔ Doctor Listens (English)</span>
+        </div>
+
+        <!-- Timeline of turns -->
+        <div id="transcript-timeline" class="transcript-timeline">
+          <!-- Turn cards dynamically populated -->
+        </div>
+
+        <!-- Turn Recorder Bottom Bar -->
+        <div class="speech-recorder-footer">
+          <!-- Audio playing feedback alert -->
+          <div id="audio-playback-banner" class="alert-box alert-warning" style="display: none; width: 100%; padding: 8px 12px;">
+            <i class="fa-solid fa-volume-high"></i>
+            <span>TTS Speaking — Recording paused to prevent microphone echo.</span>
+          </div>
+
+          <!-- Processing Progress Alert -->
+          <div id="turn-processing-banner" class="alert-box" style="display: none; width: 100%; padding: 8px 12px; background: var(--primary-light); color: var(--primary-teal);">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span id="turn-processing-text">Processing turn...</span>
+          </div>
+
+          <!-- Controls Row -->
+          <div class="mic-action-row">
+            <button id="btn-type-turn" class="icon-btn" title="Type Utterance" style="font-size: 20px;">
+              <i class="fa-solid fa-keyboard"></i>
+            </button>
+
+            <!-- Big Push-to-Talk / Record Button -->
+            <button id="btn-record-turn" class="record-btn-big" title="Tap to Record Turn">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+
+            <button id="btn-preset-turn" class="icon-btn" title="Demo Scripted Presets" style="font-size: 20px;">
+              <i class="fa-solid fa-list-check"></i>
+            </button>
+          </div>
+
+          <!-- Timer / State text -->
+          <div id="record-status-label" class="record-status-label">
+            TAP TO RECORD TURN
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: DRAFT REVIEW & APPROVAL -->
+      <section id="view-draft-review" class="view-section">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button id="btn-back-to-consultation" class="icon-btn" title="Back to Consultation">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <h2 style="font-size: 18px; font-weight: 700;">Clinical Record Draft</h2>
+        </div>
+
+        <!-- AI Draft Warning Label -->
+        <div class="alert-box alert-warning">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size: 22px;"></i>
+          <div>
+            <strong>AI-GENERATED DRAFT — PENDING DOCTOR REVIEW</strong>
+            <p style="font-size: 11px; margin-top: 2px;">
+              Verify symptoms and enter confirmed diagnosis and prescriptions. AI never invents clinical facts.
+            </p>
+          </div>
+        </div>
+
+        <!-- Symptoms Section -->
+        <div class="card">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">Patient-Reported Symptoms</h3>
+          <div id="draft-symptoms-list">
+            <!-- Dynamic symptoms -->
+          </div>
+        </div>
+
+        <!-- Doctor Diagnosis (Doctor Responsibility) -->
+        <div class="card" style="border: 1.5px solid var(--doctor-border); background: var(--doctor-light);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--doctor-color);">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h3 style="font-size: 15px; font-weight: 700;">Doctor Confirmed Diagnosis *</h3>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+            Physician responsibility. Enter or verify diagnosis before approval:
+          </p>
+          <textarea id="draft-input-diagnosis" rows="2" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 14px;" placeholder="e.g. Acute Viral Pyrexia with Tension Headache"></textarea>
+        </div>
+
+        <!-- Prescriptions Builder -->
+        <div class="card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <h3 style="font-size: 15px; font-weight: 700;">Prescriptions</h3>
+            <button id="btn-add-prescription" class="btn btn-outline btn-sm">
+              <i class="fa-solid fa-plus"></i> Add Medicine
+            </button>
+          </div>
+          <div id="draft-prescriptions-list">
+            <!-- Dynamic prescription rows -->
+          </div>
+        </div>
+
+        <!-- Medical History & Follow-up Recommendation -->
+        <div class="form-group">
+          <label>Relevant Medical History</label>
+          <input type="text" id="draft-input-history" placeholder="Not stated in conversation">
+        </div>
+        <div class="form-group">
+          <label>Allergies</label>
+          <input type="text" id="draft-input-allergies" placeholder="Not stated">
+        </div>
+        <div class="form-group">
+          <label>Follow-up Recommendation</label>
+          <input type="text" id="draft-input-followup" placeholder="Follow up after 3 days if symptoms persist">
+        </div>
+
+        <!-- Approval Actions -->
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+          <button id="btn-approve-record" class="btn btn-primary" style="padding: 16px; font-size: 15px;">
+            <i class="fa-solid fa-circle-check"></i> Approve & Save Official Clinical Record
+          </button>
+          <button id="btn-save-draft" class="btn btn-outline">
+            <i class="fa-solid fa-floppy-disk"></i> Save Draft Edits
+          </button>
+        </div>
+      </section>
+
+      <!-- VIEW 5: APPROVAL & FOLLOW-UP -->
+      <section id="view-approval" class="view-section">
+        <!-- Approval Confirmation -->
+        <div class="alert-box alert-success" style="padding: 18px;">
+          <i class="fa-solid fa-circle-check" style="font-size: 26px;"></i>
+          <div>
+            <strong>CLINICAL RECORD APPROVED & COMMITTED</strong>
+            <p style="font-size: 12px; margin-top: 4px;">
+              Saved in canonical English to official clinical records with doctor reviewer ID and timestamp.
+            </p>
+          </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card">
+          <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Confirmed Diagnosis</h4>
+          <h3 id="appr-diagnosis-text" style="font-size: 16px; font-weight: 700; color: var(--doctor-color); margin: 4px 0 12px 0;">Viral Pyrexia</h3>
+          
+          <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Prescription Summary</h4>
+          <div id="appr-prescription-summary" style="font-size: 13px; line-height: 1.5; margin-top: 4px;">
+            <!-- Rendered list -->
+          </div>
+        </div>
+
+        <!-- Schedule Follow-up Appointment -->
+        <div class="card">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">Schedule Patient Follow-up</h3>
+          
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Appointment Date & Time</label>
+            <input type="datetime-local" id="input-followup-datetime">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Patient Contact Number</label>
+            <input type="tel" id="input-followup-phone" placeholder="10-digit mobile number">
+          </div>
+
+          <div class="alert-box" style="background: var(--secondary-light); color: var(--secondary-blue); padding: 10px; font-size: 12px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Appointment is saved directly to local database. Automated SMS notifications can be configured in App Settings.</span>
+          </div>
+
+          <button id="btn-save-followup" class="btn btn-primary" style="width: 100%; margin-top: 14px;">
+            <i class="fa-solid fa-calendar-check"></i> Save Follow-up Appointment
+          </button>
+        </div>
+
+        <button id="btn-finish-to-dashboard" class="btn btn-outline" style="margin-top: 10px;">
+          <i class="fa-solid fa-house"></i> Return to Dashboard
+        </button>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: DOCTOR & LAN SETTINGS -->
+  <div id="modal-settings" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Doctor & App Settings</h3>
+        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label>Doctor Full Name</label>
+        <input type="text" id="setting-doc-name" value="Dr. Priya Sharma">
+      </div>
+      <div class="form-group">
+        <label>Doctor Credentials</label>
+        <input type="text" id="setting-doc-creds" value="MBBS, MD (General Medicine)">
+      </div>
+      <div class="form-group">
+        <label>Doctor Preferred Language</label>
+        <select id="setting-doc-lang">
+          <option value="en-IN">English (Indian) [en-IN]</option>
+          <option value="hi-IN">Hindi (हिंदी) [hi-IN]</option>
+          <option value="mr-IN">Marathi (मराठी) [mr-IN]</option>
+        </select>
+        <small style="color: var(--text-muted); font-size: 11px;">Patient speech will translate into this language.</small>
+      </div>
+
+      <!-- Speech Voice Profile -->
+      <div class="card" style="background: var(--secondary-light); border-color: #bae6fd; padding: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0284c7; font-size: 13px;">
+          <i class="fa-solid fa-volume-high"></i> Voice Profile: Male Default Voice
+        </div>
+        <p style="font-size: 11px; color: #0369a1; margin-top: 4px;">
+          Both doctor and patient speech synthesis use high-clarity male voices (hi_male_1, mr_male_1, en_male_1).
+        </p>
+      </div>
+
+      <!-- Patient Messaging / SMS Section (Reserved for future) -->
+      <div class="card" style="padding: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px;">
+            <i class="fa-solid fa-message" style="color: var(--text-muted);"></i> Patient SMS Reminders
+          </div>
+          <span class="badge-chip" style="background: #e2e8f0; color: #475569;">v1.1 Feature</span>
+        </div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+          Outbound SMS gateway is reserved for future addition. Follow-up appointments are recorded in SQLite.
+        </p>
+      </div>
+
+      <!-- Backend Connection -->
+      <div class="form-group">
+        <label>API Base URL (LAN IPv4)</label>
+        <input type="url" id="setting-api-url" placeholder="http://192.168.1.4:8000">
+        <small style="color: var(--text-muted); font-size: 11px;">Enter computer's private Wi-Fi LAN IP to access from mobile phones.</small>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline btn-close-modal">Cancel</button>
+        <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTER PATIENT -->
+  <div id="modal-patient-register" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Register New Patient</h3>
+        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="reg-patient-name" placeholder="e.g. Ramesh Kumar" required>
+      </div>
+      <div class="form-group">
+        <label>Age (Years)</label>
+        <input type="number" id="reg-patient-age" placeholder="e.g. 38" min="0" max="130">
+      </div>
+      <div class="form-group">
+        <label>Mobile Number *</label>
+        <input type="tel" id="reg-patient-phone" placeholder="10-digit number" required>
+      </div>
+      <div class="form-group">
+        <label>Preferred Language *</label>
+        <select id="reg-patient-lang">
+          <option value="hi-IN">Hindi (हिंदी) [hi-IN]</option>
+          <option value="mr-IN">Marathi (मराठी) [mr-IN]</option>
+          <option value="en-IN">English (Indian) [en-IN]</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline btn-close-modal">Cancel</button>
+        <button id="btn-submit-patient" class="btn btn-primary">Register Patient</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: QUICK TEXT INPUT TURN -->
+  <div id="modal-text-turn" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-text-turn-title">Type Utterance</h3>
+        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label>Spoken Statement</label>
+        <textarea id="input-turn-text" rows="3" placeholder="e.g. Mujhe three days se fever hai aur headache bhi hai."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline btn-close-modal">Cancel</button>
+        <button id="btn-submit-text-turn" class="btn btn-primary">Submit Turn</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SCRIPTED DEMO PRESETS -->
+  <div id="modal-presets" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-presets-title">Demo Presets</h3>
+        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="presets-list-container" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Preset pills -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PRESCRIPTION -->
+  <div id="modal-prescription" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Prescription</h3>
+        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label>Medicine Name *</label>
+        <input type="text" id="presc-med" value="Tab Paracetamol" required>
+      </div>
+      <div class="form-group">
+        <label>Strength</label>
+        <input type="text" id="presc-strength" value="500mg">
+      </div>
+      <div class="form-group">
+        <label>Dose</label>
+        <input type="text" id="presc-dose" value="1 tablet">
+      </div>
+      <div class="form-group">
+        <label>Frequency</label>
+        <input type="text" id="presc-freq" value="Twice daily">
+      </div>
+      <div class="form-group">
+        <label>Duration</label>
+        <input type="text" id="presc-duration" value="3 days">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-outline btn-close-modal">Cancel</button>
+        <button id="btn-confirm-add-presc" class="btn btn-primary">Add Medicine</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

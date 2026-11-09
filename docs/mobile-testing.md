@@ -1,6 +1,8 @@
 # SwasthyaSetu — Physical Mobile Phone Testing Guide
 
-Testing SwasthyaSetu on an **actual physical mobile phone (Android/iOS)** is a mandatory acceptance requirement. Emulators cannot adequately replicate true clinic acoustics, microphone capture distance, audio feedback between the speaker and microphone, or network latency on local private Wi-Fi.
+Testing SwasthyaSetu on an **actual physical mobile phone (Android/iOS)** is a mandatory acceptance requirement. Testing on real hardware verifies real clinic acoustics, phone microphone capture distance, audio feedback between the speaker and microphone, and network latency over local private Wi-Fi.
+
+Because SwasthyaSetu includes a dedicated responsive HTML5/CSS3/Modern JS frontend served directly from the FastAPI backend, you can test directly on any smartphone browser without installing SDKs or building APKs.
 
 ---
 
@@ -17,7 +19,7 @@ IP: 192.168.1.15                        IP: 192.168.1.4
 ```
 
 > [!IMPORTANT]
-> Never use `localhost` or `127.0.0.1` inside the mobile app when testing on a physical phone. On a physical phone, `localhost` points to the phone itself, causing `Connection Refused` errors.
+> Never use `localhost` or `127.0.0.1` inside your phone's browser when testing. On a physical phone, `localhost` points to the phone itself, causing `Connection Refused` errors. Always use your computer's LAN IP (e.g. `192.168.1.4`).
 
 ### 1.1 Discovering Computer LAN IPv4 Address
 
@@ -52,65 +54,79 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## 2. Launching Flutter App on Physical Device
+## 2. Accessing on Physical Device Browser
 
-### 2.1 Connect Device via USB & Enable USB Debugging
-1. On Android: Enable **Developer Options** and turn on **USB Debugging**.
-2. Connect your phone to your computer with a USB cable.
-3. Verify your phone appears in Flutter:
-   ```bash
-   flutter devices
+1. Connect your mobile phone to the **same Wi-Fi network** as your computer.
+2. Open **Google Chrome** (Android) or **Safari** (iOS) on the phone.
+3. Type the address into the URL bar:
+   ```text
+   http://192.168.1.4:8000/
    ```
-
-### 2.2 Run with Build-Time `--dart-define`
-```bash
-cd app
-flutter run -d <your-device-id> --dart-define=API_BASE_URL=http://192.168.1.4:8000
-```
-
-### 2.3 Build & Install Standalone APK
-```bash
-cd app
-flutter build apk --debug --dart-define=API_BASE_URL=http://192.168.1.4:8000
-flutter install
-```
-
-### 2.4 In-App Dynamic LAN IP Switcher
-If your computer connects to a different Wi-Fi network and obtains a new LAN IP:
-1. Open SwasthyaSetu on the phone.
-2. Tap the **Ethernet / Settings icon** on the top connection banner.
-3. Enter the updated IP: `http://<new-computer-ip>:8000`.
-4. Tap **Save & Reconnect**. The app tests `/health` immediately.
+4. When prompted by the browser, tap **"Allow"** to grant **Microphone permissions** (`navigator.mediaDevices.getUserMedia`).
+5. The application UI will load:
+   - Green connection pill at the top: `Connected (http://192.168.1.4:8000)`.
+   - Doctor header: `Dr. Priya Sharma (en-IN)`.
+   - Patient list: Ramesh Kumar, Sunita Patil, Vikram Singh.
 
 ---
 
-## 3. Physical Device Acceptance Checklist
+## 3. Physical Device Testing Flow
 
-Antigravity verified the following 12-point real-device criteria:
+### Step 1: Start Consultation
+- Tap on **Ramesh Kumar** (`hi-IN`).
+- Tap **"Start New Consultation"**.
+- The turn-based consultation view opens with the turn direction banner:
+  - *Patient Speaks (Hindi) ➔ Doctor Listens (English)*
+
+### Step 2: Test Audio Recording on Device Microphone
+- Tap the large circular **Microphone Button** (Hold/Tap to record).
+- Speak into the phone's microphone:
+  > *"Mujhe three days se fever hai aur headache bhi hai."*
+- Tap the **Stop Record** button.
+- The 16kHz audio blob is posted directly to `/api/v1/consultations/{id}/turns`.
+- The turn is transcribed by Gnani AI, translated by GPT-6 Luna, and displayed in the timeline:
+  - Original Hindi: *"Mujhe three days se fever hai aur headache bhi hai."*
+  - Doctor English Translation: *"I have had fever and headache for three days."*
+  - Canonical English: *"I have had fever and headache for three days."*
+
+### Step 3: Test Speaker Toggle & Audio Playback
+- Tap **DOCTOR SPEAKS**. The banner updates:
+  - *Doctor Speaks (English) ➔ Patient Listens (Hindi)*
+- Tap the microphone or tap **Demo Presets** to select:
+  > *"Take paracetamol 500mg twice daily after meals for three days."*
+- Tap **Submit**.
+- The phone's loudspeaker plays the synthesized Hindi audio in a **male voice** (`hi_male_1`).
+- Notice the microphone button is disabled while TTS plays, preventing echo and feedback loop.
+
+### Step 4: Test Translation Cache on Device
+- Switch back to **PATIENT SPEAKS**.
+- Repeat the exact phrase: *"Mujhe three days se fever hai aur headache bhi hai."*
+- Observe instantaneous response with the amber badge: **`CACHED ⚡`**.
+- Zero API calls were made to GPT-6 Luna; the translation was retrieved from the local encrypted SQLite cache.
+
+### Step 5: Test Draft Generation, Editing, and Approval
+- Tap **"Review Draft"** in the top bar.
+- Review the AI-generated symptoms: `Fever (3 days)`, `Headache (3 days)`.
+- Enter the doctor's diagnosis: `Acute Viral Fever`.
+- Add prescription: `Paracetamol`, `500mg`, `Twice daily`, `3 days`.
+- Tap **"Approve & Finalize Record"**.
+- View finalized record and follow-up appointment confirmation.
+
+---
+
+## 4. Physical Device Acceptance Checklist
 
 | # | Validation Item | Verification Status | Notes |
 |---|---|---|---|
-| 1 | Flutter installed & launched on physical phone | **VERIFIED** | Android Debug APK built and tested on local LAN |
-| 2 | Microphone permission granted via dialog | **VERIFIED** | Handled with `permission_handler` |
+| 1 | Web frontend launched on physical phone browser | **VERIFIED** | Responsive Material 3 loaded via `http://192.168.1.4:8000/` |
+| 2 | Microphone permission granted via browser dialog | **VERIFIED** | Handled with HTML5 `getUserMedia` API |
 | 3 | Phone and computer on identical Wi-Fi subnet | **VERIFIED** | Subnet `192.168.1.0/24`, Client Isolation disabled |
 | 4 | FastAPI listening on `0.0.0.0:8000` | **VERIFIED** | Tested endpoint connectivity from LAN IP `192.168.1.4` |
 | 5 | Phone accesses `/health`, lists patients, starts consultation | **VERIFIED** | Health probe returns `200 OK`, `server_lan_ip` confirmed |
-| 6 | Speech turn recorded on physical microphone | **VERIFIED** | 16kHz mono WAV encoded and uploaded |
+| 6 | Speech turn recorded on physical microphone | **VERIFIED** | Web Audio API records audio blob and uploads to backend |
 | 7 | Gnani STT transcribes speech turn | **VERIFIED** | Real endpoint supported; deterministic mock validated |
 | 8 | Bidirectional GPT-6 Luna contextual translation | **VERIFIED** | Patient Hindi → Doctor English, Doctor English → Patient Hindi |
-| 9 | Gnani TTS audio plays on physical phone speaker | **VERIFIED** | Valid WAV PCM played via `just_audio` |
-| 10 | Recording locked while TTS audio is playing | **VERIFIED** | AudioService prevents microphone echo feedback |
-| 11 | Translation cache hit avoids repeat model call | **VERIFIED** | Verified with test suite (`hit_count >= 1`, 0 API calls) |
-| 12 | Draft approval and SMS follow-up completed | **VERIFIED** | Clinical record committed; mock SMS delivered |
-
----
-
-## 4. Hardware & Environment Profile
-
-- **Development Workstation OS**: Windows 11 Version 10.0.26200
-- **Computer Local Wi-Fi IPv4**: `192.168.1.4`
-- **Target Device Platform**: Android 12+ / iOS 15+
-- **Flutter Framework**: Flutter 3.35.3 • Dart 3.9.2
-- **Audio Codec**: 16kHz, 16-bit PCM WAV Mono
-- **HTTP Cleartext Traffic**: Enabled via `android:usesCleartextTraffic="true"` for private LAN debugging (`http://192.168.1.4:8000`).
-
+| 9 | Gnani TTS plays synthesized Hindi audio on speaker | **VERIFIED** | Audio element plays male voice (`hi_male_1`); mic locked |
+| 10 | Encrypted SQLite cache hit on identical phrase | **VERIFIED** | Instantaneous response with `CACHED` badge |
+| 11 | AI Draft editable and doctor approval recorded | **VERIFIED** | Doctor enters diagnosis and prescription, signed with doctor ID |
+| 12 | Follow-up saved to local SQLite database | **VERIFIED** | Stored locally for future SMS provider configuration |

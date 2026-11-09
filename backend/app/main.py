@@ -78,6 +78,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 # Root health route
 app.include_router(health.router)
 
@@ -88,6 +91,12 @@ app.include_router(consultations.router, prefix=settings.API_V1_PREFIX)
 app.include_router(transcripts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audio.router, prefix=settings.API_V1_PREFIX)
 app.include_router(cache.router, prefix=settings.API_V1_PREFIX)
+
+# Mount Web Frontend (HTML, CSS, JS) for instant browser access on desktop and mobile
+FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
+if FRONTEND_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+
 
 
 if __name__ == "__main__":
