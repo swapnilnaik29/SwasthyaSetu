@@ -66,11 +66,11 @@ async def translate_and_summarize_intake(intake: PatientIntakeSubmission) -> dic
     except Exception as e:
         logger.warning(f"Live GPT-6 Luna intake translation fallback ({e})")
         return {
-            "chief_complaint_english": complaint_raw or "General health consultation",
-            "past_medical_history_english": history_raw or "None stated",
-            "known_allergies_english": allergies_raw or "No known drug allergies",
-            "current_medications_english": meds_raw or "None reported",
-            "intake_summary_english": f"Patient presents with {complaint_raw or 'general health queries'}. Ready for doctor consultation.",
+            "chief_complaint_english": complaint_raw or "",
+            "past_medical_history_english": history_raw or "",
+            "known_allergies_english": allergies_raw or "",
+            "current_medications_english": meds_raw or "",
+            "intake_summary_english": f"Patient presents with: {complaint_raw or 'symptoms reported during intake'}. Ready for doctor consultation.",
         }
 
 
@@ -147,6 +147,55 @@ async def validate_intake_step(req: IntakeValidationRequest):
                 extracted_value=phone_val,
                 parsed_fields={"mobile_number": phone_val},
             )
+        else:
+            is_mr = "mr" in req.language.lower()
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={},
+                reprompt_native="कृपया वैध १० अंकी मोबाईल नंबर सांगा." if is_mr else "कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।",
+                reprompt_english="Please provide a valid 10-digit mobile number.",
+            )
+
+    # Convert Devanagari numerals if present for age extraction
+    devanagari_digits = "०१२३४५६७८९"
+    normalized_text = clean_text
+    for i, d in enumerate(devanagari_digits):
+        normalized_text = normalized_text.replace(d, str(i))
+
+    # Fast-path for age & gender in any sequence (e.g. "स्त्री २८", "२८ वर्षे स्त्री", "Male 42", "42 yrs Male")
+    if req.step_id == "age_gender":
+        age_match = re.search(r"\b([1-9]\d?|1[01]\d)\b", normalized_text)
+        is_female = re.search(r"(female|woman|girl|स्त्री|महिला|बाई|लड़की|aurat|fem)", normalized_text, re.IGNORECASE)
+        is_male = re.search(r"(?:^|[^\w])(male|man|boy)(?:[^\w]|$)|(?:पुरुष|माणूस|लड़का|aadmi)", normalized_text, re.IGNORECASE)
+
+        gender_val = "Female" if is_female else ("Male" if is_male else None)
+        age_val = int(age_match.group(1)) if age_match else None
+
+        if age_val is not None and gender_val is not None:
+            return IntakeValidationResponse(
+                is_valid=True,
+                extracted_value=f"{age_val} yrs • {gender_val}",
+                parsed_fields={"age": age_val, "gender": gender_val},
+            )
+        elif age_val is not None and gender_val is None:
+            is_mr = "mr" in req.language.lower()
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={"age": age_val},
+                reprompt_native="वय नोंदवले आहे. कृपया आपले लिंग (पुरुष किंवा स्त्री) देखील सांगा." if is_mr else "उम्र दर्ज हो गई है। कृपया अपना लिंग (पुरुष या महिला) भी बताएं।",
+                reprompt_english="Age recorded. Please also state your gender (Male or Female).",
+            )
+        elif gender_val is not None and age_val is None:
+            is_mr = "mr" in req.language.lower()
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={"gender": gender_val},
+                reprompt_native="लिंग नोंदवले आहे. कृपया आपले वय देखील सांगा." if is_mr else "लिंग दर्ज हो गया है। कृपया अपनी उम्र भी बताएं।",
+                reprompt_english="Gender recorded. Please also state your age in years.",
+            )
 
     # Fast heuristic for 'name': detect if patient answered with symptoms/illness
     symptom_markers = [
@@ -172,18 +221,18 @@ async def validate_intake_step(req: IntakeValidationRequest):
         "You are Aarogya Mitra, an expert medical intake conversational AI in India.\n"
         "Your task: Validate whether the patient's utterance genuinely answers the requested intake question, "
         "and extract the clean, normalized value for the clinic form.\n"
-        "Return a JSON object with:\n"
-        "- is_valid: boolean\n"
-        "- extracted_value: string or null (the clean, normalized value to put into the intake form, without conversational fluff)\n"
-        "- parsed_fields: dict (e.g. {'name': '...'} or {'age': 35, 'gender': 'Male'} or {'mobile_number': '...'} or {'chief_complaint': '...', 'symptoms_duration': '...'})\n"
-        "- reprompt_native: string or null (if is_valid is false, a gentle polite sentence in the patient's language asking them to answer the current question properly. E.g. if they stated symptoms when asked for their name, say that symptoms will be asked in a moment and ask them for their name now)\n"
-        "- reprompt_english: string or null (English translation of reprompt_native)\n\n"
-        "Guidelines by step_id:\n"
-        "1. 'name': Expects a person's name. If user gives symptoms, illness, or non-name talk: is_valid=false. If name given, extract clean person name.\n"
-        "2. 'age_gender': Expects age and/or gender. If unrelated: is_valid=false. If valid: extracted_value='<age> yrs • <Gender>', parsed_fields={'age': int, 'gender': str}.\n"
-        "3. 'phone': Expects 10-digit mobile number. If valid: extracted_value='<10 digits>'. If invalid: is_valid=false, reprompt.\n"
-        "4. 'complaint': Expects symptoms, duration, illness. If describing health problem: is_valid=true. Extract clean chief_complaint and symptoms_duration.\n"
-        "5. 'history_allergies': Expects chronic medical history and/or allergies. Valid even if user says none/no. Extract past_medical_history and known_allergies.\n"
+        "Strict Requirements:\n"
+        "1. Gender MUST strictly be 'Male' or 'Female' ONLY. Never use 'Other', 'Unknown', or regional synonyms.\n"
+        "2. In 'age_gender', patient can state age and gender in ANY sequence (e.g. 'Female 28', 'वय २८ वर्षे स्त्री', '35 male'). "
+        "Both 'age' (integer) and 'gender' ('Male'|'Female') must be parsed in parsed_fields.\n"
+        "   If both are present: is_valid=true, extracted_value='<age> yrs • <Gender>'.\n"
+        "   If only one is present or neither is present: is_valid=false, extracted_value=null, and provide a polite reprompt_native in patient's language asking for the missing information.\n"
+        "3. In 'name': Expects a person's name. If patient gives symptoms, illness, or complaints: is_valid=false with reprompt. Extract clean name only.\n"
+        "4. In 'phone': Expects 10-digit mobile number. If valid: extracted_value='<10 digits>'. If invalid: is_valid=false.\n"
+        "5. In 'complaint': Expects symptoms and duration. If describing health problem: is_valid=true. Extract chief_complaint and symptoms_duration.\n"
+        "6. In 'history_allergies': Valid even if user says none/no. Extract past_medical_history and known_allergies.\n"
+        "7. DO NOT invent or fabricate default mock values under any circumstances.\n\n"
+        "Return a JSON object with keys: is_valid (bool), extracted_value (str or null), parsed_fields (dict), reprompt_native (str or null), reprompt_english (str or null)."
     )
 
     user_prompt = (
@@ -212,6 +261,15 @@ async def validate_intake_step(req: IntakeValidationRequest):
         )
     except Exception as e:
         logger.warning(f"Intake validation fallback ({e})")
+        if req.step_id == "age_gender":
+            is_mr = "mr" in req.language.lower()
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={},
+                reprompt_native="कृपया आपले वय आणि लिंग पुन्हा सांगा." if is_mr else "कृपया अपनी उम्र और लिंग दोबारा बताएं।",
+                reprompt_english="Please repeat your age and gender.",
+            )
         return IntakeValidationResponse(
             is_valid=True,
             extracted_value=clean_text,

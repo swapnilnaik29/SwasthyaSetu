@@ -47,7 +47,13 @@ class MockTTSService(TTSProvider):
     def __init__(self):
         logger.info("Initializing MockTTSService [OFFLINE/MOCK MODE]")
 
-    async def synthesize(self, text: str, language: str, voice: Optional[str] = None) -> bytes:
+    async def synthesize(
+        self,
+        text: str,
+        language: str,
+        voice: Optional[str] = None,
+        gender: str = "male",
+    ) -> bytes:
         log_sanitized_event("mock_tts_synthesis", text_length=len(text), language=language)
         
         # Generate 0.5s of gentle audio tone in PCM WAV format

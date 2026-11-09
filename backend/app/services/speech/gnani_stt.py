@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 from typing import Tuple, Optional
 from app.core.config import settings
@@ -5,17 +6,24 @@ from app.core.logger import logger, log_sanitized_event
 from app.services.speech.base import STTProvider
 from app.services.speech.mock_speech import MockSTTService
 
-# Shared connection pool for low latency
+# Shared connection pool for low latency (event-loop aware)
 _stt_http_client: Optional[httpx.AsyncClient] = None
+_stt_client_loop: Optional[asyncio.AbstractEventLoop] = None
 
 
 def get_stt_client() -> httpx.AsyncClient:
-    global _stt_http_client
-    if _stt_http_client is None or _stt_http_client.is_closed:
+    global _stt_http_client, _stt_client_loop
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if _stt_http_client is None or _stt_http_client.is_closed or _stt_client_loop != current_loop:
         _stt_http_client = httpx.AsyncClient(
             timeout=20.0,
             limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
         )
+        _stt_client_loop = current_loop
     return _stt_http_client
 
 
@@ -75,10 +83,15 @@ class GnaniSTTService(STTProvider):
                 or ""
             )
 
-            # If empty from ambient silence, fall back to mock
+            # If empty from ambient silence or non-speech audio, return clean empty transcript
             if not transcript.strip():
-                logger.info("Empty transcript from live STT; using fallback.")
-                return await MockSTTService().transcribe(audio_bytes, language, filename)
+                logger.info("Empty transcript from live STT (silence or unintelligible audio).")
+                return "", {
+                    "provider": "gnani_prisma",
+                    "model": self.model,
+                    "confidence": 0.0,
+                    "detected_language": language,
+                }
 
             metadata = {
                 "provider": "gnani_prisma",
@@ -89,8 +102,26 @@ class GnaniSTTService(STTProvider):
             log_sanitized_event("gnani_stt_completed", confidence=metadata["confidence"])
             return transcript.strip(), metadata
         except httpx.HTTPStatusError as e:
-            logger.error(f"Gnani STT API error status={e.response.status_code}: {e.response.text}")
-            return await MockSTTService().transcribe(audio_bytes, language, filename)
+            logger.error(f"Gnani STT API error status={e.response.status_code}")
+            if e.response.status_code >= 500:
+                logger.warning(f"Gnani STT upstream server error ({e.response.status_code}); returning clean empty transcript.")
+                return "", {
+                    "provider": "gnani_prisma",
+                    "model": self.model,
+                    "confidence": 0.0,
+                    "detected_language": language,
+                    "upstream_error": e.response.status_code,
+                }
+            raise RuntimeError(f"Gnani STT API error ({e.response.status_code}): {e.response.text}")
+        except httpx.TimeoutException as e:
+            logger.warning(f"Gnani STT request timed out: {e}")
+            return "", {
+                "provider": "gnani_prisma",
+                "model": self.model,
+                "confidence": 0.0,
+                "detected_language": language,
+                "timeout": True,
+            }
         except Exception as e:
-            logger.warning(f"Gnani STT API call failed ({e}); falling back gracefully to mock transcription.")
-            return await MockSTTService().transcribe(audio_bytes, language, filename)
+            logger.error(f"Gnani STT API call failed: {e}")
+            raise

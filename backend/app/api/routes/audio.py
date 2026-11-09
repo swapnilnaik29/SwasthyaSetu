@@ -29,6 +29,7 @@ class SynthesizeRequest(BaseModel):
     text: str
     language: str = "hi-IN"
     voice: Optional[str] = None
+    gender: Optional[str] = "male"
 
 
 @router.post("/synthesize")
@@ -36,7 +37,12 @@ async def synthesize_text(payload: SynthesizeRequest):
     """Direct TTS synthesis for conversational intake assistant."""
     tts = get_tts_service()
     try:
-        wav_bytes = await tts.synthesize(payload.text, payload.language, payload.voice)
+        wav_bytes = await tts.synthesize(
+            payload.text,
+            payload.language,
+            payload.voice,
+            gender=payload.gender or "male",
+        )
         audio_id = store_transient_audio(wav_bytes)
         return {"audio_id": audio_id, "audio_url": f"/api/v1/audio/{audio_id}"}
     except Exception as e:

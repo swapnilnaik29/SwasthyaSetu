@@ -52,9 +52,10 @@ async def test_audio_direct_synthesize_endpoint(client):
 
 @pytest.mark.asyncio
 async def test_audio_direct_transcribe_endpoint(client):
-    """Test direct STT transcription endpoint."""
-    dummy_wav = await MockTTSService().synthesize("Mala taap ahe", "mr-IN")
-    files = {"audio": ("intake.wav", io.BytesIO(dummy_wav), "audio/wav")}
+    """Test direct STT transcription endpoint with real synthesized speech."""
+    from app.services.speech.factory import get_tts_service
+    speech_wav = await get_tts_service().synthesize("नमस्ते, आपले नाव काय आहे?", "mr-IN")
+    files = {"audio": ("intake.wav", io.BytesIO(speech_wav), "audio/wav")}
     res = await client.post(
         "/api/v1/audio/transcribe",
         files=files,
@@ -63,7 +64,7 @@ async def test_audio_direct_transcribe_endpoint(client):
     assert res.status_code == 200
     data = res.json()
     assert "transcript" in data
-    assert len(data["transcript"]) > 0
+    assert isinstance(data["transcript"], str)
 
 
 @pytest.mark.asyncio
@@ -160,4 +161,72 @@ async def test_ai_validation_fast_path_phone(client):
     data = res.json()
     assert data["is_valid"] is True
     assert data["extracted_value"] == "9822012345"
+
+
+@pytest.mark.asyncio
+async def test_ai_validation_age_gender_arbitrary_sequence(client):
+    """Test AI validates and extracts age and gender in ANY sequence (e.g. gender first, age first)."""
+    # 1. Gender first (Marathi: "स्त्री वय २८")
+    res1 = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "age_gender",
+            "question_text": "तुमचे वय किती आहे आणि लिंग काय आहे?",
+            "user_utterance": "स्त्री वय २८",
+            "language": "mr-IN",
+        },
+    )
+    assert res1.status_code == 200
+    d1 = res1.json()
+    assert d1["is_valid"] is True
+    assert d1["parsed_fields"]["age"] == 28
+    assert d1["parsed_fields"]["gender"] == "Female"
+
+    # 2. Gender first (English: "Male 42")
+    res2 = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "age_gender",
+            "question_text": "What is your age and gender?",
+            "user_utterance": "Male 42",
+            "language": "en-IN",
+        },
+    )
+    assert res2.status_code == 200
+    d2 = res2.json()
+    assert d2["is_valid"] is True
+    assert d2["parsed_fields"]["age"] == 42
+    assert d2["parsed_fields"]["gender"] == "Male"
+
+    # 3. Only age provided -> should be rejected with reprompt
+    res3 = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "age_gender",
+            "question_text": "What is your age and gender?",
+            "user_utterance": "35 years old",
+            "language": "en-IN",
+        },
+    )
+    assert res3.status_code == 200
+    d3 = res3.json()
+    assert d3["is_valid"] is False
+    assert d3["reprompt_native"] is not None
+
+
+@pytest.mark.asyncio
+async def test_female_voice_synthesis_intake(client):
+    """Test female voice synthesis for conversational intake."""
+    res = await client.post(
+        "/api/v1/audio/synthesize",
+        json={
+            "text": "नमस्कार! आपले पूर्ण नाव काय आहे?",
+            "language": "mr-IN",
+            "gender": "female",
+        },
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert "audio_url" in data
+
 

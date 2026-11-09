@@ -14,7 +14,13 @@ class STTProvider(ABC):
 
 class TTSProvider(ABC):
     @abstractmethod
-    async def synthesize(self, text: str, language: str, voice: Optional[str] = None) -> bytes:
+    async def synthesize(
+        self,
+        text: str,
+        language: str,
+        voice: Optional[str] = None,
+        gender: str = "male",
+    ) -> bytes:
         """
         Synthesizes text to speech audio bytes in the given language.
         Returns: audio bytes (WAV or MP3)

@@ -9,6 +9,8 @@ class ApiService {
     this.defaultBaseUrl = window.location.origin.includes('http') && !window.location.origin.includes('file')
       ? window.location.origin
       : 'http://127.0.0.1:8000';
+    // Strict serial async request queue (do not send any new until old response is received)
+    this.requestQueue = Promise.resolve();
   }
 
   getBaseUrl() {
@@ -27,7 +29,23 @@ class ApiService {
     return `${this.getBaseUrl()}${cleanPath}`;
   }
 
-  async request(endpoint, options = {}) {
+  // Enqueue all requests sequentially through this.requestQueue
+  request(endpoint, options = {}) {
+    return new Promise((resolve, reject) => {
+      this.requestQueue = this.requestQueue
+        .catch(() => {}) // Ensure pipeline continues even if an earlier call errored
+        .then(async () => {
+          try {
+            const data = await this._executeRequest(endpoint, options);
+            resolve(data);
+          } catch (err) {
+            reject(err);
+          }
+        });
+    });
+  }
+
+  async _executeRequest(endpoint, options = {}) {
     const baseUrl = this.getBaseUrl();
     const url = `${baseUrl}${endpoint}`;
     
@@ -116,11 +134,11 @@ class ApiService {
     });
   }
 
-  // Direct Audio Synthesis & Transcription (Intake Assistant)
-  async synthesizeSpeech(text, language = 'hi-IN') {
+  // Direct Audio Synthesis & Transcription (Intake Assistant: Female Voice by default)
+  async synthesizeSpeech(text, language = 'hi-IN', voice = null, gender = 'female') {
     return this.request('/api/v1/audio/synthesize', {
       method: 'POST',
-      body: JSON.stringify({ text, language }),
+      body: JSON.stringify({ text, language, voice, gender }),
     });
   }
 

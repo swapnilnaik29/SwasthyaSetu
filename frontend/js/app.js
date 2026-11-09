@@ -67,7 +67,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'Question 2 of 5 • Age & Gender',
-      text: 'आपकी उम्र कितनी है और आपका लिंग (पुरुष / महिला / अन्य) क्या है?',
+      text: 'आपकी उम्र कितनी है और आपका लिंग (पुरुष / महिला) क्या है?',
       sub: '(What is your age and gender?)',
       chips: ['35 वर्ष, पुरुष', '28 वर्ष, महिला', '45 वर्ष, पुरुष', '52 वर्ष, महिला'],
     },
@@ -76,7 +76,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'Question 3 of 5 • Mobile Phone Number',
       text: 'कृपया अपना 10 अंकों का मोबाइल फोन नंबर बताइए।',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345', '9123456789'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -104,7 +104,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'प्रश्न २ / ५ • वय आणि लिंग',
-      text: 'तुमचे वय किती आहे आणि लिंग (पुरुष / स्त्री / इतर) काय आहे?',
+      text: 'तुमचे वय किती आहे आणि लिंग (पुरुष / स्त्री) काय आहे?',
       sub: '(What is your age and gender?)',
       chips: ['35 वर्षे, पुरुष', '28 वर्षे, स्त्री', '45 वर्षे, पुरुष', '52 वर्षे, स्त्री'],
     },
@@ -113,7 +113,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'प्रश्न ३ / ५ • मोबाईल नंबर',
       text: 'कृपया आपला १० अंकी मोबाईल नंबर सांगा.',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345', '9123456789'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -141,7 +141,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'Question 2 of 5 • Age & Gender',
-      text: 'What is your age and gender (Male / Female / Other)?',
+      text: 'What is your age and gender (Male / Female)?',
       sub: '(e.g., 35, Male or 28, Female)',
       chips: ['35, Male', '28, Female', '45, Male', '52, Female'],
     },
@@ -150,7 +150,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'Question 3 of 5 • Mobile Phone Number',
       text: 'Please provide your 10-digit mobile phone number.',
       sub: '(Used for clinic registration and consultation records)',
-      chips: ['9876543210', '9820012345', '9123456789'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -178,7 +178,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'પ્રશ્ન ૨ / ૫ • ઉંમર અને લિંગ',
-      text: 'તમારી ઉંમર કેટલી છે અને તમારું લિંગ (પુરુષ / સ્ત્રી / અન્ય) શું છે?',
+      text: 'તમારી ઉંમર કેટલી છે અને તમારું લિંગ (પુરુષ / સ્ત્રી) શું છે?',
       sub: '(What is your age and gender?)',
       chips: ['35 વર્ષ, પુરુષ', '28 વર્ષ, સ્ત્રી', '45 વર્ષ, પુરુષ'],
     },
@@ -187,7 +187,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'પ્રશ્ન ૩ / ૫ • મોબાઇલ નંબર',
       text: 'કૃપા કરીને તમારો ૧૦ અંકનો મોબાઈલ નંબર જણાવો.',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -215,7 +215,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'প্রশ্ন ২ / ৫ • বয়স ও লিঙ্গ',
-      text: 'আপনার বয়স কত এবং লিঙ্গ (পুরুষ / মহিলা / অন্য) কি?',
+      text: 'আপনার বয়স কত এবং লিঙ্গ (পুরুষ / মহিলা) কি?',
       sub: '(What is your age and gender?)',
       chips: ['৩৫ বছর, পুরুষ', '২৮ বছর, মহিলা', '৪৫ বছর, পুরুষ'],
     },
@@ -224,7 +224,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'প্রশ্ন ৩ / ৫ • মোবাইল নম্বর',
       text: 'দয়া করে আপনার ১০ সংখ্যার মোবাইল ফোন নম্বরটি বলুন।',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -252,7 +252,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'கேள்வி 2 / 5 • வயது & பாலினம்',
-      text: 'உங்கள் வயது மற்றும் பாலினம் (ஆண் / பெண் / பிற) என்ன?',
+      text: 'உங்கள் வயது மற்றும் பாலினம் (ஆண் / பெண்) என்ன?',
       sub: '(What is your age and gender?)',
       chips: ['35 வயது, ஆண்', '28 வயது, பெண்', '45 வயது, ஆண்'],
     },
@@ -261,11 +261,11 @@ const ONBOARDING_QUESTIONS = {
       label: 'கேள்வி 3 / 5 • தொலைபேசி எண்',
       text: 'தயவுசெய்து உங்கள் 10 இலக்க மொபைல் எண்ணைக் கூறவும்.',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345'],
+      chips: [],
     },
     {
       id: 'complaint',
-      label: 'கேள்வி 4 / 5 • உடல்நலக் கோளாறு',
+      label: 'கேள்வி 4 / 5 • உடல்நலக் கோฬาறு',
       text: 'உங்களுக்கு என்ன பிரச்சனை உள்ளது மற்றும் எத்தனை நாட்களாக உள்ளது?',
       sub: '(What health problem are you facing and for how many days?)',
       chips: ['3 நாட்களாக காய்ச்சல் மற்றும் தலைவலி', 'நேற்று முதல் கடுமையான வயிற்று வலி'],
@@ -289,7 +289,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'age_gender',
       label: 'ప్రశ్న 2 / 5 • వయస్సు & లింగం',
-      text: 'మీ వయస్సు ఎంత మరియు మీ లింగం (పురుషుడు / స్త్రీ / ఇతర) ఏమిటి?',
+      text: 'మీ వయస్సు ఎంత మరియు మీ లింగం (పురుషుడు / స్త్రీ) ఏమిటి?',
       sub: '(What is your age and gender?)',
       chips: ['35 సంవత్సరాలు, పురుషుడు', '28 సంవత్సరాలు, స్త్రీ'],
     },
@@ -298,7 +298,7 @@ const ONBOARDING_QUESTIONS = {
       label: 'ప్రశ్న 3 / 5 • మొబైల్ నంబర్',
       text: 'దయచేసి మీ 10 అంకెల మొబైల్ ఫోన్ నంబర్‌ను తెలపండి.',
       sub: '(Please provide your 10-digit mobile phone number.)',
-      chips: ['9876543210', '9820012345'],
+      chips: [],
     },
     {
       id: 'complaint',
@@ -719,10 +719,13 @@ async function renderIntakeQuestion() {
   const micStatus = document.getElementById('intake-mic-status');
   if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-volume-high" style="color: var(--primary-teal);"></i> Speaking question...`;
 
-  // 1. Speak question aloud via TTS and WAIT for completion
+  // 1. Speak question aloud via female TTS and WAIT for completion
   await playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
 
-  // 2. Automatically open microphone after TTS and listen for user response
+  // 2. Pause briefly so speaker output clears before opening mic
+  await new Promise(r => setTimeout(r, 350));
+
+  // 3. Automatically open microphone after TTS and listen for user response
   startAutoListening();
 }
 
@@ -730,13 +733,14 @@ window.handleQuickChipClick = function(text) {
   handleIntakeAnswer(text);
 };
 
-// Play question or reprompt aloud using direct TTS endpoint with low-latency in-memory cache
+// Play question or reprompt aloud using direct TTS endpoint (Female Voice: Nalini / Kaveri / Devika)
 async function playIntakeQuestionTTS(text, lang) {
-  const cacheKey = `${lang}::${text.trim()}`;
+  const cacheKey = `${lang}::female::${text.trim()}`;
   try {
     let audioUrl = intakeTtsCache.get(cacheKey);
     if (!audioUrl) {
-      const res = await window.api.synthesizeSpeech(text, lang);
+      // Intake form assistant strictly speaks in female voice
+      const res = await window.api.synthesizeSpeech(text, lang, null, 'female');
       if (res && res.audio_url) {
         audioUrl = window.api.resolveAudioUrl(res.audio_url);
         intakeTtsCache.set(cacheKey, audioUrl);
@@ -773,7 +777,7 @@ async function startAutoListening() {
   };
 
   window.audioManager.onSilenceDetected = async () => {
-    console.log('[SwasthyaSetu] User stopped speaking. Auto-stopping and transcribing...');
+    console.log('[SwasthyaSetu] Long pause detected after speech. Auto-stopping and transcribing...');
     await processAutoVoiceIntake();
   };
 
@@ -787,8 +791,8 @@ async function startAutoListening() {
   await window.audioManager.startRecording({
     vad: true,
     speechThreshold: 0.015,
-    silenceDurationMs: 1600, // 1.6 seconds of silence triggers automatic transcription
-    maxIdleMs: 10000,
+    silenceDurationMs: 1800, // 1.8 seconds long pause triggers auto stop and transcribe
+    maxIdleMs: 12000,
   });
 }
 
@@ -823,8 +827,9 @@ async function processAutoVoiceIntake() {
       if (inputEl) inputEl.value = result.transcript;
       await handleIntakeAnswer(result.transcript);
     } else {
-      if (micStatus) micStatus.textContent = 'काहीही ऐकू आले नाही. कृपया स्पष्ट बोला.';
+      if (micStatus) micStatus.textContent = 'काहीही आवाज ऐकू आला नाही. कृपया पुन्हा बोला.';
       // Re-prompt user to speak
+      await new Promise(r => setTimeout(r, 400));
       startAutoListening();
     }
   } catch (err) {
@@ -858,7 +863,7 @@ async function handleIntakeAnswer(answer) {
       onboardingState.selectedLanguage
     );
 
-    // CASE 1: REJECTED (e.g. user said symptoms when asked for their name!)
+    // CASE 1: REJECTED (e.g. user said symptoms when asked for their name)
     if (!valResult.is_valid) {
       console.warn('[SwasthyaSetu] AI Validation rejected answer:', clean, valResult);
       const reprompt = valResult.reprompt_native || 'कृपया विचारलेल्या प्रश्नाचे उत्तर द्या.';
@@ -873,8 +878,9 @@ async function handleIntakeAnswer(answer) {
         micStatus.innerHTML = `<span style="color: #be123c; font-weight: 700;">⚠️ ${reprompt}</span>`;
       }
 
-      // Speak correction aloud in native language
+      // Speak correction aloud in native language (female voice)
       await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+      await new Promise(r => setTimeout(r, 350));
 
       // Automatically re-open mic to let patient answer the question properly!
       startAutoListening();
@@ -892,25 +898,64 @@ async function handleIntakeAnswer(answer) {
       onboardingState.data.name = cleanName;
       updateAutofillField('item-name', 'field-preview-name', cleanName);
     } else if (q.id === 'age_gender') {
-      const ageVal = parsed.age || (extracted.match(/\d+/) ? parseInt(extracted.match(/\d+/)[0]) : 35);
-      const genderVal = parsed.gender || (extracted.toLowerCase().includes('female') || extracted.includes('महिला') || extracted.includes('स्त्री') ? 'Female' : 'Male');
+      // Must extract both age and gender in any sequence; no default fallbacks
+      const ageVal = parsed.age ? parseInt(parsed.age) : (extracted.match(/\d+/) ? parseInt(extracted.match(/\d+/)[0]) : null);
+      let genderVal = parsed.gender;
+      if (!genderVal) {
+        const lowerExt = extracted.toLowerCase();
+        if (lowerExt.includes('female') || extracted.includes('महिला') || extracted.includes('स्त्री') || extracted.includes('बाई') || extracted.includes('aurat') || extracted.includes('लड़की')) {
+          genderVal = 'Female';
+        } else if (lowerExt.includes('male') || extracted.includes('पुरुष') || extracted.includes('माणूस') || extracted.includes('aadmi') || extracted.includes('लड़का')) {
+          genderVal = 'Male';
+        }
+      } else {
+        genderVal = (genderVal.toLowerCase().includes('fem') || genderVal.includes('महिला') || genderVal.includes('स्त्री')) ? 'Female' : 'Male';
+      }
+
+      if (!ageVal || !genderVal) {
+        // Missing either age or gender -> reprompt!
+        const reprompt = !ageVal 
+          ? (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले वय सांगा.' : 'कृपया अपनी उम्र बताइए।')
+          : (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले लिंग (पुरुष किंवा स्त्री) सांगा.' : 'कृपया अपना लिंग (पुरुष या महिला) बताइए।');
+        
+        if (alertBanner && alertText) {
+          alertText.textContent = reprompt;
+          alertBanner.style.display = 'flex';
+        }
+        await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+        await new Promise(r => setTimeout(r, 350));
+        startAutoListening();
+        return;
+      }
+
       onboardingState.data.age = ageVal;
       onboardingState.data.gender = genderVal;
       updateAutofillField('item-age', 'field-preview-age-gender', `${ageVal} yrs • ${genderVal}`);
     } else if (q.id === 'phone') {
       const phoneDigits = parsed.mobile_number || extracted.replace(/\D/g, '');
-      const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+      const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : '';
+      if (!phoneClean || phoneClean.length < 10) {
+        const reprompt = onboardingState.selectedLanguage.includes('mr') ? 'कृपया वैध १० अंकी मोबाईल नंबर सांगा.' : 'कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।';
+        if (alertBanner && alertText) {
+          alertText.textContent = reprompt;
+          alertBanner.style.display = 'flex';
+        }
+        await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+        await new Promise(r => setTimeout(r, 350));
+        startAutoListening();
+        return;
+      }
       onboardingState.data.mobile_number = phoneClean;
       updateAutofillField('item-phone', 'field-preview-phone', phoneClean);
     } else if (q.id === 'complaint') {
       const compVal = parsed.chief_complaint || extracted;
-      const durVal = parsed.symptoms_duration || 'Not specified';
+      const durVal = parsed.symptoms_duration || '';
       onboardingState.data.chief_complaint = compVal;
       onboardingState.data.symptoms_duration = durVal;
       updateAutofillField('item-complaint', 'field-preview-complaint', compVal);
     } else if (q.id === 'history_allergies') {
       const histVal = parsed.past_medical_history || extracted;
-      const allVal = parsed.known_allergies || 'No known allergies';
+      const allVal = parsed.known_allergies || '';
       onboardingState.data.past_medical_history = histVal;
       onboardingState.data.known_allergies = allVal;
       updateAutofillField('item-history', 'field-preview-history', histVal);
@@ -1367,10 +1412,10 @@ function renderDraftReview(draft) {
 
   // Doctor diagnosis input
   const diagInput = document.getElementById('draft-diagnosis');
-  if (diagInput) diagInput.value = payload.doctor_diagnosis || 'Acute Viral Fever with tension headache';
+  if (diagInput) diagInput.value = payload.doctor_diagnosis || '';
 
   const notesInput = document.getElementById('draft-notes');
-  if (notesInput) notesInput.value = payload.doctor_notes || (payload.medical_history ? `History: ${payload.medical_history}. Follow-up advised.` : 'Patient examined. Prescribed symptomatic relief medications.');
+  if (notesInput) notesInput.value = payload.doctor_notes || (payload.medical_history ? `History: ${payload.medical_history}.` : '');
 
   renderPrescriptions(payload.prescriptions || []);
 }
@@ -1467,7 +1512,11 @@ async function saveFollowupAppointment() {
 
   try {
     const appointmentAt = new Date(dtStr).toISOString();
-    const phone = state.selectedPatient ? state.selectedPatient.mobile_number : '9876543210';
+    const phone = state.selectedPatient && state.selectedPatient.mobile_number ? state.selectedPatient.mobile_number : '';
+    if (!phone) {
+      alert('Patient phone number missing. Please update patient details first.');
+      return;
+    }
     await window.api.scheduleFollowup(state.activeConsultation.id, appointmentAt, phone);
     alert('Follow-up appointment saved successfully in clinic records!');
     showView('dashboard');

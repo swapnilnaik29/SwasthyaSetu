@@ -68,7 +68,7 @@ class PatientIntakeSubmission(BaseModel):
     name: str = Field(..., min_length=2)
     age: Optional[int] = None
     gender: Optional[str] = None
-    mobile_number: str = Field(default="9999999999")
+    mobile_number: str = Field(..., min_length=10)
     preferred_language: str = Field(default="hi-IN")
     chief_complaint: Optional[str] = None
     symptoms_duration: Optional[str] = None

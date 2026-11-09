@@ -499,11 +499,11 @@
           <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Physician Assessment</h3>
           <div class="form-group" style="margin-bottom: 12px;">
             <label>Doctor Diagnosis *</label>
-            <input type="text" id="draft-diagnosis" placeholder="Enter confirmed clinical diagnosis..." value="Acute Viral Fever with tension headache">
+            <input type="text" id="draft-diagnosis" placeholder="Enter confirmed clinical diagnosis..." value="">
           </div>
           <div class="form-group">
             <label>Doctor Clinical Notes</label>
-            <textarea id="draft-notes" rows="3" placeholder="Enter clinical observations, rest advisory, and diet instructions...">Patient presented with 3-day history of fever and bilateral headache. Advised hydration, rest, and light diet.</textarea>
+            <textarea id="draft-notes" rows="3" placeholder="Enter clinical observations, rest advisory, and diet instructions..."></textarea>
           </div>
         </div>
 
@@ -669,10 +669,11 @@
       <!-- Speech Voice Profile -->
       <div class="card" style="background: var(--secondary-light); border-color: #bae6fd; padding: 12px;">
         <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0284c7; font-size: 13px;">
-          <i class="fa-solid fa-volume-high"></i> Voice Profile: Male Default Voices
+          <i class="fa-solid fa-volume-high"></i> Voice Configuration
         </div>
         <p style="font-size: 11px; color: #0369a1; margin-top: 4px;">
-          Deepak (Hindi), Omkar (Marathi), Deven (English) configured as default male synthesis voices.
+          <strong>Form Filling:</strong> Female Voice (Nalini / Kaveri / Devika)<br>
+          <strong>Consultation:</strong> Male Default Voice (Deepak / Omkar / Deven)
         </p>
       </div>
 
@@ -733,23 +734,23 @@
 
       <div class="form-group">
         <label>Medicine Name *</label>
-        <input type="text" id="presc-med" value="Tab Paracetamol" required>
+        <input type="text" id="presc-med" placeholder="e.g. Tab Paracetamol" required>
       </div>
       <div class="form-group">
         <label>Strength</label>
-        <input type="text" id="presc-strength" value="500mg">
+        <input type="text" id="presc-strength" placeholder="e.g. 500mg">
       </div>
       <div class="form-group">
         <label>Dose</label>
-        <input type="text" id="presc-dose" value="1 tablet">
+        <input type="text" id="presc-dose" placeholder="e.g. 1 tablet">
       </div>
       <div class="form-group">
         <label>Frequency</label>
-        <input type="text" id="presc-freq" value="Twice daily">
+        <input type="text" id="presc-freq" placeholder="e.g. Twice daily">
       </div>
       <div class="form-group">
         <label>Duration</label>
-        <input type="text" id="presc-duration" value="3 days">
+        <input type="text" id="presc-duration" placeholder="e.g. 3 days">
       </div>
 
       <div class="form-actions">
