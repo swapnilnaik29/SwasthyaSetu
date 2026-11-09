@@ -112,3 +112,52 @@ async def test_ambient_background_consultation_skips_tts(client):
     # TTS audio generation MUST be skipped in ambient background scribe mode!
     assert turn["audio_url"] is None
 
+
+@pytest.mark.asyncio
+async def test_ai_validation_rejects_symptoms_when_asking_name(client):
+    """Test AI detects fever complaint when asking for name and reprompts patient."""
+    val_req = {
+        "step_id": "name",
+        "question_text": "नमस्कार! आपले पूर्ण नाव काय आहे?",
+        "user_utterance": "Mala teen divasapasun taap aani dukhane ahe.",
+        "language": "mr-IN",
+    }
+    res = await client.post("/api/v1/patients/intake/validate", json=val_req)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["is_valid"] is False
+    assert data["reprompt_native"] is not None
+    assert len(data["reprompt_native"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_ai_validation_accepts_and_extracts_clean_name(client):
+    """Test AI accepts name even inside a conversational sentence and extracts clean name."""
+    val_req = {
+        "step_id": "name",
+        "question_text": "नमस्कार! आपले पूर्ण नाव काय आहे?",
+        "user_utterance": "Mi Suresh Pawar boltoy.",
+        "language": "mr-IN",
+    }
+    res = await client.post("/api/v1/patients/intake/validate", json=val_req)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["is_valid"] is True
+    assert "Suresh Pawar" in data["extracted_value"]
+
+
+@pytest.mark.asyncio
+async def test_ai_validation_fast_path_phone(client):
+    """Test fast-path validation for 10-digit mobile number."""
+    val_req = {
+        "step_id": "phone",
+        "question_text": "कृपया आपला १० अंकी मोबाईल नंबर सांगा.",
+        "user_utterance": "9822012345",
+        "language": "mr-IN",
+    }
+    res = await client.post("/api/v1/patients/intake/validate", json=val_req)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["is_valid"] is True
+    assert data["extracted_value"] == "9822012345"
+

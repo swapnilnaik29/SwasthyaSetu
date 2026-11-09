@@ -1,7 +1,7 @@
 /**
  * SwasthyaSetu Audio Manager
  * Handles microphone capture with native 16kHz Mono 16-bit WAV encoding,
- * recording timer, and single-device echo suppression.
+ * recording timer, silence detection (VAD), and single-device echo suppression.
  */
 
 // Helper: Linear interpolation resampling to 16,000 Hz
@@ -42,8 +42,8 @@ function encodeWAV(samples, sampleRate = 16000) {
   view.setUint16(20, 1, true);       // PCM format
   view.setUint16(22, 1, true);       // Mono channel
   view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true); // Byte rate (sampleRate * 1 * 16 / 8)
-  view.setUint16(32, 2, true);       // Block align (1 * 16 / 8)
+  view.setUint32(28, sampleRate * 2, true); // Byte rate
+  view.setUint16(32, 2, true);       // Block align
   view.setUint16(34, 16, true);      // Bits per sample
   
   /* "data" sub-chunk */
@@ -76,9 +76,21 @@ class AudioManager {
     this.timerInterval = null;
     this.recordDurationSeconds = 0;
 
+    // VAD & Silence Detection options
+    this.enableVad = false;
+    this.hasSpoken = false;
+    this.speechThreshold = 0.015;
+    this.silenceDurationMs = 1600;
+    this.maxIdleMs = 9000;
+    this.recordingStartTime = 0;
+    this.lastSpeechTime = 0;
+
     // Callbacks
     this.onStateChange = null;
     this.onTimerTick = null;
+    this.onSpeechStart = null;
+    this.onSilenceDetected = null;
+    this.onIdleTimeout = null;
   }
 
   async checkMicPermission() {
@@ -92,7 +104,7 @@ class AudioManager {
     }
   }
 
-  async startRecording() {
+  async startRecording(options = {}) {
     if (this.isPlaying) {
       this.stopPlayback();
     }
@@ -111,15 +123,56 @@ class AudioManager {
       this.audioCtx = new AudioContextClass();
       this.sourceNode = this.audioCtx.createMediaStreamSource(this.audioStream);
 
-      // ScriptProcessor for cross-browser PCM buffer capture (compatible with all mobile and desktop browsers)
+      // ScriptProcessor for cross-browser PCM buffer capture
       this.processorNode = this.audioCtx.createScriptProcessor(4096, 1, 1);
       this.pcmChunks = [];
+
+      // VAD Configuration
+      this.enableVad = !!options.vad;
+      this.hasSpoken = false;
+      this.speechThreshold = options.speechThreshold || 0.015;
+      this.silenceDurationMs = options.silenceDurationMs || 1600; // 1.6s of silence after speech
+      this.maxIdleMs = options.maxIdleMs || 10000; // 10s wait if user never speaks
+      this.recordingStartTime = Date.now();
+      this.lastSpeechTime = Date.now();
 
       this.processorNode.onaudioprocess = (e) => {
         if (!this.isRecording) return;
         const inputData = e.inputBuffer.getChannelData(0);
-        // Copy chunk
         this.pcmChunks.push(new Float32Array(inputData));
+
+        // Real-time Voice Activity & Silence Detection
+        if (this.enableVad) {
+          let sum = 0;
+          for (let i = 0; i < inputData.length; i++) {
+            sum += inputData[i] * inputData[i];
+          }
+          const rms = Math.sqrt(sum / inputData.length);
+          const now = Date.now();
+
+          if (rms > this.speechThreshold) {
+            if (!this.hasSpoken) {
+              this.hasSpoken = true;
+              console.log('[AudioManager] Speech detected!');
+              if (this.onSpeechStart) this.onSpeechStart();
+            }
+            this.lastSpeechTime = now;
+          } else if (this.hasSpoken) {
+            // User spoke and has now been silent
+            if (now - this.lastSpeechTime > this.silenceDurationMs) {
+              this.enableVad = false;
+              console.log('[AudioManager] Silence detected after speech. Auto-stopping recording.');
+              if (this.onSilenceDetected) this.onSilenceDetected();
+            }
+          } else {
+            // User hasn't started speaking yet
+            if (now - this.recordingStartTime > this.maxIdleMs) {
+              this.enableVad = false;
+              console.log('[AudioManager] Max idle timeout reached.');
+              if (this.onIdleTimeout) this.onIdleTimeout();
+            }
+          }
+        }
       };
 
       this.sourceNode.connect(this.processorNode);
@@ -142,6 +195,7 @@ class AudioManager {
     if (!this.isRecording) return null;
     this._stopTimer();
     this.isRecording = false;
+    this.enableVad = false;
 
     // Disconnect audio graph
     if (this.processorNode) {
@@ -171,6 +225,8 @@ class AudioManager {
     for (const chunk of this.pcmChunks) {
       totalLength += chunk.length;
     }
+    if (totalLength === 0) return null;
+
     const merged = new Float32Array(totalLength);
     let offset = 0;
     for (const chunk of this.pcmChunks) {
@@ -187,40 +243,47 @@ class AudioManager {
   }
 
   playAudio(url) {
-    if (this.isRecording) {
-      this.stopRecording();
-    }
+    this.playAudioAsync(url).catch(e => console.warn('playAudio error:', e));
+  }
 
-    if (this.currentAudioPlayer) {
-      this.currentAudioPlayer.pause();
-      this.currentAudioPlayer = null;
-    }
+  playAudioAsync(url) {
+    return new Promise((resolve) => {
+      if (this.isRecording) {
+        this.stopRecording();
+      }
 
-    // Timestamp cache buster for audio playback
-    const fullUrl = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
-    const player = new Audio(fullUrl);
-    this.currentAudioPlayer = player;
-    this.isPlaying = true;
+      if (this.currentAudioPlayer) {
+        this.currentAudioPlayer.pause();
+        this.currentAudioPlayer = null;
+      }
 
-    if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: true });
+      const fullUrl = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
+      const player = new Audio(fullUrl);
+      this.currentAudioPlayer = player;
+      this.isPlaying = true;
 
-    player.onended = () => {
-      this.isPlaying = false;
-      this.currentAudioPlayer = null;
-      if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: false });
-    };
+      if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: true });
 
-    player.onerror = (e) => {
-      console.error('Audio playback failed:', e);
-      this.isPlaying = false;
-      this.currentAudioPlayer = null;
-      if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: false });
-    };
+      let settled = false;
+      const done = () => {
+        if (settled) return;
+        settled = true;
+        this.isPlaying = false;
+        this.currentAudioPlayer = null;
+        if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: false });
+        resolve();
+      };
 
-    player.play().catch(err => {
-      console.warn('Audio auto-play blocked by browser. User interaction needed.', err);
-      this.isPlaying = false;
-      if (this.onStateChange) this.onStateChange({ isRecording: this.isRecording, isPlaying: false });
+      player.onended = done;
+      player.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        done();
+      };
+
+      player.play().catch(err => {
+        console.warn('Audio auto-play blocked or failed:', err);
+        done();
+      });
     });
   }
 

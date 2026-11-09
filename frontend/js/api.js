@@ -97,6 +97,18 @@ class ApiService {
   }
 
   // Conversational AI Patient Intake
+  async validateIntakeAnswer(stepId, questionText, userUtterance, language = 'hi-IN') {
+    return this.request('/api/v1/patients/intake/validate', {
+      method: 'POST',
+      body: JSON.stringify({
+        step_id: stepId,
+        question_text: questionText,
+        user_utterance: userUtterance,
+        language: language,
+      }),
+    });
+  }
+
   async submitConversationalIntake(intakeData) {
     return this.request('/api/v1/patients/intake', {
       method: 'POST',

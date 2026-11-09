@@ -1,6 +1,7 @@
 /**
  * SwasthyaSetu Main Application Controller
  * Handles Conversational AI Onboarding, Floating Bubble UI,
+ * AI Answer Validation & Structured Extraction, Automated Speech-to-Speech Flow,
  * Shared Language Detection (Ambient Scribe vs Turn-by-Turn),
  * Bidirectional Translation, and Clinical Record Lifecycle.
  */
@@ -35,6 +36,9 @@ const onboardingState = {
   },
   isRecording: false,
 };
+
+// Client-side synthesized TTS audio cache for zero-latency replays
+const intakeTtsCache = new Map();
 
 const LANG_LABELS = {
   'en-IN': 'English',
@@ -306,7 +310,7 @@ const ONBOARDING_QUESTIONS = {
     {
       id: 'history_allergies',
       label: 'ప్రశ్న 5 / 5 • మునుపటి చరిత్ర & అలెర్జీలు',
-      text: 'మీకు BP, మధుమేహం వంటి దీర్ಘకాలిక వ్యాధులు లేదా అలెర్జీలు ఉన్నాయా?',
+      text: 'మీకు BP, మధుమేహం వంటి దీర్ఘకాలిక వ్యాధులు లేదా అలెర్జీలు ఉన్నాయా?',
       sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
       chips: ['ఏ వ్యాధులు లేదా అలెర్జీలు లేవు', 'హై బీపీ ఉంది'],
     },
@@ -373,7 +377,6 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
 
 // App Initialization
 document.addEventListener('DOMContentLoaded', async () => {
-  // Setup Language Selector First so buttons are immediately responsive
   setupBubbleLanguageSelector();
   setupEventListeners();
   setupAudioCallbacks();
@@ -585,7 +588,7 @@ async function loadConsultationHistory(patientId) {
 }
 
 /* ==========================================================================
-   CONVERSATIONAL AI ONBOARDING & FLOATING BUBBLE UI
+   CONVERSATIONAL AI ONBOARDING WITH REAL-TIME AI VALIDATION
    ========================================================================== */
 
 function showOnboardingView() {
@@ -604,7 +607,7 @@ function showOnboardingView() {
     current_medications: '',
   };
 
-  // Reset live autofill display
+  // Reset live autofill display - all fields start pending with no default mock data
   const resetField = (id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -618,6 +621,10 @@ function showOnboardingView() {
   resetField('field-preview-complaint');
   resetField('field-preview-history');
   resetField('field-preview-allergies');
+
+  // Hide validation alerts
+  const alertBanner = document.getElementById('intake-validation-alert');
+  if (alertBanner) alertBanner.style.display = 'none';
 
   // Show Step A (Language Selector) and hide others
   const stepA = document.getElementById('onboard-step-language');
@@ -671,13 +678,17 @@ function selectOnboardingLanguage(langCode, displayName) {
   renderIntakeQuestion();
 }
 
-function renderIntakeQuestion() {
+async function renderIntakeQuestion() {
   const questions = getQuestionsForLanguage(onboardingState.selectedLanguage);
   const q = questions[onboardingState.currentStep];
   if (!q) {
     submitOnboardingForm();
     return;
   }
+
+  // Clear previous validation alerts
+  const alertBanner = document.getElementById('intake-validation-alert');
+  if (alertBanner) alertBanner.style.display = 'none';
 
   // Update question cards
   const stepInd = document.getElementById('intake-step-indicator');
@@ -705,120 +716,219 @@ function renderIntakeQuestion() {
     `).join('');
   }
 
-  // Automatically speak question aloud via TTS using male voice
-  playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
+  const micStatus = document.getElementById('intake-mic-status');
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-volume-high" style="color: var(--primary-teal);"></i> Speaking question...`;
+
+  // 1. Speak question aloud via TTS and WAIT for completion
+  await playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
+
+  // 2. Automatically open microphone after TTS and listen for user response
+  startAutoListening();
 }
 
 window.handleQuickChipClick = function(text) {
   handleIntakeAnswer(text);
 };
 
-// Play question aloud using direct TTS endpoint
+// Play question or reprompt aloud using direct TTS endpoint with low-latency in-memory cache
 async function playIntakeQuestionTTS(text, lang) {
+  const cacheKey = `${lang}::${text.trim()}`;
   try {
-    const res = await window.api.synthesizeSpeech(text, lang);
-    if (res && res.audio_url) {
-      const fullUrl = window.api.resolveAudioUrl(res.audio_url);
-      window.audioManager.playAudio(fullUrl);
+    let audioUrl = intakeTtsCache.get(cacheKey);
+    if (!audioUrl) {
+      const res = await window.api.synthesizeSpeech(text, lang);
+      if (res && res.audio_url) {
+        audioUrl = window.api.resolveAudioUrl(res.audio_url);
+        intakeTtsCache.set(cacheKey, audioUrl);
+      }
+    }
+    if (audioUrl) {
+      await window.audioManager.playAudioAsync(audioUrl);
     }
   } catch (err) {
     console.warn('Intake TTS playback skipped/failed:', err.message);
   }
 }
 
-// Intake Voice Recording Toggle
-async function toggleIntakeVoiceRecording() {
+// Automatic Microphone Listening Loop (Speech-to-Speech)
+async function startAutoListening() {
   const micBtn = document.getElementById('btn-intake-mic');
   const micStatus = document.getElementById('intake-mic-status');
   const recTimer = document.getElementById('intake-rec-timer');
 
-  if (window.audioManager.isRecording) {
-    // Stop recording and transcribe
-    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing with Gnani AI...`;
+  if (window.audioManager.isPlaying) return;
+
+  if (micStatus) {
+    micStatus.innerHTML = `<span style="color: var(--success-green); font-weight: 800;">🎙️ ऐकत आहे... (Listening... Speak your answer now)</span>`;
+  }
+  if (micBtn) micBtn.classList.add('recording');
+  if (recTimer) {
+    recTimer.style.display = 'inline-block';
+    recTimer.textContent = '00:00';
+  }
+
+  // Setup real-time VAD callbacks
+  window.audioManager.onSpeechStart = () => {
+    if (micStatus) micStatus.innerHTML = `<span style="color: var(--primary-teal); font-weight: 800;">🗣️ बोलणे चालू आहे... (Speaking detected...)</span>`;
+  };
+
+  window.audioManager.onSilenceDetected = async () => {
+    console.log('[SwasthyaSetu] User stopped speaking. Auto-stopping and transcribing...');
+    await processAutoVoiceIntake();
+  };
+
+  window.audioManager.onIdleTimeout = () => {
+    if (micStatus) micStatus.textContent = 'माईक थांबला. बोलण्यासाठी माईक टॅप करा (Tap mic to speak)';
     if (micBtn) micBtn.classList.remove('recording');
     if (recTimer) recTimer.style.display = 'none';
+    window.audioManager.stopRecording();
+  };
 
-    const audioBlob = await window.audioManager.stopRecording();
-    if (audioBlob) {
-      try {
-        const result = await window.api.transcribeAudio(audioBlob, onboardingState.selectedLanguage);
-        if (result && result.transcript) {
-          const inputEl = document.getElementById('input-intake-text');
-          if (inputEl) inputEl.value = result.transcript;
-          handleIntakeAnswer(result.transcript);
-        } else {
-          if (micStatus) micStatus.textContent = 'No speech detected. Please tap mic and speak clearly.';
-        }
-      } catch (err) {
-        if (micStatus) micStatus.textContent = 'STT error: ' + err.message;
-      }
-    }
+  await window.audioManager.startRecording({
+    vad: true,
+    speechThreshold: 0.015,
+    silenceDurationMs: 1600, // 1.6 seconds of silence triggers automatic transcription
+    maxIdleMs: 10000,
+  });
+}
+
+// Intake Voice Recording Toggle (Manual fallback)
+async function toggleIntakeVoiceRecording() {
+  if (window.audioManager.isRecording) {
+    await processAutoVoiceIntake();
   } else {
-    // Start recording
-    const started = await window.audioManager.startRecording();
-    if (started) {
-      if (micBtn) micBtn.classList.add('recording');
-      if (micStatus) micStatus.textContent = 'Listening... Speak in your native language (Tap to stop)';
-      if (recTimer) {
-        recTimer.style.display = 'inline-block';
-        recTimer.textContent = '00:00';
-      }
-    }
+    await startAutoListening();
   }
 }
 
-// Process submitted answer (text or voice)
-function handleIntakeAnswer(answer) {
+async function processAutoVoiceIntake() {
+  const micBtn = document.getElementById('btn-intake-mic');
+  const micStatus = document.getElementById('intake-mic-status');
+  const recTimer = document.getElementById('intake-rec-timer');
+
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transcribing & validating with AI...`;
+  if (micBtn) micBtn.classList.remove('recording');
+  if (recTimer) recTimer.style.display = 'none';
+
+  const audioBlob = await window.audioManager.stopRecording();
+  if (!audioBlob) {
+    if (micStatus) micStatus.textContent = 'कोणताही आवाज आला नाही. कृपया पुन्हा बोला. (Tap mic to speak)';
+    return;
+  }
+
+  try {
+    const result = await window.api.transcribeAudio(audioBlob, onboardingState.selectedLanguage);
+    if (result && result.transcript && result.transcript.trim()) {
+      const inputEl = document.getElementById('input-intake-text');
+      if (inputEl) inputEl.value = result.transcript;
+      await handleIntakeAnswer(result.transcript);
+    } else {
+      if (micStatus) micStatus.textContent = 'काहीही ऐकू आले नाही. कृपया स्पष्ट बोला.';
+      // Re-prompt user to speak
+      startAutoListening();
+    }
+  } catch (err) {
+    if (micStatus) micStatus.textContent = 'STT error: ' + err.message;
+  }
+}
+
+// Process and Validate Answer with AI (GPT-6 Luna)
+async function handleIntakeAnswer(answer) {
   const clean = (answer || '').trim();
   if (!clean) return;
 
-  const step = onboardingState.currentStep;
-
-  if (step === 0) {
-    // Name
-    onboardingState.data.name = clean;
-    updateAutofillField('item-name', 'field-preview-name', clean);
-  } else if (step === 1) {
-    // Age & Gender
-    let age = null;
-    const ageMatch = clean.match(/\d+/);
-    if (ageMatch) age = parseInt(ageMatch[0]);
-    onboardingState.data.age = age || 35;
-
-    let gender = 'Male';
-    const lower = clean.toLowerCase();
-    if (lower.includes('महिला') || lower.includes('स्त्री') || lower.includes('female') || lower.includes('woman') || lower.includes('girl')) {
-      gender = 'Female';
-    }
-    onboardingState.data.gender = gender;
-
-    updateAutofillField('item-age', 'field-preview-age-gender', `${onboardingState.data.age} yrs • ${gender}`);
-  } else if (step === 2) {
-    // Phone
-    const digits = clean.replace(/\D/g, '');
-    const phone = digits.length >= 10 ? digits.slice(-10) : clean;
-    onboardingState.data.mobile_number = phone || '9876543210';
-    updateAutofillField('item-phone', 'field-preview-phone', onboardingState.data.mobile_number);
-  } else if (step === 3) {
-    // Chief Complaint & Symptoms Duration
-    onboardingState.data.chief_complaint = clean;
-    onboardingState.data.symptoms_duration = clean;
-    updateAutofillField('item-complaint', 'field-preview-complaint', clean);
-  } else if (step === 4) {
-    // Medical History & Allergies
-    onboardingState.data.past_medical_history = clean;
-    onboardingState.data.known_allergies = clean;
-    updateAutofillField('item-history', 'field-preview-history', clean);
-    updateAutofillField('item-allergies', 'field-preview-allergies', clean);
-  }
-
-  // Advance to next question
-  onboardingState.currentStep++;
   const questions = getQuestionsForLanguage(onboardingState.selectedLanguage);
-  if (onboardingState.currentStep < questions.length) {
-    renderIntakeQuestion();
-  } else {
-    submitOnboardingForm();
+  const q = questions[onboardingState.currentStep];
+  if (!q) return;
+
+  const micStatus = document.getElementById('intake-mic-status');
+  const submitBtn = document.getElementById('btn-submit-intake-text');
+  const alertBanner = document.getElementById('intake-validation-alert');
+  const alertText = document.getElementById('intake-validation-text');
+
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI तपासत आहे... (AI validating answer...)`;
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    // Call AI validation endpoint to check if answer matches the question asked
+    const valResult = await window.api.validateIntakeAnswer(
+      q.id,
+      q.text,
+      clean,
+      onboardingState.selectedLanguage
+    );
+
+    // CASE 1: REJECTED (e.g. user said symptoms when asked for their name!)
+    if (!valResult.is_valid) {
+      console.warn('[SwasthyaSetu] AI Validation rejected answer:', clean, valResult);
+      const reprompt = valResult.reprompt_native || 'कृपया विचारलेल्या प्रश्नाचे उत्तर द्या.';
+
+      // Show alert in UI
+      if (alertBanner && alertText) {
+        alertText.textContent = reprompt;
+        alertBanner.style.display = 'flex';
+      }
+
+      if (micStatus) {
+        micStatus.innerHTML = `<span style="color: #be123c; font-weight: 700;">⚠️ ${reprompt}</span>`;
+      }
+
+      // Speak correction aloud in native language
+      await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+
+      // Automatically re-open mic to let patient answer the question properly!
+      startAutoListening();
+      return;
+    }
+
+    // CASE 2: VALID ANSWER!
+    if (alertBanner) alertBanner.style.display = 'none';
+
+    const extracted = (valResult.extracted_value || clean).trim();
+    const parsed = valResult.parsed_fields || {};
+
+    if (q.id === 'name') {
+      const cleanName = parsed.name || extracted;
+      onboardingState.data.name = cleanName;
+      updateAutofillField('item-name', 'field-preview-name', cleanName);
+    } else if (q.id === 'age_gender') {
+      const ageVal = parsed.age || (extracted.match(/\d+/) ? parseInt(extracted.match(/\d+/)[0]) : 35);
+      const genderVal = parsed.gender || (extracted.toLowerCase().includes('female') || extracted.includes('महिला') || extracted.includes('स्त्री') ? 'Female' : 'Male');
+      onboardingState.data.age = ageVal;
+      onboardingState.data.gender = genderVal;
+      updateAutofillField('item-age', 'field-preview-age-gender', `${ageVal} yrs • ${genderVal}`);
+    } else if (q.id === 'phone') {
+      const phoneDigits = parsed.mobile_number || extracted.replace(/\D/g, '');
+      const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : phoneDigits;
+      onboardingState.data.mobile_number = phoneClean;
+      updateAutofillField('item-phone', 'field-preview-phone', phoneClean);
+    } else if (q.id === 'complaint') {
+      const compVal = parsed.chief_complaint || extracted;
+      const durVal = parsed.symptoms_duration || 'Not specified';
+      onboardingState.data.chief_complaint = compVal;
+      onboardingState.data.symptoms_duration = durVal;
+      updateAutofillField('item-complaint', 'field-preview-complaint', compVal);
+    } else if (q.id === 'history_allergies') {
+      const histVal = parsed.past_medical_history || extracted;
+      const allVal = parsed.known_allergies || 'No known allergies';
+      onboardingState.data.past_medical_history = histVal;
+      onboardingState.data.known_allergies = allVal;
+      updateAutofillField('item-history', 'field-preview-history', histVal);
+      updateAutofillField('item-allergies', 'field-preview-allergies', allVal);
+    }
+
+    // Advance to next question
+    onboardingState.currentStep++;
+    if (onboardingState.currentStep < questions.length) {
+      renderIntakeQuestion();
+    } else {
+      submitOnboardingForm();
+    }
+  } catch (err) {
+    console.error('Validation error:', err);
+    // On unexpected error, do not break flow
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -844,8 +954,15 @@ async function submitOnboardingForm() {
   }
 
   try {
-    if (!onboardingState.data.name) onboardingState.data.name = 'Patient ' + Math.floor(1000 + Math.random() * 9000);
-    if (!onboardingState.data.mobile_number) onboardingState.data.mobile_number = '98' + Math.floor(10000000 + Math.random() * 90000000);
+    // Ensure we actually have patient's name before submitting
+    if (!onboardingState.data.name || onboardingState.data.name.trim().length < 2) {
+      alert('कृपया रुग्णाचे पूर्ण नाव भरा. (Please provide the patient name.)');
+      if (finishBtn) {
+        finishBtn.disabled = false;
+        finishBtn.innerHTML = `<i class="fa-solid fa-check"></i> Complete & Submit Form`;
+      }
+      return;
+    }
 
     const savedPatient = await window.api.submitConversationalIntake(onboardingState.data);
     state.selectedPatient = savedPatient;
@@ -923,12 +1040,10 @@ function initiateConsultationStart() {
   const sharedInfo = checkSharedLanguage(patientLang, state.doctor);
 
   if (sharedInfo.isShared) {
-    // Both doctor and patient speak the same language!
     const modalShared = document.getElementById('modal-shared-lang-name');
     if (modalShared) modalShared.textContent = sharedInfo.sharedLangLabel;
     openModal('modal-mode-select');
   } else {
-    // Different languages: directly start in Standard Turn-by-Turn Mode
     startConsultationWithMode('NORMAL');
   }
 }
@@ -957,9 +1072,8 @@ async function startConsultationWithMode(mode = 'NORMAL') {
 
     state.activeConsultation = consultation;
     state.turns = [];
-    state.activeSpeaker = 'PATIENT'; // patient starts
+    state.activeSpeaker = 'PATIENT';
 
-    // Setup consultation screen
     const pTitle = document.getElementById('cons-patient-title');
     const bPat = document.getElementById('cons-badge-patient');
     const bDoc = document.getElementById('cons-badge-doctor');
@@ -968,7 +1082,6 @@ async function startConsultationWithMode(mode = 'NORMAL') {
     if (bPat) bPat.textContent = `Patient: ${LANG_LABELS[patientLang] || patientLang}`;
     if (bDoc) bDoc.textContent = `Doctor: ${LANG_LABELS[doctorLang] || doctorLang}`;
 
-    // Ambient mode banner toggle
     const ambientBanner = document.getElementById('ambient-mode-banner');
     if (ambientBanner) {
       ambientBanner.style.display = (mode === 'AMBIENT_BACKGROUND') ? 'flex' : 'none';
@@ -993,7 +1106,6 @@ function switchSpeaker(speaker) {
 
   const btnPatient = document.getElementById('btn-speaker-patient');
   const btnDoctor = document.getElementById('btn-speaker-doctor');
-  const recBtn = document.getElementById('btn-record-turn');
   const turnBanner = document.getElementById('turn-direction-banner');
   const turnText = document.getElementById('turn-direction-text');
 
@@ -1025,7 +1137,7 @@ function switchSpeaker(speaker) {
   }
 }
 
-// Audio Recording & Turn Processing
+// Audio Recording & Turn Processing (Consultation)
 async function toggleRecording() {
   if (state.isProcessing) return;
 
@@ -1066,7 +1178,6 @@ async function processAudioTurn(audioBlob) {
       window.audioManager.playAudio(fullUrl);
     }
 
-    // Auto-prompt turn handoff
     promptTurnHandoff();
   } catch (err) {
     alert('Turn processing failed: ' + err.message);
@@ -1434,7 +1545,7 @@ function setupEventListeners() {
     if (q) playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
   });
 
-  // Intake Mic Button
+  // Intake Mic Button (Manual toggle)
   on('btn-intake-mic', 'click', toggleIntakeVoiceRecording);
 
   // Intake Text Submit

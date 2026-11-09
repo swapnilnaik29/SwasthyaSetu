@@ -10,15 +10,23 @@ from app.services.translation.prompts import (
 )
 
 
-# Shared client instance to eliminate instantiation & TLS handshake latency
+# Shared client instance with event-loop awareness
 _openai_client = None
+_client_loop = None
 
 
 def get_openai_client(api_key: str):
-    global _openai_client
-    if _openai_client is None:
+    global _openai_client, _client_loop
+    import asyncio
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+
+    if _openai_client is None or _client_loop != current_loop:
         from openai import AsyncOpenAI
         _openai_client = AsyncOpenAI(api_key=api_key)
+        _client_loop = current_loop
     return _openai_client
 
 

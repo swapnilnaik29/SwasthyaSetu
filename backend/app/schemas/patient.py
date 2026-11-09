@@ -76,3 +76,18 @@ class PatientIntakeSubmission(BaseModel):
     known_allergies: Optional[str] = None
     current_medications: Optional[str] = None
     raw_responses: Optional[Dict[str, Any]] = None
+
+
+class IntakeValidationRequest(BaseModel):
+    step_id: str  # "name", "age_gender", "phone", "complaint", "history_allergies"
+    question_text: str
+    user_utterance: str
+    language: str = "hi-IN"
+
+
+class IntakeValidationResponse(BaseModel):
+    is_valid: bool
+    extracted_value: Optional[str] = None
+    parsed_fields: Dict[str, Any] = Field(default_factory=dict)
+    reprompt_native: Optional[str] = None
+    reprompt_english: Optional[str] = None
