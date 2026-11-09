@@ -893,6 +893,10 @@ async function handleIntakeAnswer(answer) {
     const extracted = (valResult.extracted_value || clean).trim();
     const parsed = valResult.parsed_fields || {};
 
+    // Reflect the AI corrected format response in the input box
+    const inputEl = document.getElementById('input-intake-text');
+    if (inputEl) inputEl.value = extracted;
+
     if (q.id === 'name') {
       const cleanName = parsed.name || extracted;
       onboardingState.data.name = cleanName;
@@ -914,9 +918,9 @@ async function handleIntakeAnswer(answer) {
 
       if (!ageVal || !genderVal) {
         // Missing either age or gender -> reprompt!
-        const reprompt = !ageVal 
+        const reprompt = valResult.reprompt_native || (!ageVal 
           ? (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले वय सांगा.' : 'कृपया अपनी उम्र बताइए।')
-          : (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले लिंग (पुरुष किंवा स्त्री) सांगा.' : 'कृपया अपना लिंग (पुरुष या महिला) बताइए।');
+          : (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले लिंग (पुरुष किंवा स्त्री) सांगा.' : 'कृपया अपना लिंग (पुरुष या महिला) बताइए।'));
         
         if (alertBanner && alertText) {
           alertText.textContent = reprompt;
@@ -932,10 +936,10 @@ async function handleIntakeAnswer(answer) {
       onboardingState.data.gender = genderVal;
       updateAutofillField('item-age', 'field-preview-age-gender', `${ageVal} yrs • ${genderVal}`);
     } else if (q.id === 'phone') {
-      const phoneDigits = parsed.mobile_number || extracted.replace(/\D/g, '');
+      const phoneDigits = (parsed.mobile_number || parsed.phone || extracted || '').toString().replace(/\D/g, '');
       const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : '';
       if (!phoneClean || phoneClean.length < 10) {
-        const reprompt = onboardingState.selectedLanguage.includes('mr') ? 'कृपया वैध १० अंकी मोबाईल नंबर सांगा.' : 'कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।';
+        const reprompt = valResult.reprompt_native || (onboardingState.selectedLanguage.includes('mr') ? 'कृपया वैध १० अंकी मोबाईल नंबर सांगा.' : 'कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।');
         if (alertBanner && alertText) {
           alertText.textContent = reprompt;
           alertBanner.style.display = 'flex';
@@ -952,14 +956,15 @@ async function handleIntakeAnswer(answer) {
       const durVal = parsed.symptoms_duration || '';
       onboardingState.data.chief_complaint = compVal;
       onboardingState.data.symptoms_duration = durVal;
-      updateAutofillField('item-complaint', 'field-preview-complaint', compVal);
+      const displayVal = durVal && !compVal.includes(durVal) ? `${compVal} (${durVal})` : compVal;
+      updateAutofillField('item-complaint', 'field-preview-complaint', displayVal);
     } else if (q.id === 'history_allergies') {
       const histVal = parsed.past_medical_history || extracted;
       const allVal = parsed.known_allergies || '';
       onboardingState.data.past_medical_history = histVal;
       onboardingState.data.known_allergies = allVal;
-      updateAutofillField('item-history', 'field-preview-history', histVal);
-      updateAutofillField('item-allergies', 'field-preview-allergies', allVal);
+      updateAutofillField('item-history', 'field-preview-history', histVal || 'None');
+      updateAutofillField('item-allergies', 'field-preview-allergies', allVal || 'None');
     }
 
     // Advance to next question

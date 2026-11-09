@@ -164,6 +164,56 @@ async def test_ai_validation_fast_path_phone(client):
 
 
 @pytest.mark.asyncio
+async def test_ai_validation_spoken_phone_in_words_english_and_marathi(client):
+    """Test AI converts spoken number words in English and Marathi to 10-digit numbers."""
+    # 1. English words: 'nine eight two two zero one two three four five'
+    res_en = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "phone",
+            "question_text": "Please tell me your 10-digit phone number.",
+            "user_utterance": "nine eight two two zero one two three four five",
+            "language": "en-IN",
+        },
+    )
+    assert res_en.status_code == 200
+    d_en = res_en.json()
+    assert d_en["is_valid"] is True
+    assert d_en["extracted_value"] == "9822012345"
+    assert d_en["parsed_fields"]["mobile_number"] == "9822012345"
+
+    # 2. Marathi words: 'माझा नंबर आहे नऊ आठ दोन दोन शून्य एक दोन तीन चार पाच'
+    res_mr = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "phone",
+            "question_text": "कृपया आपला १० अंकी मोबाईल नंबर सांगा.",
+            "user_utterance": "माझा नंबर आहे नऊ आठ दोन दोन शून्य एक दोन तीन चार पाच",
+            "language": "mr-IN",
+        },
+    )
+    assert res_mr.status_code == 200
+    d_mr = res_mr.json()
+    assert d_mr["is_valid"] is True
+    assert d_mr["extracted_value"] == "9822012345"
+
+    # 3. Wrong answer for phone (symptoms spoken instead of number)
+    res_wrong = await client.post(
+        "/api/v1/patients/intake/validate",
+        json={
+            "step_id": "phone",
+            "question_text": "कृपया आपला १० अंकी मोबाईल नंबर सांगा.",
+            "user_utterance": "Mala teen divasapasun potat khup dukhatahe",
+            "language": "mr-IN",
+        },
+    )
+    assert res_wrong.status_code == 200
+    d_wrong = res_wrong.json()
+    assert d_wrong["is_valid"] is False
+    assert d_wrong["reprompt_native"] is not None
+
+
+@pytest.mark.asyncio
 async def test_ai_validation_age_gender_arbitrary_sequence(client):
     """Test AI validates and extracts age and gender in ANY sequence (e.g. gender first, age first)."""
     # 1. Gender first (Marathi: "स्त्री वय २८")
