@@ -14,7 +14,12 @@ class ApiService {
   }
 
   getBaseUrl() {
-    return localStorage.getItem(this.storageKey) || this.defaultBaseUrl;
+    const stored = localStorage.getItem(this.storageKey);
+    if (stored) return stored;
+    if (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.protocol.startsWith('file')) {
+      return window.location.origin;
+    }
+    return this.defaultBaseUrl;
   }
 
   setBaseUrl(url) {
@@ -219,6 +224,17 @@ class ApiService {
   async generateDraft(consultationId) {
     return this.request(`/api/v1/consultations/${consultationId}/draft`, {
       method: 'POST',
+    });
+  }
+
+  async processScribeAudio(consultationId, audioBlob, doctorLang = 'en-IN', patientLang = 'hi-IN') {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'scribe_consultation.wav');
+    formData.append('doctor_language', doctorLang);
+    formData.append('patient_language', patientLang);
+    return this.request(`/api/v1/consultations/${consultationId}/scribe`, {
+      method: 'POST',
+      body: formData,
     });
   }
 

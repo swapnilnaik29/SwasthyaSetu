@@ -13,6 +13,8 @@ class Doctor(Base):
     credentials: Mapped[str] = mapped_column(String(255), default="MBBS, MD")
     preferred_language: Mapped[str] = mapped_column(String(10), default="en-IN")  # primary language
     spoken_languages: Mapped[str] = mapped_column(String(255), default="en-IN,mr-IN")  # comma-separated languages doctor speaks/understands
+    doctor_voice: Mapped[str] = mapped_column(String(50), default="Deven (Male)", nullable=True)
+    patient_voice: Mapped[str] = mapped_column(String(50), default="Auto (Matches Gender)", nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )

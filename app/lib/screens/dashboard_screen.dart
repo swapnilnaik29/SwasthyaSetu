@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/i18n_service.dart';
 import '../core/theme.dart';
+import '../core/language_names.dart';
 import '../models/doctor.dart';
 import '../models/patient.dart';
-import '../widgets/language_selector_sheet.dart';
 import 'onboarding_screen.dart';
 import 'patient_detail_screen.dart';
 import 'consultation_screen.dart';
@@ -67,12 +67,115 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  int _titleTapCount = 0;
+  DateTime? _lastTapTime;
+
+  void _handleTitleTap() {
+    final now = DateTime.now();
+    if (_lastTapTime == null || now.difference(_lastTapTime!) > const Duration(seconds: 3)) {
+      _titleTapCount = 1;
+    } else {
+      _titleTapCount++;
+    }
+    _lastTapTime = now;
+
+    if (_titleTapCount >= 10) {
+      _titleTapCount = 0;
+      _openDeveloperBackendDialog();
+    } else if (_titleTapCount >= 7) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Developer Mode: Tap ${10 - _titleTapCount} more times for Server Configuration'),
+          duration: const Duration(milliseconds: 600),
+        ),
+      );
+    }
+  }
+
+  void _openDeveloperBackendDialog() {
+    final urlController = TextEditingController(text: widget.api.baseUrl);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.developer_mode, color: AppColors.primaryGreen),
+            SizedBox(width: 8),
+            Text(
+              'Server Configuration',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Configure Backend Server LAN IP / Hostname:',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: urlController,
+              decoration: const InputDecoration(
+                hintText: 'e.g. http://192.168.1.4:8000',
+                prefixIcon: Icon(Icons.dns, size: 20),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: [
+                ActionChip(
+                  label: const Text('192.168.1.4:8000', style: TextStyle(fontSize: 11)),
+                  onPressed: () => urlController.text = 'http://192.168.1.4:8000',
+                ),
+                ActionChip(
+                  label: const Text('10.0.2.2:8000', style: TextStyle(fontSize: 11)),
+                  onPressed: () => urlController.text = 'http://10.0.2.2:8000',
+                ),
+                ActionChip(
+                  label: const Text('localhost:8000', style: TextStyle(fontSize: 11)),
+                  onPressed: () => urlController.text = 'http://localhost:8000',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newUrl = urlController.text.trim();
+              if (newUrl.isNotEmpty) {
+                await widget.api.setBaseUrl(newUrl);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Connected to backend: $newUrl')),
+                  );
+                  _loadPatients();
+                }
+              }
+            },
+            child: const Text('Save & Connect'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _openSettingsDialog() {
     final i18n = I18nService();
     final nameController = TextEditingController(text: widget.doctor.name);
     final credsController = TextEditingController(text: widget.doctor.credentials);
-    final urlController = TextEditingController(text: widget.api.baseUrl);
-    String selectedLang = widget.doctor.preferredLanguage;
 
     showDialog(
       context: context,
@@ -106,28 +209,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(i18n.t('credentialsSpecialty'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 const SizedBox(height: 4),
                 TextField(controller: credsController),
-                const SizedBox(height: 12),
-                Text(i18n.t('preferredLanguageLabel'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                const SizedBox(height: 4),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedLang,
-                  decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10)),
-                  items: const [
-                    DropdownMenuItem(value: 'en-IN', child: Text('English (Indian) [en-IN]')),
-                    DropdownMenuItem(value: 'mr-IN', child: Text('Marathi (मराठी) [mr-IN]')),
-                    DropdownMenuItem(value: 'hi-IN', child: Text('Hindi (हिंदी) [hi-IN]')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) setDialogState(() => selectedLang = val);
-                  },
-                ),
-                const SizedBox(height: 12),
-                Text(i18n.t('backendServerUrl'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: urlController,
-                  decoration: const InputDecoration(hintText: 'e.g. http://192.168.1.4:8000'),
-                ),
               ],
             ),
           ),
@@ -138,20 +219,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final newUrl = urlController.text.trim();
-                if (newUrl.isNotEmpty) {
-                  await widget.api.setBaseUrl(newUrl);
-                }
                 final updated = Doctor(
                   id: widget.doctor.id,
                   name: nameController.text.trim(),
                   credentials: credsController.text.trim(),
-                  preferredLanguage: selectedLang,
+                  preferredLanguage: 'en-IN',
                   spokenLanguages: widget.doctor.spokenLanguages,
                 );
                 try {
                   final saved = await widget.api.updateDoctorSettings(updated);
-                  await i18n.setLanguage(saved.preferredLanguage);
                   widget.onDoctorUpdated(saved);
                   if (context.mounted) Navigator.pop(context);
                 } catch (e) {
@@ -176,35 +252,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: AppColors.greenLight,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.greenBorder),
+        title: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _handleTitleTap,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: AppColors.greenLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.greenBorder),
+                ),
+                child: const Icon(Icons.favorite, color: AppColors.primaryGreen, size: 20),
               ),
-              child: const Icon(Icons.favorite, color: AppColors.primaryGreen, size: 20),
-            ),
-            const SizedBox(width: 10),
-            const Text.rich(
-              TextSpan(
-                text: 'Swasthya',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: AppColors.primaryGreenDeep),
-                children: [
-                  TextSpan(text: 'Setu', style: TextStyle(color: AppColors.primaryGreen)),
-                ],
+              const SizedBox(width: 10),
+              const Text.rich(
+                TextSpan(
+                  text: 'Swasthya',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: AppColors.primaryGreenDeep),
+                  children: [
+                    TextSpan(text: 'Setu', style: TextStyle(color: AppColors.primaryGreen)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.language, color: AppColors.primaryGreen),
-            tooltip: 'Switch Portal Language',
-            onPressed: () => LanguageSelectorSheet.show(context),
-          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: AppColors.textMuted),
             tooltip: 'Doctor & App Settings',
@@ -274,7 +350,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   border: Border.all(color: AppColors.greenBorder),
                                 ),
                                 child: Text(
-                                  'Primary: ${widget.doctor.preferredLanguage}',
+                                  'Primary: ${LanguageNames.getName(widget.doctor.preferredLanguage)}',
                                   style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primaryGreenDeep),
                                 ),
                               ),
@@ -438,7 +514,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          p.localizedName(widget.doctor.preferredLanguage),
+                          p.name,
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textMain),
                         ),
                         const SizedBox(height: 2),
@@ -457,7 +533,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       border: Border.all(color: langColor.withValues(alpha: 0.3)),
                     ),
                     child: Text(
-                      p.preferredLanguage,
+                      LanguageNames.getName(p.preferredLanguage),
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: langColor),
                     ),
                   ),

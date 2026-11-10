@@ -1,12 +1,24 @@
 import asyncio
 import io
 import wave
+import struct
 import httpx
 from typing import Optional
 from app.core.config import settings
 from app.core.logger import logger, log_sanitized_event
 from app.services.speech.base import TTSProvider
 from app.services.speech.mock_speech import MockTTSService
+
+def sanitize_wav_header(wav_bytes: bytes) -> bytes:
+    """Fixes streaming 0xFFFFFFFF placeholder sizes in RIFF WAV header for Android MediaPlayer compatibility."""
+    if len(wav_bytes) >= 44 and wav_bytes.startswith(b"RIFF"):
+        b = bytearray(wav_bytes)
+        struct.pack_into("<I", b, 4, len(wav_bytes) - 8)
+        data_pos = b.find(b"data")
+        if data_pos != -1 and len(b) >= data_pos + 8:
+            struct.pack_into("<I", b, data_pos + 4, len(wav_bytes) - (data_pos + 8))
+        return bytes(b)
+    return wav_bytes
 
 # Shared connection pool for ultra-low latency keep-alive requests (event-loop aware)
 _tts_http_client: Optional[httpx.AsyncClient] = None
@@ -53,12 +65,28 @@ class GnaniTTSService(TTSProvider):
         "hi": "Deepak",
         "mr": "Omkar",
         "en": "Deven",
+        "gu": "Nirav",
+        "bn": "Tanmay",
+        "ta": "Saravanan",
+        "te": "Chaitanya",
+        "kn": "Gopal",
+        "ml": "Manoj",
+        "pa": "Amrit",
+        "or": "Subhas",
     }
 
     SUPPORTED_FEMALE_VOICES = {
         "hi": "Nalini",
         "mr": "Kaveri",
         "en": "Devika",
+        "gu": "Dhwani",
+        "bn": "Mithu",
+        "ta": "Kavitha",
+        "te": "Sandhya",
+        "kn": "Shweta",
+        "ml": "Arya",
+        "pa": "Kaur",
+        "or": "Ananya",
     }
 
     def __init__(self, api_key: Optional[str] = None, base_url: str = "https://api.vachana.ai"):
@@ -75,23 +103,50 @@ class GnaniTTSService(TTSProvider):
         lang = language.strip().lower()
         if requested_voice and requested_voice not in ["hi_male_1", "mr_male_1", "en_male_1", ""]:
             return requested_voice
-        
-        # Female voice selection (for conversational intake form assistant)
-        if gender and gender.strip().lower() == "female":
-            if "hi" in lang:
-                return self.SUPPORTED_FEMALE_VOICES["hi"]
-            elif "mr" in lang:
-                return self.SUPPORTED_FEMALE_VOICES["mr"]
-            else:
-                return self.SUPPORTED_FEMALE_VOICES["en"]
 
-        # Default male voice selection (for doctor and patient consultation turns)
-        if "hi" in lang:
-            return self.SUPPORTED_MALE_VOICES["hi"]
-        elif "mr" in lang:
-            return self.SUPPORTED_MALE_VOICES["mr"]
+        is_female = bool(gender and gender.strip().lower() == "female")
+        voices_map = self.SUPPORTED_FEMALE_VOICES if is_female else self.SUPPORTED_MALE_VOICES
+        fallback_voice = "Devika" if is_female else "Deven"
+
+        for code in ["mr", "hi", "gu", "bn", "ta", "te", "kn", "ml", "pa", "or", "en"]:
+            if code in lang:
+                return voices_map.get(code, fallback_voice)
+
+        return fallback_voice
+
+    async def synthesize_openai(self, text: str, voice: str = "nova") -> bytes:
+        """High-clarity universal speech synthesis using OpenAI TTS-1."""
+        client = get_tts_client()
+        clean_voice = voice.lower()
+        if "fem" in clean_voice or "nova" in clean_voice or "nalini" in clean_voice or "kaveri" in clean_voice or "devika" in clean_voice:
+            target_voice = "nova"
+        elif "shimmer" in clean_voice:
+            target_voice = "shimmer"
+        elif "onyx" in clean_voice or "deep" in clean_voice:
+            target_voice = "onyx"
+        elif "echo" in clean_voice or "male" in clean_voice:
+            target_voice = "echo"
+        elif "alloy" in clean_voice:
+            target_voice = "alloy"
         else:
-            return self.SUPPORTED_MALE_VOICES["en"]
+            target_voice = "nova" if "female" in clean_voice else "echo"
+
+        res = await client.post(
+            "https://api.openai.com/v1/audio/speech",
+            headers={
+                "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "tts-1",
+                "input": text,
+                "voice": target_voice,
+                "response_format": "wav",
+            },
+            timeout=20.0,
+        )
+        res.raise_for_status()
+        return sanitize_wav_header(res.content)
 
     async def synthesize(
         self,
@@ -100,48 +155,61 @@ class GnaniTTSService(TTSProvider):
         voice: Optional[str] = None,
         gender: str = "male",
     ) -> bytes:
-        if not self.api_key:
-            raise ValueError("GNANI_API_KEY is not configured")
+        v_lower = (voice or "").lower()
+        openai_voices = ["nova", "shimmer", "echo", "onyx", "alloy", "fable"]
+        if any(ov in v_lower for ov in openai_voices) and settings.OPENAI_API_KEY:
+            try:
+                target_v = voice or ("nova" if gender == "female" else "echo")
+                return await self.synthesize_openai(text, voice=target_v)
+            except Exception as e:
+                logger.error(f"OpenAI TTS direct synthesis failed: {e}")
 
-        selected_voice = self._get_voice_for_language(language, voice, gender=gender)
-        headers = {
-            "X-API-Key-ID": self.api_key,
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        # Attempt Gnani TTS if configured and language supported
+        lang_short = language.split("-")[0].lower()
+        if self.api_key and lang_short in ["hi", "mr", "en", "gu", "bn", "ta", "te", "kn", "ml", "pa", "or"]:
+            try:
+                selected_voice = self._get_voice_for_language(language, voice, gender=gender)
+                headers = {
+                    "X-API-Key-ID": self.api_key,
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                }
 
-        payload = {
-            "text": text,
-            "language": language,
-            "voice": selected_voice,
-            "model": self.model,
-            "speed": 1.0,
-            "audio_config": {
-                "sample_rate": 16000,
-                "num_channels": 1,
-                "encoding": "linear_pcm",
-                "container": "wav",
-            },
-        }
+                payload = {
+                    "text": text,
+                    "language": language,
+                    "voice": selected_voice,
+                    "model": self.model,
+                    "speed": 1.0,
+                    "audio_config": {
+                        "sample_rate": 16000,
+                        "num_channels": 1,
+                        "encoding": "linear_pcm",
+                        "container": "wav",
+                    },
+                }
 
-        log_sanitized_event("gnani_tts_request_initiated", language=language, voice=selected_voice)
+                log_sanitized_event("gnani_tts_request_initiated", language=language, voice=selected_voice)
+                client = get_tts_client()
+                response = await client.post(
+                    f"{self.base_url}/api/v1/tts/inference",
+                    headers=headers,
+                    json=payload,
+                )
+                response.raise_for_status()
+                wav_audio = response.content
+                if not wav_audio.startswith(b"RIFF"):
+                    wav_audio = pcm_to_wav(wav_audio)
+                else:
+                    wav_audio = sanitize_wav_header(wav_audio)
+                log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(wav_audio))
+                return wav_audio
+            except Exception as e:
+                logger.warning(f"Gnani TTS failed ({e}), falling back to OpenAI TTS...")
 
-        client = get_tts_client()
-        try:
-            response = await client.post(
-                f"{self.base_url}/api/v1/tts/inference",
-                headers=headers,
-                json=payload,
-            )
-            response.raise_for_status()
-            wav_audio = response.content
-            if not wav_audio.startswith(b"RIFF"):
-                wav_audio = pcm_to_wav(wav_audio)
-            log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(wav_audio))
-            return wav_audio
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Gnani TTS API error status={e.response.status_code}: {e.response.text}")
-            raise RuntimeError(f"Gnani TTS API error ({e.response.status_code}): {e.response.text}")
-        except Exception as e:
-            logger.error(f"Gnani TTS API call failed: {e}")
-            raise
+        # Robust OpenAI TTS Fallback
+        if settings.OPENAI_API_KEY:
+            fallback_voice = "nova" if (gender == "female" or "fem" in v_lower) else "echo"
+            return await self.synthesize_openai(text, voice=fallback_voice)
+
+        raise RuntimeError("No TTS provider available to synthesize speech")

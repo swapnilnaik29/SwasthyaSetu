@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
+import '../core/report_printer.dart';
 import '../models/doctor.dart';
 import '../models/patient.dart';
 
@@ -183,6 +184,53 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Print Prescription & Clinical Record
+            ElevatedButton.icon(
+              icon: const Icon(Icons.print, size: 20),
+              label: const Text('Print Prescription / Clinical Report'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(14),
+                backgroundColor: AppColors.primaryGreen,
+              ),
+              onPressed: () async {
+                try {
+                  final reports = await widget.api.getPatientReports(widget.patient.id);
+                  if (reports.isNotEmpty) {
+                    await ReportPrinter.printReport(
+                      Map<String, dynamic>.from(reports.first),
+                      patient: widget.patient,
+                      doctor: widget.doctor,
+                    );
+                  } else {
+                    // Build on-the-fly report map if needed
+                    await ReportPrinter.printReport(
+                      {
+                        'doctor_name': widget.doctor.name,
+                        'doctor_credentials': widget.doctor.credentials,
+                        'patient_name': widget.patient.name,
+                        'patient_age': widget.patient.age,
+                        'patient_gender': widget.patient.gender,
+                        'patient_phone': widget.patient.mobileNumber,
+                        'chief_complaint': widget.patient.chiefComplaint,
+                        'doctor_diagnosis': 'Consultation Completed',
+                        'doctor_notes': widget.initialNotes,
+                        'date': DateTime.now().toIso8601String(),
+                      },
+                      patient: widget.patient,
+                      doctor: widget.doctor,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Print error: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: 12),
 
             // Return to Dashboard Action
             OutlinedButton.icon(

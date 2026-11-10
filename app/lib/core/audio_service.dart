@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -36,6 +37,10 @@ class AudioService extends ChangeNotifier {
         _isPlaying = playing;
         notifyListeners();
       }
+    });
+    _player.onPlayerComplete.listen((_) {
+      _isPlaying = false;
+      notifyListeners();
     });
     _setupAudioContext();
   }
@@ -126,6 +131,7 @@ class AudioService extends ChangeNotifier {
           final bytes = await file.readAsBytes();
           if (bytes.isNotEmpty) {
             _currentRecordingPath = null;
+            debugPrint('[AudioService] Recording stopped. Read ${bytes.length} bytes.');
             return bytes;
           }
         }
@@ -147,13 +153,43 @@ class AudioService extends ChangeNotifier {
       await _player.stop();
       _isPlaying = true;
       notifyListeners();
-      debugPrint('[AudioService] Playing audio via speaker: $url');
-      await _player.play(UrlSource(url));
+
+      debugPrint('[AudioService] Downloading audio file: $url');
+      final uri = Uri.parse(url);
+      final response = await http.get(uri).timeout(const Duration(seconds: 15));
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+        throw Exception('Failed to fetch audio: status ${response.statusCode}');
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/tts_${DateTime.now().millisecondsSinceEpoch}.wav');
+      await tempFile.writeAsBytes(response.bodyBytes, flush: true);
+
+      debugPrint('[AudioService] Playing audio via DeviceFileSource: ${tempFile.path} (${response.bodyBytes.length} bytes)');
+      await _player.play(DeviceFileSource(tempFile.path));
     } catch (e) {
       debugPrint('[AudioService] Playback failed: $e');
       _isPlaying = false;
       notifyListeners();
     }
+  }
+
+  Future<void> playAudioAndWait(String url) async {
+    await playAudio(url);
+    if (!_isPlaying) return;
+
+    final completer = Completer<void>();
+    StreamSubscription? sub;
+    sub = _player.onPlayerComplete.listen((_) {
+      sub?.cancel();
+      if (!completer.isCompleted) completer.complete();
+    });
+    // Fallback safety timeout (12s)
+    Future.delayed(const Duration(seconds: 12), () {
+      sub?.cancel();
+      if (!completer.isCompleted) completer.complete();
+    });
+    await completer.future;
   }
 
   Future<void> stopAudio() async {
@@ -174,4 +210,3 @@ class AudioService extends ChangeNotifier {
     super.dispose();
   }
 }
-

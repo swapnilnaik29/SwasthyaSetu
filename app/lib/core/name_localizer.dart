@@ -109,3 +109,4 @@ class NameLocalizer {
     return result.isNotEmpty ? result : text;
   }
 }
+

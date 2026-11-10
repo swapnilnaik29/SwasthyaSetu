@@ -349,16 +349,23 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.auto_awesome, color: AppColors.primaryGreen, size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            _i18n.t('talkToAiTitle'),
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
-                          ),
-                        ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            const Icon(Icons.auto_awesome, color: AppColors.primaryGreen, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _i18n.t('talkToAiTitle'),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       // Mic Dictation for AI Clinical Assistant
                       _micButton(
                         target: 'ai_assist',
@@ -432,16 +439,26 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _i18n.t('patientVitalsTitle'),
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
-                          ),
-                          Text(_i18n.t('patientVitalsSubtitle'), style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _i18n.t('patientVitalsTitle'),
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              _i18n.t('patientVitalsSubtitle'),
+                              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       _micButton(
                         target: 'vitals',
                         tooltip: _i18n.t('dictateVitalsTooltip'),
@@ -489,28 +506,29 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _i18n.t('prescriptionsTitle'),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
+                      Expanded(
+                        child: Text(
+                          _i18n.t('prescriptionsTitle'),
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primaryGreenDeep),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      Row(
-                        children: [
-                          _micButton(
-                            target: 'rx',
-                            tooltip: _i18n.t('dictateRxTooltip'),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.add, size: 14),
-                            label: Text(_i18n.t('addMedicineBtn'), style: const TextStyle(fontSize: 11)),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            ),
-                            onPressed: _showAddPrescriptionDialog,
-                          ),
-                        ],
+                      const SizedBox(width: 6),
+                      _micButton(
+                        target: 'rx',
+                        tooltip: _i18n.t('dictateRxTooltip'),
+                      ),
+                      const SizedBox(width: 6),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.add, size: 14),
+                        label: Text(_i18n.t('addMedicineBtn'), style: const TextStyle(fontSize: 11)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        onPressed: _showAddPrescriptionDialog,
                       ),
                     ],
                   ),
@@ -600,10 +618,15 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        _i18n.t('notesLabel'),
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textMain),
+                      Expanded(
+                        child: Text(
+                          _i18n.t('notesLabel'),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textMain),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       _micButton(
                         target: 'notes',
                         tooltip: _i18n.t('dictateNotesTooltip'),
@@ -646,17 +669,29 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
                     decoration: const InputDecoration(labelText: 'Follow-up Recommendation'),
                   ),
                   const SizedBox(height: 10),
-                  Row(
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      const Text('Follow-up Date: ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                      Text(
-                        _selectedNextDate != null ? DateFormat('dd MMM yyyy').format(_selectedNextDate!) : 'Not set',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primaryGreen),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Follow-up Date: ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                          Text(
+                            _selectedNextDate != null ? DateFormat('dd MMM yyyy').format(_selectedNextDate!) : 'Not set',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primaryGreen),
+                          ),
+                        ],
                       ),
-                      const Spacer(),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.calendar_month, size: 16),
-                        label: const Text('Change Date'),
+                        label: const Text('Change Date', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          visualDensity: VisualDensity.compact,
+                        ),
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
@@ -750,9 +785,10 @@ class _DraftReviewScreenState extends State<DraftReviewScreen> {
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           ),
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
         ),
       ],
     );

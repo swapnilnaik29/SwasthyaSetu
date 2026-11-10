@@ -28,30 +28,44 @@ from app.services.translation.luna_service import get_openai_client
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
 
-async def translate_and_summarize_intake(intake: PatientIntakeSubmission) -> dict:
+async def translate_and_summarize_intake(intake) -> dict:
     """Translates patient's intake responses into canonical medical English using GPT-6 Luna."""
-    complaint_raw = intake.chief_complaint or ""
-    history_raw = intake.past_medical_history or ""
-    allergies_raw = intake.known_allergies or ""
-    meds_raw = intake.current_medications or ""
-    lang = intake.preferred_language or "hi-IN"
+    if isinstance(intake, dict):
+        complaint_raw = intake.get("chief_complaint") or ""
+        history_raw = intake.get("past_medical_history") or ""
+        allergies_raw = intake.get("known_allergies") or ""
+        meds_raw = intake.get("current_medications") or ""
+        name_raw = intake.get("name") or intake.get("patient_name") or ""
+        lang = intake.get("preferred_language") or "hi-IN"
+        dur_raw = intake.get("symptoms_duration") or "Not specified"
+    else:
+        complaint_raw = getattr(intake, "chief_complaint", None) or ""
+        history_raw = getattr(intake, "past_medical_history", None) or ""
+        allergies_raw = getattr(intake, "known_allergies", None) or ""
+        meds_raw = getattr(intake, "current_medications", None) or ""
+        name_raw = getattr(intake, "name", None) or getattr(intake, "patient_name", None) or ""
+        lang = getattr(intake, "preferred_language", None) or "hi-IN"
+        dur_raw = getattr(intake, "symptoms_duration", None) or "Not specified"
 
     client = get_openai_client(settings.OPENAI_API_KEY)
 
     system_prompt = (
         "You are an expert AI clinical triage assistant. A patient completed a pre-consultation intake in their native language.\n"
         "Translate and summarize the medical information into concise, professional clinical English for the attending doctor.\n"
+        "Also transliterate the patient's name into clean English Latin alphabet if it is in Devanagari/Hindi/Marathi script.\n"
         "Return a valid JSON object with keys:\n"
-        "- chief_complaint_english: string (translated patient symptoms and duration)\n"
-        "- past_medical_history_english: string (chronic conditions, previous illnesses)\n"
-        "- known_allergies_english: string (drug or food allergies)\n"
-        "- current_medications_english: string (medications currently taken)\n"
-        "- intake_summary_english: string (concise 2-sentence clinical briefing for the doctor)"
+        "- patient_name_english: string (patient name transliterated to English Latin script, e.g. 'Sunita Patil')\n"
+        "- chief_complaint_english: string (translated patient symptoms and duration in English)\n"
+        "- past_medical_history_english: string (chronic conditions, previous illnesses in English)\n"
+        "- known_allergies_english: string (drug or food allergies in English)\n"
+        "- current_medications_english: string (medications currently taken in English)\n"
+        "- intake_summary_english: string (concise 2-sentence clinical briefing for the doctor in English)"
     )
 
     user_prompt = (
+        f"Patient Name: {name_raw}\n"
         f"Patient Language: {lang}\n"
-        f"Chief Complaint: {complaint_raw} (Duration: {intake.symptoms_duration or 'Not specified'})\n"
+        f"Chief Complaint: {complaint_raw} (Duration: {dur_raw})\n"
         f"Past Medical History: {history_raw or 'None reported'}\n"
         f"Allergies: {allergies_raw or 'None'}\n"
         f"Current Medications: {meds_raw or 'None'}"
@@ -71,6 +85,7 @@ async def translate_and_summarize_intake(intake: PatientIntakeSubmission) -> dic
     except Exception as e:
         logger.warning(f"Live GPT-6 Luna intake translation fallback ({e})")
         return {
+            "patient_name_english": name_raw,
             "chief_complaint_english": complaint_raw or "",
             "past_medical_history_english": history_raw or "",
             "known_allergies_english": allergies_raw or "",
@@ -118,25 +133,24 @@ async def create_patient(
     # If intake was spoken/typed in Marathi, Hindi, or contains non-ASCII characters, canonicalize to English
     if (patient_in.preferred_language and patient_in.preferred_language != "en-IN") or any(ord(c) > 127 for c in (patient_in.name + (patient_in.chief_complaint or ""))):
         try:
-            intake_sub = PatientIntakeSubmission(
-                patient_name=patient_in.name,
-                preferred_language=patient_in.preferred_language or "hi-IN",
-                chief_complaint=patient_in.chief_complaint,
-                symptoms_duration=patient_in.symptoms_duration,
-                past_medical_history=patient_in.past_medical_history,
-                known_allergies=patient_in.known_allergies,
-                current_medications=patient_in.current_medications,
-            )
-            trans_data = await translate_and_summarize_intake(intake_sub)
+            trans_data = await translate_and_summarize_intake(patient_in)
             complaint_en = trans_data.get("chief_complaint_english") or complaint_en
             history_en = trans_data.get("past_medical_history_english") or history_en
             allergies_en = trans_data.get("known_allergies_english") or allergies_en
             meds_en = trans_data.get("current_medications_english") or meds_en
             summary_en = trans_data.get("intake_summary_english") or summary_en
+            if trans_data.get("patient_name_english") and trans_data["patient_name_english"].strip():
+                name_en = trans_data["patient_name_english"].strip()
 
-            if any(ord(c) > 127 for c in patient_in.name):
+            if any(ord(c) > 127 for c in complaint_en):
                 sarvam = SarvamTranslationService()
-                name_trans = await sarvam.translate(patient_in.name, target_lang="en-IN", source_lang=patient_in.preferred_language or "hi-IN")
+                c_trans = await sarvam.translate(complaint_en, target_lang="en-IN", source_lang=patient_in.preferred_language or "hi-IN")
+                if c_trans.strip():
+                    complaint_en = c_trans.strip()
+
+            if any(ord(c) > 127 for c in name_en):
+                sarvam = SarvamTranslationService()
+                name_trans = await sarvam.translate(name_en, target_lang="en-IN", source_lang=patient_in.preferred_language or "hi-IN")
                 if name_trans.strip():
                     name_en = name_trans.strip()
         except Exception as e:
@@ -264,7 +278,8 @@ async def validate_intake_step(req: IntakeValidationRequest):
         "   - If not 10 digits or irrelevant utterance: is_valid=false, extracted_value=null, and provide a polite reprompt_native in the patient's language asking them to speak their 10-digit mobile number.\n\n"
         "4. 'complaint':\n"
         "   - Expects health problem, symptoms, and duration.\n"
-        "   - If describing a medical problem: is_valid=true, extracted_value='clean summary', parsed_fields={'chief_complaint': '...', 'symptoms_duration': '...'}.\n"
+        "   - CRITICAL REQUIREMENT: Translate the medical complaint and all symptoms into professional clinical English (e.g. 'Severe abdominal pain and fever for 2 days'). Even if patient spoke in Marathi, Hindi, or Hinglish, extracted_value and parsed_fields['chief_complaint'] MUST ALWAYS BE IN ENGLISH!\n"
+        "   - If describing a medical problem: is_valid=true, extracted_value='<medical complaint in English>', parsed_fields={'chief_complaint': '<English translated complaint>', 'symptoms_duration': '<duration in English>'}.\n"
         "   - If irrelevant: is_valid=false with reprompt.\n\n"
         "5. 'history_allergies':\n"
         "   - Expects chronic conditions (BP, Diabetes, Asthma, etc.) and/or allergies.\n"
@@ -318,6 +333,19 @@ async def validate_intake_step(req: IntakeValidationRequest):
                     reprompt_native=data.get("reprompt_native") or ("हे आपले लक्षण वाटते. कृपया आधी आपले पूर्ण नाव सांगा." if is_mr else "यह आपकी तकलीफ़ लग रही है। कृपया पहले अपना शुभ नाम बताएं।"),
                     reprompt_english=data.get("reprompt_english") or "This seems like a symptom. Please tell me your full name first.",
                 )
+
+        if req.step_id == "complaint" and data.get("is_valid", True):
+            comp = parsed_fields.get("chief_complaint") or extracted_val or clean_text
+            if any(ord(c) > 127 for c in str(comp)):
+                try:
+                    from app.services.translation.sarvam_service import SarvamTranslationService
+                    sarvam = SarvamTranslationService()
+                    translated_comp = await sarvam.translate(str(comp), target_lang="en-IN", source_lang=req.language or "hi-IN")
+                    if translated_comp and translated_comp.strip():
+                        parsed_fields["chief_complaint"] = translated_comp.strip()
+                        extracted_val = translated_comp.strip()
+                except Exception as ex:
+                    logger.warning(f"Sarvam translation for complaint failed: {ex}")
 
         return IntakeValidationResponse(
             is_valid=data.get("is_valid", True),
@@ -391,14 +419,26 @@ async def complete_conversational_intake(
     """
     # Translate and summarize intake into English
     summary_data = await translate_and_summarize_intake(intake_in)
+    comp_en = summary_data.get("chief_complaint_english") or intake_in.chief_complaint
+    name_en = summary_data.get("patient_name_english") or intake_in.name
+
+    if any(ord(c) > 127 for c in (comp_en or "")):
+        try:
+            from app.services.translation.sarvam_service import SarvamTranslationService
+            sarvam = SarvamTranslationService()
+            c_trans = await sarvam.translate(comp_en, target_lang="en-IN", source_lang=intake_in.preferred_language or "hi-IN")
+            if c_trans.strip():
+                comp_en = c_trans.strip()
+        except Exception as e:
+            logger.warning(f"Sarvam translation in complete_conversational_intake failed: {e}")
 
     patient = Patient(
-        name=intake_in.name.strip(),
+        name=name_en.strip(),
         age=intake_in.age,
         gender=intake_in.gender,
         mobile_number=intake_in.mobile_number.strip(),
         preferred_language=intake_in.preferred_language,
-        chief_complaint=summary_data.get("chief_complaint_english") or intake_in.chief_complaint,
+        chief_complaint=comp_en,
         symptoms_duration=intake_in.symptoms_duration,
         past_medical_history=summary_data.get("past_medical_history_english") or intake_in.past_medical_history,
         known_allergies=summary_data.get("known_allergies_english") or intake_in.known_allergies,
@@ -518,8 +558,16 @@ async def get_patient_reports(
                         consultation_id=c.id,
                         patient_id=patient.id,
                         patient_name=patient.name,
+                        patient_age=patient.age,
+                        patient_gender=patient.gender,
+                        patient_phone=patient.mobile_number,
+                        patient_language=patient.preferred_language,
+                        chief_complaint=patient.chief_complaint,
+                        past_medical_history=patient.past_medical_history,
+                        known_allergies=patient.known_allergies,
                         date=c.started_at,
                         doctor_name=actual_doctor_name,
+                        doctor_credentials=doc.credentials if doc else "MBBS, MD",
                         status=status,
                         doctor_diagnosis=structured.doctor_diagnosis,
                         doctor_notes=structured.doctor_notes,
@@ -529,8 +577,8 @@ async def get_patient_reports(
                         follow_up_recommendation=structured.follow_up_recommendation,
                         follow_up_days=structured.follow_up_days,
                         recommended_next_visit_date=structured.recommended_next_visit_date,
-                        medical_history=structured.medical_history,
-                        allergies=structured.allergies,
+                        medical_history=structured.medical_history or patient.past_medical_history,
+                        allergies=structured.allergies or patient.known_allergies,
                     )
                 )
             except Exception as e:

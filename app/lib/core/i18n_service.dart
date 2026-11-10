@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'api_client.dart';
 
 class I18nService extends ChangeNotifier {
@@ -8,7 +7,7 @@ class I18nService extends ChangeNotifier {
   I18nService._internal();
 
   String _currentLanguage = 'en-IN';
-  String get currentLanguage => _currentLanguage;
+  String get currentLanguage => 'en-IN';
 
   final Map<String, Map<String, String>> _dictionaries = {
     'en-IN': {
@@ -188,33 +187,12 @@ class I18nService extends ChangeNotifier {
   };
 
   Future<void> init(ApiClient api, [String? initialDoctorLang]) async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedLang = prefs.getString('swasthya_selected_lang') ?? initialDoctorLang;
-    if (savedLang != null) {
-      _currentLanguage = savedLang;
-    }
-
-    // Sync localized UI strings from SQLite database cache
-    try {
-      final dbCaches = await api.getUICaches();
-      if (dbCaches.isNotEmpty) {
-        dbCaches.forEach((lang, data) {
-          if (data['translations'] is Map) {
-            final trans = Map<String, dynamic>.from(data['translations']);
-            _dictionaries[lang] = trans.map((k, v) => MapEntry(k, v.toString()));
-          }
-        });
-      }
-    } catch (e) {
-      debugPrint('[I18nService] SQLite UI cache sync: $e');
-    }
+    _currentLanguage = 'en-IN';
     notifyListeners();
   }
 
   Future<void> setLanguage(String langCode) async {
-    _currentLanguage = langCode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('swasthya_selected_lang', langCode);
+    _currentLanguage = 'en-IN';
     notifyListeners();
   }
 

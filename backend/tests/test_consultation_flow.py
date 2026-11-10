@@ -98,3 +98,47 @@ async def test_full_consultation_turn_lifecycle(client):
     assert patch_res.status_code == 200
     assert "severe headache" in patch_res.json()["canonical_english_text"]
 
+
+@pytest.mark.asyncio
+async def test_ambient_scribe_consultation(client):
+    # 1. Create Patient
+    pat_res = await client.post(
+        "/api/v1/patients",
+        json={
+            "name": "Sunita Patil",
+            "age": 36,
+            "mobile_number": "9822334455",
+            "preferred_language": "mr-IN",
+        },
+    )
+    patient_id = pat_res.json()["id"]
+
+    # 2. Create Consultation
+    cons_res = await client.post(
+        "/api/v1/consultations",
+        json={
+            "patient_id": patient_id,
+            "doctor_language": "en-IN",
+            "patient_language": "mr-IN",
+        },
+    )
+    assert cons_res.status_code == 201
+    consultation_id = cons_res.json()["id"]
+
+    # 3. Post Scribe Audio
+    from app.services.speech.mock_speech import MockTTSService
+    dummy_wav = await MockTTSService().synthesize("Doctor mala don divas pasun tap ahe", "mr-IN")
+    files = {"audio": ("ambient_scribe.wav", io.BytesIO(dummy_wav), "audio/wav")}
+    scribe_res = await client.post(
+        f"/api/v1/consultations/{consultation_id}/scribe",
+        files=files,
+    )
+    assert scribe_res.status_code == 200
+    draft = scribe_res.json()
+    assert "structured_payload" in draft
+    payload = draft["structured_payload"]
+    assert "doctor_diagnosis" in payload
+    assert "patient_reported_symptoms" in payload
+    assert "vitals" in payload
+    assert "prescriptions" in payload
+

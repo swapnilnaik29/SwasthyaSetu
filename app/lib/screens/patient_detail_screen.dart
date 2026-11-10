@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
+import '../core/language_names.dart';
 import '../models/doctor.dart';
 import '../models/patient.dart';
 import '../widgets/report_details_dialog.dart';
@@ -49,7 +50,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final p = widget.patient;
-    final displayName = p.localizedName(widget.doctor.preferredLanguage);
+    final displayName = p.name;
 
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +94,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                'Preferred Language: ${p.preferredLanguage}',
+                                'Preferred Language: ${LanguageNames.getName(p.preferredLanguage)}',
                                 style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primaryGreen),
                               ),
                             ),
@@ -257,7 +258,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
               icon: const Icon(Icons.description_outlined, size: 14),
               label: const Text('View Full Report', style: TextStyle(fontSize: 11)),
               style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
-              onPressed: () => ReportDetailsDialog.show(context, r),
+              onPressed: () => ReportDetailsDialog.show(context, r, patient: widget.patient, doctor: widget.doctor),
             ),
           ),
         ],

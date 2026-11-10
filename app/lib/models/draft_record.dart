@@ -5,6 +5,7 @@ class Vitals {
   int? pulseBpm;
   double? temperatureF;
   int? spo2Percent;
+  String? bmi;
 
   Vitals({
     this.weightKg,
@@ -13,27 +14,66 @@ class Vitals {
     this.pulseBpm,
     this.temperatureF,
     this.spo2Percent,
+    this.bmi,
   });
 
   factory Vitals.fromJson(Map<String, dynamic> json) {
+    double? parseDbl(dynamic val) {
+      if (val == null) return null;
+      final m = RegExp(r'\d+(?:\.\d+)?').firstMatch(val.toString());
+      return m != null ? double.tryParse(m.group(0)!) : null;
+    }
+
+    int? parseInt(dynamic val) {
+      if (val == null) return null;
+      final m = RegExp(r'\d+').firstMatch(val.toString());
+      return m != null ? int.tryParse(m.group(0)!) : null;
+    }
+
+    final w = parseDbl(json['weight_kg'] ?? json['weight'] ?? json['wt']);
+    final h = parseDbl(json['height_cm'] ?? json['height'] ?? json['ht']);
+    final bp = (json['blood_pressure'] ?? json['bp'])?.toString();
+    final p = parseInt(json['pulse_bpm'] ?? json['pulse'] ?? json['heart_rate']);
+    final t = parseDbl(json['temperature_f'] ?? json['temperature'] ?? json['temp']);
+    final s = parseInt(json['spo2_percent'] ?? json['spo2']);
+    String? bmiVal = json['bmi']?.toString();
+    if ((bmiVal == null || bmiVal.isEmpty) && w != null && h != null && h > 0) {
+      final hMeters = h / 100.0;
+      bmiVal = (w / (hMeters * hMeters)).toStringAsFixed(1);
+    }
+
     return Vitals(
-      weightKg: json['weight_kg'] != null ? double.tryParse(json['weight_kg'].toString()) : null,
-      heightCm: json['height_cm'] != null ? double.tryParse(json['height_cm'].toString()) : null,
-      bloodPressure: json['blood_pressure']?.toString(),
-      pulseBpm: json['pulse_bpm'] != null ? int.tryParse(json['pulse_bpm'].toString()) : null,
-      temperatureF: json['temperature_f'] != null ? double.tryParse(json['temperature_f'].toString()) : null,
-      spo2Percent: json['spo2_percent'] != null ? int.tryParse(json['spo2_percent'].toString()) : null,
+      weightKg: w,
+      heightCm: h,
+      bloodPressure: bp,
+      pulseBpm: p,
+      temperatureF: t,
+      spo2Percent: s,
+      bmi: bmiVal,
     );
   }
 
   Map<String, dynamic> toJson() {
+    String? calcBmi = bmi;
+    if ((calcBmi == null || calcBmi.isEmpty) && weightKg != null && heightCm != null && heightCm! > 0) {
+      final hMeters = heightCm! / 100.0;
+      calcBmi = (weightKg! / (hMeters * hMeters)).toStringAsFixed(1);
+    }
+
     return {
       'weight_kg': weightKg,
+      'weight': weightKg != null ? '$weightKg kg' : null,
       'height_cm': heightCm,
+      'height': heightCm != null ? '$heightCm cm' : null,
       'blood_pressure': bloodPressure,
+      'bp': bloodPressure,
       'pulse_bpm': pulseBpm,
+      'pulse': pulseBpm != null ? '$pulseBpm bpm' : null,
       'temperature_f': temperatureF,
+      'temperature': temperatureF != null ? '$temperatureF °F' : null,
       'spo2_percent': spo2Percent,
+      'spo2': spo2Percent != null ? '$spo2Percent%' : null,
+      'bmi': calcBmi,
     };
   }
 }

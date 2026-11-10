@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>SwasthyaSetu — Clinical Communication Suite</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,13 +42,11 @@
 
       <!-- Right Header Actions -->
       <div class="header-actions">
-        <!-- Quick App Language Switcher (Backed by Database Cache) -->
-        <div class="lang-select-pill" title="Switch Portal Language">
+        <!-- Quick App Language Switcher (Hidden: UI strictly in English) -->
+        <div class="lang-select-pill" title="Portal Language" style="display: none;">
           <i class="fa-solid fa-globe" style="color: var(--primary-green);"></i>
           <select id="header-lang-switcher" aria-label="Portal Language">
             <option value="en-IN">English</option>
-            <option value="mr-IN">मराठी (Marathi)</option>
-            <option value="hi-IN">हिंदी (Hindi)</option>
           </select>
         </div>
 
@@ -75,9 +73,6 @@
         <!-- Doctor Hero Profile Card -->
         <div class="doctor-hero-card">
           <div class="doctor-hero-left">
-            <div class="doctor-avatar-circle">
-              <i class="fa-solid fa-user-doctor"></i>
-            </div>
             <div class="doctor-hero-info">
               <h3 id="dash-doctor-name">Dr. Swapnil Naik</h3>
               <p id="dash-doctor-creds">MBBS, MD (General Medicine)</p>
@@ -97,8 +92,8 @@
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" id="input-patient-search" placeholder="Search patients by name or phone...">
           </div>
-          <button id="btn-add-patient" class="btn btn-primary" title="Launch Interactive Patient Onboarding">
-            <i class="fa-solid fa-user-plus"></i> <span id="label-onboard-btn">Onboard Patient</span>
+          <button id="btn-add-patient" class="btn btn-primary" style="background-color: #059669 !important; background: #059669 !important; color: #ffffff !important; border: 1px solid #047857 !important; font-weight: 700 !important;" title="Launch Interactive Patient Onboarding">
+            <i class="fa-solid fa-user-plus" style="color: #ffffff !important;"></i> <span id="label-onboard-btn" style="color: #ffffff !important; font-weight: 700 !important;">Onboard Patient</span>
           </button>
         </div>
 
@@ -449,86 +444,158 @@
           </button>
         </div>
 
-        <!-- Language Pair Bar -->
-        <div class="lang-pair-container card" id="cons-lang-pair-bar" style="padding: 10px 18px; display: flex; align-items: center; justify-content: space-between;">
-          <span class="badge-chip badge-hi" id="cons-badge-patient">Patient: Hindi</span>
-          <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 13px;"></i>
-          <span class="badge-chip badge-en" id="cons-badge-doctor">Doctor: English</span>
-        </div>
-
-        <!-- Speaker Selector -->
-        <div class="speaker-toggle-container" id="cons-speaker-toggle">
-          <button id="btn-speaker-patient" class="speaker-btn active patient">
-            <i class="fa-solid fa-user"></i> <span id="label-patient-speaks-btn">PATIENT SPEAKS</span>
+        <!-- Consultation Mode Switcher -->
+        <div class="card" style="padding: 6px; display: flex; gap: 8px; background: #e2e8f0; border-radius: var(--radius-md);">
+          <button id="btn-mode-conversation" class="btn" style="flex: 1; padding: 10px 14px; font-size: 13px; font-weight: 800; border-radius: var(--radius-sm); background: #ffffff; color: var(--primary-green-deep); box-shadow: var(--shadow-sm); border: none; cursor: pointer;">
+            <i class="fa-solid fa-comments"></i> Conversation Mode
           </button>
-          <button id="btn-speaker-doctor" class="speaker-btn doctor">
-            <i class="fa-solid fa-user-doctor"></i> <span id="label-doctor-speaks-btn">DOCTOR SPEAKS</span>
+          <button id="btn-mode-scribe" class="btn" style="flex: 1; padding: 10px 14px; font-size: 13px; font-weight: 800; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); border: none; cursor: pointer;">
+            <i class="fa-solid fa-microphone-lines"></i> Ambient Scribe Mode
           </button>
         </div>
 
-        <!-- Doctor Speaking Language Selector (Doctor can speak in any language) -->
-        <div id="doctor-speak-lang-bar" style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: var(--radius-md); font-size: 13px;">
-          <span style="font-weight: 800; color: var(--primary-green-deep);" id="label-doc-speaking-in">Doctor Speaking In:</span>
-          <select id="doctor-speak-lang" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--green-300); font-weight: 700; color: var(--primary-green-deep); background: #ffffff; outline: none; cursor: pointer;">
-            <option value="en-IN">English</option>
-            <option value="mr-IN">Marathi (मराठी)</option>
-            <option value="hi-IN">Hindi (हिंदी)</option>
-            <option value="gu-IN">Gujarati (ગુજરાતી)</option>
-            <option value="bn-IN">Bengali (বাংলা)</option>
-            <option value="ta-IN">Tamil (தமிழ்)</option>
-            <option value="te-IN">Telugu (తెలుగు)</option>
-            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
-            <option value="ml-IN">Malayalam (മലയാളം)</option>
-            <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
-            <option value="or-IN">Odia (ଓଡ଼ିଆ)</option>
-          </select>
-        </div>
+        <!-- CONVERSATION MODE SECTION -->
+        <div id="section-conversation-mode" style="display: flex; flex-direction: column; gap: 14px; flex: 1;">
+          <!-- Language Pair Bar -->
+          <div class="lang-pair-container card" id="cons-lang-pair-bar" style="padding: 10px 18px; display: flex; align-items: center; justify-content: space-between;">
+            <span class="badge-chip badge-hi" id="cons-badge-patient">Patient: Hindi</span>
+            <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 13px;"></i>
+            <span class="badge-chip badge-en" id="cons-badge-doctor">Doctor: English</span>
+          </div>
 
-        <!-- Turn Direction Banner -->
-        <div id="turn-direction-banner" class="turn-direction-banner patient-turn">
-          <i class="fa-solid fa-circle-arrow-right"></i>
-          <span id="turn-direction-text">Patient Speaks ➔ Doctor Listens</span>
-        </div>
-
-        <!-- Clean Loading Symbol Indicator -->
-        <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; padding: 12px;">
-          <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary-green);"></i>
-        </div>
-
-        <!-- Transcript Timeline -->
-        <div class="timeline-container" id="transcript-timeline">
-          <!-- Turns rendered dynamically -->
-        </div>
-
-        <!-- Recording & Control Footer -->
-        <div class="recorder-footer-card">
-          <div style="display: flex; align-items: center; gap: 24px;">
-            <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance Manually">
-              <i class="fa-solid fa-keyboard"></i> <span id="label-type-btn">Type</span>
+          <!-- Speaker Selector -->
+          <div class="speaker-toggle-container" id="cons-speaker-toggle">
+            <button id="btn-speaker-patient" class="speaker-btn active patient">
+              <i class="fa-solid fa-user"></i> <span id="label-patient-speaks-btn">PATIENT SPEAKS</span>
             </button>
-
-            <!-- Large Microphone Button -->
-            <button id="btn-record-turn" class="recorder-btn-large" title="Tap to Speak">
-              <i class="fa-solid fa-microphone"></i>
+            <button id="btn-speaker-doctor" class="speaker-btn doctor">
+              <i class="fa-solid fa-user-doctor"></i> <span id="label-doctor-speaks-btn">DOCTOR SPEAKS</span>
             </button>
           </div>
 
-          <div id="record-timer" class="recording-timer" style="display: none;">
-            <i class="fa-solid fa-circle fa-beat" style="font-size: 8px; margin-right: 6px; color: var(--error-color);"></i>
-            <span id="timer-display">00:00</span>
+          <!-- Doctor Speaking Language Selector (Doctor can speak in any language) -->
+          <div id="doctor-speak-lang-bar" style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: var(--radius-md); font-size: 13px;">
+            <span style="font-weight: 800; color: var(--primary-green-deep);" id="label-doc-speaking-in">Doctor Speaking In:</span>
+            <select id="doctor-speak-lang" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--green-300); font-weight: 700; color: var(--primary-green-deep); background: #ffffff; outline: none; cursor: pointer;">
+              <option value="en-IN">English</option>
+              <option value="mr-IN">Marathi (मराठी)</option>
+              <option value="hi-IN">Hindi (हिंदी)</option>
+              <option value="gu-IN">Gujarati (ગુજરાતી)</option>
+              <option value="bn-IN">Bengali (বাংলা)</option>
+              <option value="ta-IN">Tamil (தமிழ்)</option>
+              <option value="te-IN">Telugu (తెలుగు)</option>
+              <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+              <option value="ml-IN">Malayalam (മലയാളം)</option>
+              <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+              <option value="or-IN">Odia (ଓଡ଼ିଆ)</option>
+            </select>
           </div>
 
-          <!-- Animated Soundwave Visualizer for Consultation -->
-          <div class="soundwave-visualizer" id="consultation-audio-wave" style="display: none; margin: 6px auto;">
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
-            <span class="soundwave-bar"></span>
+          <!-- Turn Direction Banner -->
+          <div id="turn-direction-banner" class="turn-direction-banner patient-turn">
+            <i class="fa-solid fa-circle-arrow-right"></i>
+            <span id="turn-direction-text">Patient Speaks ➔ Doctor Listens</span>
           </div>
 
-          <div id="record-instruction" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
-            Tap microphone to speak turn in native language
+          <!-- Clean Loading Symbol Indicator -->
+          <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; padding: 12px;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary-green);"></i>
+          </div>
+
+          <!-- Transcript Timeline -->
+          <div class="timeline-container" id="transcript-timeline">
+            <!-- Turns rendered dynamically -->
+          </div>
+
+          <!-- Recording & Control Footer -->
+          <div class="recorder-footer-card">
+            <div style="display: flex; align-items: center; gap: 24px;">
+              <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance Manually">
+                <i class="fa-solid fa-keyboard"></i> <span id="label-type-btn">Type</span>
+              </button>
+
+              <!-- Large Microphone Button -->
+              <button id="btn-record-turn" class="recorder-btn-large" title="Tap to Speak">
+                <i class="fa-solid fa-microphone"></i>
+              </button>
+            </div>
+
+            <div id="record-timer" class="recording-timer" style="display: none;">
+              <i class="fa-solid fa-circle fa-beat" style="font-size: 8px; margin-right: 6px; color: var(--error-color);"></i>
+              <span id="timer-display">00:00</span>
+            </div>
+
+            <!-- Animated Soundwave Visualizer for Consultation -->
+            <div class="soundwave-visualizer" id="consultation-audio-wave" style="display: none; margin: 6px auto;">
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+            </div>
+
+            <div id="record-instruction" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+              Tap microphone to speak turn in native language
+            </div>
+          </div>
+        </div>
+
+        <!-- AMBIENT SCRIBE MODE SECTION -->
+        <div id="section-scribe-mode" style="display: none; flex-direction: column; gap: 16px; flex: 1;">
+          <div class="card" style="padding: 16px 20px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--green-light); color: var(--primary-green); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                <i class="fa-solid fa-ear-listen"></i>
+              </div>
+              <div>
+                <h4 style="font-size: 16px; font-weight: 800; color: var(--primary-green-deep);">Ambient Continuous Listening</h4>
+                <p style="font-size: 12px; color: var(--text-muted);">Doctor and patient converse freely without taking turns</p>
+              </div>
+            </div>
+            <div style="padding: 10px 14px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 12px; line-height: 1.5; color: var(--text-main);">
+              <i class="fa-solid fa-circle-info" style="color: var(--primary-green); margin-right: 6px;"></i>
+              Place your device between doctor and patient. The system listens to the entire consultation, transcribes the dialogue, translates everything to English, and generates the structured clinical report & vitals automatically.
+            </div>
+          </div>
+
+          <!-- Digital Timer & Soundwave Card -->
+          <div class="card" style="padding: 30px 20px; text-align: center; border: 2px solid var(--border-color);" id="scribe-timer-card">
+            <div id="scribe-status-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; background: #f1f5f9; font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+              <i class="fa-solid fa-circle" style="font-size: 8px;"></i> Standby - Ready to Record
+            </div>
+
+            <div id="scribe-timer-display" style="font-size: 52px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); margin: 20px 0 10px;">
+              00:00
+            </div>
+
+            <!-- Soundwave -->
+            <div class="soundwave-visualizer" id="scribe-audio-wave" style="display: none; margin: 10px auto;">
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+              <span class="soundwave-bar"></span>
+            </div>
+
+            <p id="scribe-instruction-text" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+              Click "Start Recording" to begin consultation listening
+            </p>
+          </div>
+
+          <!-- Processing Banner -->
+          <div id="scribe-processing-banner" style="display: none; align-items: center; justify-content: center; gap: 10px; padding: 16px; background: var(--green-light); border-radius: var(--radius-md); border: 1.5px solid var(--green-border);">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 20px; color: var(--primary-green);"></i>
+            <span style="font-size: 13px; font-weight: 700; color: var(--primary-green-deep);">Processing consultation audio and generating clinical report...</span>
+          </div>
+
+          <!-- Two Scribe Buttons -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: auto;">
+            <button id="btn-scribe-start" class="btn btn-primary" style="padding: 16px; font-size: 15px; font-weight: 800; border-radius: var(--radius-md);">
+              <i class="fa-solid fa-play"></i> Start Recording
+            </button>
+            <button id="btn-scribe-stop" class="btn" style="padding: 16px; font-size: 15px; font-weight: 800; border-radius: var(--radius-md); background: #ef4444; color: #ffffff; border: none; cursor: pointer;" disabled>
+              <i class="fa-solid fa-stop"></i> Stop & Generate
+            </button>
           </div>
         </div>
       </section>
@@ -569,11 +636,11 @@
             <span class="badge-chip badge-green">Voice Assist</span>
           </div>
 
-          <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap;">
             <button id="btn-doctor-ai-mic" class="recorder-btn-large" style="width: 46px; height: 46px; font-size: 18px; flex-shrink: 0;" title="Speak Vitals & Clinical Details">
               <i class="fa-solid fa-microphone"></i>
             </button>
-            <input type="text" id="input-doctor-ai-text" placeholder="e.g. Weight 70 kg, height 175 cm, BP 120/80 mmHg, pulse 74..." style="flex: 1; padding: 11px 16px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+            <input type="text" id="input-doctor-ai-text" placeholder="e.g. Weight 70 kg, height 175 cm, BP 120/80 mmHg, pulse 74..." style="flex: 1; min-width: 180px; padding: 11px 16px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
             <button id="btn-submit-doctor-ai" class="btn btn-primary" style="padding: 11px 18px; flex-shrink: 0;">
               <i class="fa-solid fa-paper-plane"></i> <span id="label-send-btn">Send</span>
             </button>
@@ -586,13 +653,13 @@
 
         <!-- Patient Vitals Card -->
         <div class="card">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 6px;">
             <h3 id="vitals-card-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep);">
               <i class="fa-solid fa-heart-pulse" style="color: var(--primary-green); margin-right: 6px;"></i> Patient Vitals
             </h3>
             <span id="vitals-card-sub" style="font-size: 12px; color: var(--text-muted);">Auto-filled / Editable</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
             <div class="form-group">
               <label id="label-vitals-weight">Weight (kg)</label>
               <input type="number" step="0.1" id="vitals-weight" placeholder="e.g. 70">
@@ -738,14 +805,6 @@
       <div class="form-group">
         <label id="label-setting-doc-creds">Doctor Credentials</label>
         <input type="text" id="setting-doc-creds" value="MBBS, MD (General Medicine)">
-      </div>
-      <div class="form-group">
-        <label id="label-setting-doc-lang">Doctor Primary Language (Storage & Consultation)</label>
-        <select id="setting-doc-lang">
-          <option value="en-IN">English (Indian) [en-IN]</option>
-          <option value="mr-IN">Marathi (मराठी) [mr-IN]</option>
-          <option value="hi-IN">Hindi (हिंदी) [hi-IN]</option>
-        </select>
       </div>
 
       <div class="form-actions" style="margin-top: 14px;">

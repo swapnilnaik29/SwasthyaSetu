@@ -42,16 +42,27 @@ const intakeTtsCache = new Map();
 
 const LANG_LABELS = {
   'en-IN': 'English',
-  'hi-IN': 'Hindi (हिन्दी)',
-  'mr-IN': 'Marathi (मराठी)',
-  'gu-IN': 'Gujarati (ગુજરાતી)',
-  'bn-IN': 'Bengali (বাংলা)',
-  'ta-IN': 'Tamil (தமிழ்)',
-  'te-IN': 'Telugu (తెలుగు)',
-  'kn-IN': 'Kannada (ಕನ್ನಡ)',
-  'ml-IN': 'Malayalam (മലയാളം)',
-  'pa-IN': 'Punjabi (ਪੰਜਾਬੀ)',
-  'or-IN': 'Odia (ଓଡ଼ିଆ)',
+  'hi-IN': 'Hindi',
+  'mr-IN': 'Marathi',
+  'gu-IN': 'Gujarati',
+  'bn-IN': 'Bengali',
+  'ta-IN': 'Tamil',
+  'te-IN': 'Telugu',
+  'kn-IN': 'Kannada',
+  'ml-IN': 'Malayalam',
+  'pa-IN': 'Punjabi',
+  'or-IN': 'Odia',
+  'en': 'English',
+  'hi': 'Hindi',
+  'mr': 'Marathi',
+  'gu': 'Gujarati',
+  'bn': 'Bengali',
+  'ta': 'Tamil',
+  'te': 'Telugu',
+  'kn': 'Kannada',
+  'ml': 'Malayalam',
+  'pa': 'Punjabi',
+  'or': 'Odia',
 };
 
 // Conversational Onboarding Prompts by Indian Language
@@ -313,6 +324,154 @@ const ONBOARDING_QUESTIONS = {
       text: 'మీకు BP, మధుమేహం వంటి దీర్ఘకాలిక వ్యాధులు లేదా అలెర్జీలు ఉన్నాయా?',
       sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
       chips: ['ఏ వ్యాధులు లేదా అలెర్జీలు లేవు', 'హై బీపీ ఉంది'],
+    },
+  ],
+  'kn-IN': [
+    {
+      id: 'name',
+      label: 'ಪ್ರಶ್ನೆ 1 / 5 • ಪೂರ್ಣ ಹೆಸರು',
+      text: 'ನಮಸ್ಕಾರ! ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರು ಏನು?',
+      sub: '(Hello! What is your full name?)',
+      chips: ['ಸುರೇಶ್ ಗೌಡ', 'ಮಂಜುನಾಥ್', 'ಲಕ್ಷ್ಮಿ ದೇವಿ'],
+    },
+    {
+      id: 'age_gender',
+      label: 'ಪ್ರಶ್ನೆ 2 / 5 • ವಯಸ್ಸು & ಲಿಂಗ',
+      text: 'ನಿಮ್ಮ ವಯಸ್ಸು ಎಷ್ಟು ಮತ್ತು ಲಿಂಗ (ಪುರುಷ / ಮಹಿಳೆ) ಯಾವುದು?',
+      sub: '(What is your age and gender?)',
+      chips: ['35 ವರ್ಷ, ಪುರುಷ', '28 ವರ್ಷ, ಮಹಿಳೆ'],
+    },
+    {
+      id: 'phone',
+      label: 'ಪ್ರಶ್ನೆ 3 / 5 • ಮೊಬೈಲ್ ಸಂಖ್ಯೆ',
+      text: 'ದಯವಿಟ್ಟು ನಿಮ್ಮ 10 ಅಂಕಿಗಳ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ತಿಳಿಸಿ.',
+      sub: '(Please provide your 10-digit mobile phone number.)',
+      chips: [],
+    },
+    {
+      id: 'complaint',
+      label: 'ಪ್ರಶ್ನೆ 4 / 5 • ಆರೋಗ್ಯ ಸಮಸ್ಯೆ & ದಿನಗಳು',
+      text: 'ನಿಮಗೆ ಏನು ತೊಂದರೆ ಅಥವಾ ಕಾಯಿಲೆ ಇದೆ ಮತ್ತು ಎಷ್ಟು ದಿನಗಳಿಂದ ಇದೆ?',
+      sub: '(What health problem are you facing and for how many days?)',
+      chips: ['3 ದಿನಗಳಿಂದ ಜ್ವರ ಮತ್ತು ತಲೆನೋವು ಇದೆ', 'ಹೊಟ್ಟೆ ನೋವು ಇದೆ'],
+    },
+    {
+      id: 'history_allergies',
+      label: 'ಪ್ರಶ್ನೆ 5 / 5 • ಹಳೆಯ ಕಾಯಿಲೆ & ಅಲರ್ಜಿ',
+      text: 'ನಿಮಗೆ ಬಿಪಿ, ಸಕ್ಕರೆ ಕಾಯಿಲೆ ಅಥವಾ ಯಾವುದಾದರೂ ಔಷಧಿಯ ಅಲರ್ಜಿ ಇದೆಯೇ?',
+      sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
+      chips: ['ಯಾವುದೇ ಹಳೆಯ ಕಾಯಿಲೆ ಇಲ್ಲ', 'ಬಿಪಿ ಇದೆ'],
+    },
+  ],
+  'ml-IN': [
+    {
+      id: 'name',
+      label: 'ചോദ്യം 1 / 5 • പൂർണ്ണ പേര്',
+      text: 'നമസ്കാരം! നിങ്ങളുടെ മുഴുവൻ പേര് എന്താണ്?',
+      sub: '(Hello! What is your full name?)',
+      chips: ['രാഹുൽ മേനോൻ', 'അഞ്ജലി നായർ', 'മോഹൻദാസ്'],
+    },
+    {
+      id: 'age_gender',
+      label: 'ചോദ്യം 2 / 5 • പ്രായവും ലിംഗവും',
+      text: 'നിങ്ങളുടെ പ്രായം എത്രയാണ്, ലിംഗം (പുരുഷൻ / സ്ത്രീ) ഏതാണ്?',
+      sub: '(What is your age and gender?)',
+      chips: ['35 വയസ്സ്, പുരുഷൻ', '28 വയസ്സ്, സ്ത്രീ'],
+    },
+    {
+      id: 'phone',
+      label: 'ചോദ്യം 3 / 5 • മൊബൈൽ നമ്പർ',
+      text: 'ദയവായി നിങ്ങളുടെ 10 അക്ക മൊബൈൽ നമ്പർ പറയുക.',
+      sub: '(Please provide your 10-digit mobile phone number.)',
+      chips: [],
+    },
+    {
+      id: 'complaint',
+      label: 'ചോദ്യം 4 / 5 • രോഗലക്ഷണങ്ങൾ & കാലയളവ്',
+      text: 'നിങ്ങൾക്ക് എന്താണ് ശാരീരിക അസ്വസ്ഥത, എത്ര ദിവസമായി?',
+      sub: '(What health problem are you facing and for how many days?)',
+      chips: ['3 ദിവസമായി കടുത്ത പനിയും തലവേദനയും', 'വയറുവേദനയുണ്ട്'],
+    },
+    {
+      id: 'history_allergies',
+      label: 'ചോദ്യം 5 / 5 • മുൻകാല രോഗങ്ങൾ & അലർജി',
+      text: 'നിങ്ങൾക്ക് ബിപി, പ്രമേഹം തുടങ്ങിയ അസുഖങ്ങളോ മരുന്നുകളോട് അലർജിയോ ഉണ്ടോ?',
+      sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
+      chips: ['അസുഖങ്ങളോ അലർജിയോ ഇല്ല', 'പ്രമേഹമുണ്ട്'],
+    },
+  ],
+  'pa-IN': [
+    {
+      id: 'name',
+      label: 'ਸਵਾਲ 1 / 5 • ਪੂਰਾ ਨਾਮ',
+      text: 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਤੁਹਾਡਾ ਪੂਰਾ ਨਾਮ ਕੀ ਹੈ?',
+      sub: '(Hello! What is your full name?)',
+      chips: ['ਗੁਰਪ੍ਰੀਤ ਸਿੰਘ', 'ਹਰਪ੍ਰੀਤ ਕੌਰ', 'ਜਸਵਿੰਦਰ ਸਿੰਘ'],
+    },
+    {
+      id: 'age_gender',
+      label: 'ਸਵਾਲ 2 / 5 • ਉਮਰ ਅਤੇ ਲਿੰਗ',
+      text: 'ਤੁਹਾਡੀ ਉਮਰ ਕਿੰਨੀ ਹੈ ਅਤੇ ਤੁਹਾਡਾ ਲਿੰਗ (ਪੁਰਸ਼ / ਮਹਿਲਾ) ਕੀ ਹੈ?',
+      sub: '(What is your age and gender?)',
+      chips: ['35 ਸਾਲ, ਪੁਰਸ਼', '28 ਸਾਲ, ਮਹਿਲਾ'],
+    },
+    {
+      id: 'phone',
+      label: 'ਸਵਾਲ 3 / 5 • ਮੋਬਾਈਲ ਨੰਬਰ',
+      text: 'ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ 10 ਅੰਕਾਂ ਦਾ ਮੋਬਾਈਲ ਨੰਬਰ ਦੱਸੋ।',
+      sub: '(Please provide your 10-digit mobile phone number.)',
+      chips: [],
+    },
+    {
+      id: 'complaint',
+      label: 'ਸਵਾਲ 4 / 5 • ਤਕਲੀਫ਼ ਅਤੇ ਸਮਾਂ',
+      text: 'ਤੁਹਾਨੂੰ ਕੀ ਤਕਲੀਫ਼ ਜਾਂ ਬਿਮਾਰੀ ਹੈ ਅਤੇ ਇਹ ਕਿੰਨੇ ਦਿਨਾਂ ਤੋਂ ਹੈ?',
+      sub: '(What health problem are you facing and for how many days?)',
+      chips: ['3 ਦਿਨਾਂ ਤੋਂ ਤੇਜ਼ ਬੁਖਾਰ ਅਤੇ ਸਿਰਦਰਦ', 'ਪੇਟ ਦਰਦ ਹੈ'],
+    },
+    {
+      id: 'history_allergies',
+      label: 'ਸਵਾਲ 5 / 5 • ਪੁਰਾਣੀ ਬਿਮਾਰੀ ਅਤੇ ਐਲਰਜੀ',
+      text: 'ਕੀ ਤੁਹਾਨੂੰ ਬੀਪੀ, ਸ਼ੂਗਰ ਵਰਗੀ ਕੋਈ ਬਿਮਾਰੀ ਹੈ ਜਾਂ ਕਿਸੇ ਦਵਾਈ ਤੋਂ ਐਲਰਜੀ ਹੈ?',
+      sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
+      chips: ['ਕੋਈ ਪੁਰਾਣੀ ਬਿਮਾਰੀ ਜਾਂ ਐਲਰਜੀ ਨਹੀਂ', 'ਬੀਪੀ ਹੈ'],
+    },
+  ],
+  'or-IN': [
+    {
+      id: 'name',
+      label: 'ପ୍ରଶ୍ନ ୧ / ୫ • ପୂରା ନାମ',
+      text: 'ନମସ୍କାର! ଆପଣଙ୍କ ପୂରା ନାମ କ’ଣ?',
+      sub: '(Hello! What is your full name?)',
+      chips: ['ସୁବାଷ ମହାପାତ୍ର', 'ମମତା ଦାସ', 'ରାଜେଶ ପ୍ରଧାନ'],
+    },
+    {
+      id: 'age_gender',
+      label: 'ପ୍ରଶ୍ନ ୨ / ୫ • ବୟସ ଏବଂ ଲିଙ୍ଗ',
+      text: 'ଆପଣଙ୍କ ବୟସ କେତେ ଏବଂ ଆପଣଙ୍କ ଲିଙ୍ଗ (ପୁରୁଷ / ମହିଳା) କ’ଣ?',
+      sub: '(What is your age and gender?)',
+      chips: ['୩୫ ବର୍ଷ, ପୁରୁଷ', '୨୮ ବର୍ଷ, ମହିଳା'],
+    },
+    {
+      id: 'phone',
+      label: 'ପ୍ରଶ୍ନ ୩ / ୫ • ମୋବାଇଲ୍ ନମ୍ବର',
+      text: 'ଦୟାକରି ଆପଣଙ୍କ ୧୦ ଅଙ୍କ ବିଶିଷ୍ଟ ମୋବାଇଲ୍ ନମ୍ବର କୁହନ୍ତୁ।',
+      sub: '(Please provide your 10-digit mobile phone number.)',
+      chips: [],
+    },
+    {
+      id: 'complaint',
+      label: 'ପ୍ରଶ୍ନ ୪ / ୫ • ରୋଗ ଏବଂ କାରଣ',
+      text: 'ଆପଣଙ୍କର କ’ଣ ସମସ୍ୟା ବା ରୋଗ ଅଛି ଏବଂ କେତେ ଦିନ ଧରି?',
+      sub: '(What health problem are you facing and for how many days?)',
+      chips: ['୩ ଦିନ ଧରି ପ୍ରବଳ ଜ୍ୱର ଓ ମୁଣ୍ଡବିନ୍ଧା', 'ପେଟ ଯନ୍ତ୍ରଣା ହେଉଛି'],
+    },
+    {
+      id: 'history_allergies',
+      label: 'ପ୍ରଶ୍ନ ୫ / ୫ • ପୁରୁଣା ରୋଗ ଓ ଆଲର୍ଜି',
+      text: 'ଆପଣଙ୍କର ବିପି, ଡାଇବେଟିସ୍ ଅଛି କି କିମ୍ବା କୌଣସି ଔଷଧରୁ ଆଲର୍ଜି ଅଛି କି?',
+      sub: '(Do you have BP/Diabetes history, or any known drug allergies?)',
+      chips: ['କୌଣସି ପୁରୁଣା ରୋଗ ନାହିଁ', 'ବିପି ଅଛି'],
     },
   ],
 };
@@ -762,27 +921,27 @@ window.viewReportDetails = function(consultationId) {
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; text-align: center;">
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">WEIGHT</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.weight_kg ? `${vitals.weight_kg} kg` : '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${(vitals.weight_kg ?? vitals.weight) ? `${String(vitals.weight_kg ?? vitals.weight).replace('kg', '').trim()} kg` : '-'}</div>
         </div>
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">HEIGHT</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.height_cm ? `${vitals.height_cm} cm` : '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${(vitals.height_cm ?? vitals.height) ? `${String(vitals.height_cm ?? vitals.height).replace('cm', '').trim()} cm` : '-'}</div>
         </div>
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">BLOOD PRESSURE</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.blood_pressure || '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.blood_pressure || vitals.bp || '-'}</div>
         </div>
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">PULSE</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.pulse_bpm ? `${vitals.pulse_bpm} bpm` : '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${(vitals.pulse_bpm ?? vitals.pulse) ? `${String(vitals.pulse_bpm ?? vitals.pulse).replace('bpm', '').trim()} bpm` : '-'}</div>
         </div>
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">TEMP</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.temperature_f ? `${vitals.temperature_f} °F` : '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${(vitals.temperature_f ?? vitals.temperature ?? vitals.temp) ? `${String(vitals.temperature_f ?? vitals.temperature ?? vitals.temp).replace('°F', '').trim()} °F` : '-'}</div>
         </div>
         <div style="background: #f8fafc; padding: 8px; border-radius: 6px;">
           <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">SpO2</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${vitals.spo2_percent ? `${vitals.spo2_percent}%` : '-'}</div>
+          <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">${(vitals.spo2_percent ?? vitals.spo2) ? `${String(vitals.spo2_percent ?? vitals.spo2).replace('%', '').trim()}%` : '-'}</div>
         </div>
       </div>
     </div>
@@ -818,7 +977,7 @@ window.viewReportDetails = function(consultationId) {
       ` : `
         <div style="display: flex; flex-direction: column; gap: 6px;">
           ${prescriptions.map((p, idx) => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 10px; background: #f8fafc; border-radius: 6px; font-size: 12px; word-break: break-word;">
               <div>
                 <strong>${idx + 1}. ${p.medicine} ${p.strength || ''}</strong>
                 <span style="color: var(--text-muted); margin-left: 6px;">${p.dose || ''} • ${p.frequency || ''} • ${p.duration || ''}</span>
@@ -865,7 +1024,8 @@ function showOnboardingView() {
   const resetField = (id) => {
     const el = document.getElementById(id);
     if (el) {
-      el.textContent = 'Pending response...';
+      const dict = (window.I18N_DICTIONARY && window.I18N_DICTIONARY[onboardingState.selectedLanguage]) || {};
+      el.textContent = dict.autofillPending || 'Pending response...';
       el.classList.add('placeholder');
     }
   };
@@ -981,11 +1141,9 @@ async function renderIntakeQuestion() {
   // 1. Speak question aloud via female TTS and WAIT for completion
   await playIntakeQuestionTTS(q.text, onboardingState.selectedLanguage);
 
-  // 2. Pause briefly so speaker output clears before opening mic
-  await new Promise(r => setTimeout(r, 350));
-
-  // 3. Automatically open microphone after TTS and listen for user response
-  startAutoListening();
+  if (micStatus) {
+    micStatus.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;"><i class="fa-solid fa-microphone"></i> Tap microphone to speak your answer</span>`;
+  }
 }
 
 window.handleQuickChipClick = function(text) {
@@ -1013,8 +1171,8 @@ async function playIntakeQuestionTTS(text, lang) {
   }
 }
 
-// Automatic Microphone Listening Loop (Speech-to-Speech)
-async function startAutoListening() {
+// Manual Microphone Listening (User presses button to start and stop; no auto voice stop or pause)
+async function startManualIntakeListening() {
   const micBtn = document.getElementById('btn-intake-mic');
   const micStatus = document.getElementById('intake-mic-status');
   const recTimer = document.getElementById('intake-rec-timer');
@@ -1022,7 +1180,7 @@ async function startAutoListening() {
   if (window.audioManager.isPlaying) return;
 
   if (micStatus) {
-    micStatus.innerHTML = `<span style="color: var(--success-green); font-weight: 800;">🎙️ ऐकत आहे... (Listening... Speak your answer now)</span>`;
+    micStatus.innerHTML = `<span style="color: var(--error-color); font-weight: 800;"><i class="fa-solid fa-circle fa-beat" style="font-size: 8px;"></i> Recording... Speak answer, tap mic to stop</span>`;
   }
   if (micBtn) micBtn.classList.add('recording');
   if (recTimer) {
@@ -1030,52 +1188,31 @@ async function startAutoListening() {
     recTimer.textContent = '00:00';
   }
 
-  // Setup real-time VAD callbacks
-  window.audioManager.onSpeechStart = () => {
-    if (micStatus) micStatus.innerHTML = `<span style="color: var(--primary-teal); font-weight: 800;">🗣️ बोलणे चालू आहे... (Speaking detected...)</span>`;
-  };
-
-  window.audioManager.onSilenceDetected = async () => {
-    console.log('[SwasthyaSetu] Long pause detected after speech. Auto-stopping and transcribing...');
-    await processAutoVoiceIntake();
-  };
-
-  window.audioManager.onIdleTimeout = () => {
-    if (micStatus) micStatus.textContent = 'माईक थांबला. बोलण्यासाठी माईक टॅप करा (Tap mic to speak)';
-    if (micBtn) micBtn.classList.remove('recording');
-    if (recTimer) recTimer.style.display = 'none';
-    window.audioManager.stopRecording();
-  };
-
-  await window.audioManager.startRecording({
-    vad: true,
-    speechThreshold: 0.015,
-    silenceDurationMs: 1800, // 1.8 seconds long pause triggers auto stop and transcribe
-    maxIdleMs: 12000,
-  });
+  // Manual start with vad=false (continuous recording without auto-pause/cutoff)
+  await window.audioManager.startRecording({ vad: false });
 }
 
-// Intake Voice Recording Toggle (Manual fallback)
+// Intake Voice Recording Toggle (Start / Stop button)
 async function toggleIntakeVoiceRecording() {
   if (window.audioManager.isRecording) {
-    await processAutoVoiceIntake();
+    await processManualVoiceIntake();
   } else {
-    await startAutoListening();
+    await startManualIntakeListening();
   }
 }
 
-async function processAutoVoiceIntake() {
+async function processManualVoiceIntake() {
   const micBtn = document.getElementById('btn-intake-mic');
   const micStatus = document.getElementById('intake-mic-status');
   const recTimer = document.getElementById('intake-rec-timer');
 
-  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing answer...`;
   if (micBtn) micBtn.classList.remove('recording');
   if (recTimer) recTimer.style.display = 'none';
 
   const audioBlob = await window.audioManager.stopRecording();
   if (!audioBlob) {
-    if (micStatus) micStatus.textContent = 'कोणताही आवाज आला नाही. कृपया पुन्हा बोला. (Tap mic to speak)';
+    if (micStatus) micStatus.textContent = 'No voice detected. Tap microphone to speak.';
     return;
   }
 
@@ -1086,10 +1223,7 @@ async function processAutoVoiceIntake() {
       if (inputEl) inputEl.value = result.transcript;
       await handleIntakeAnswer(result.transcript);
     } else {
-      if (micStatus) micStatus.textContent = 'काहीही आवाज ऐकू आला नाही. कृपया पुन्हा बोला.';
-      // Re-prompt user to speak
-      await new Promise(r => setTimeout(r, 400));
-      startAutoListening();
+      if (micStatus) micStatus.textContent = 'No voice detected. Tap microphone to try again.';
     }
   } catch (err) {
     if (micStatus) micStatus.textContent = 'Microphone error: ' + err.message;
@@ -1140,10 +1274,9 @@ async function handleIntakeAnswer(answer) {
 
         // Speak correction aloud in native language (female voice)
         await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-        await new Promise(r => setTimeout(r, 350));
-
-        // Automatically re-open mic to let patient answer the question properly!
-        startAutoListening();
+        if (micStatus) {
+          micStatus.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;"><i class="fa-solid fa-microphone"></i> Tap microphone to speak answer again</span>`;
+        }
         return;
       }
 
@@ -1187,8 +1320,9 @@ async function handleIntakeAnswer(answer) {
             alertBanner.style.display = 'flex';
           }
           await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-          await new Promise(r => setTimeout(r, 350));
-          startAutoListening();
+          if (micStatus) {
+            micStatus.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;"><i class="fa-solid fa-microphone"></i> Tap microphone to speak answer again</span>`;
+          }
           return;
         }
 
@@ -1205,8 +1339,9 @@ async function handleIntakeAnswer(answer) {
             alertBanner.style.display = 'flex';
           }
           await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-          await new Promise(r => setTimeout(r, 350));
-          startAutoListening();
+          if (micStatus) {
+            micStatus.innerHTML = `<span style="color: var(--text-muted); font-weight: 600;"><i class="fa-solid fa-microphone"></i> Tap microphone to speak answer again</span>`;
+          }
           return;
         }
         onboardingState.data.mobile_number = phoneClean;
@@ -1311,7 +1446,7 @@ function renderPreConsultationSummary(patient) {
   if (metaEl) metaEl.textContent = `${patient.age ? patient.age + ' yrs • ' : ''}${patient.gender ? patient.gender + ' • ' : ''}${patient.mobile_number}`;
   
   const langName = LANG_LABELS[patient.preferred_language] || patient.preferred_language;
-  if (langEl) langEl.textContent = `${langName} [${patient.preferred_language}]`;
+  if (langEl) langEl.textContent = langName;
 
   if (briefEl) briefEl.textContent = patient.intake_summary_english || 'Patient completed conversational voice intake. Symptoms and history converted to canonical medical English.';
   if (compEl) compEl.textContent = patient.chief_complaint || 'General medical examination';
@@ -1367,6 +1502,7 @@ async function startConsultationWithMode(mode = 'NORMAL') {
     if (docSpeakSelect) docSpeakSelect.value = doctorLang;
 
     switchSpeaker('PATIENT');
+    switchConsultationMode('CONVERSATION');
     renderTimeline([]);
     showView('consultation');
   } catch (err) {
@@ -1589,6 +1725,127 @@ window.playTurnAudio = function(urlPath) {
 };
 
 /* ==========================================================================
+   AMBIENT SCRIBE MODE (CONTINUOUS BACKGROUND LISTENING)
+   ========================================================================== */
+
+let scribeTimerInterval = null;
+let scribeSeconds = 0;
+let currentConsultationMode = 'CONVERSATION';
+
+function switchConsultationMode(mode) {
+  if (window.audioManager.isRecording) return;
+  currentConsultationMode = mode;
+  const secConv = document.getElementById('section-conversation-mode');
+  const secScribe = document.getElementById('section-scribe-mode');
+  const btnConv = document.getElementById('btn-mode-conversation');
+  const btnScribe = document.getElementById('btn-mode-scribe');
+
+  if (mode === 'CONVERSATION') {
+    if (secConv) secConv.style.display = 'flex';
+    if (secScribe) secScribe.style.display = 'none';
+    if (btnConv) {
+      btnConv.style.background = '#ffffff';
+      btnConv.style.color = 'var(--primary-green-deep)';
+      btnConv.style.boxShadow = 'var(--shadow-sm)';
+    }
+    if (btnScribe) {
+      btnScribe.style.background = 'transparent';
+      btnScribe.style.color = 'var(--text-muted)';
+      btnScribe.style.boxShadow = 'none';
+    }
+  } else {
+    if (secConv) secConv.style.display = 'none';
+    if (secScribe) secScribe.style.display = 'flex';
+    if (btnScribe) {
+      btnScribe.style.background = '#ffffff';
+      btnScribe.style.color = '#ef4444';
+      btnScribe.style.boxShadow = 'var(--shadow-sm)';
+    }
+    if (btnConv) {
+      btnConv.style.background = 'transparent';
+      btnConv.style.color = 'var(--text-muted)';
+      btnConv.style.boxShadow = 'none';
+    }
+  }
+}
+
+async function startScribeRecording() {
+  if (window.audioManager.isRecording) return;
+  try {
+    await window.audioManager.startRecording({ vad: false });
+    scribeSeconds = 0;
+    const timerDisp = document.getElementById('scribe-timer-display');
+    const wave = document.getElementById('scribe-audio-wave');
+    const pill = document.getElementById('scribe-status-pill');
+    const instr = document.getElementById('scribe-instruction-text');
+    const btnStart = document.getElementById('btn-scribe-start');
+    const btnStop = document.getElementById('btn-scribe-stop');
+
+    if (timerDisp) timerDisp.textContent = '00:00';
+    if (wave) wave.style.display = 'flex';
+    if (pill) {
+      pill.style.background = '#fee2e2';
+      pill.style.color = '#ef4444';
+      pill.innerHTML = '<i class="fa-solid fa-circle fa-beat" style="font-size: 8px;"></i> RECORDING AMBIENT CONVERSATION';
+    }
+    if (instr) instr.textContent = 'Listening to dialogue between doctor and patient...';
+    if (btnStart) btnStart.disabled = true;
+    if (btnStop) btnStop.disabled = false;
+
+    clearInterval(scribeTimerInterval);
+    scribeTimerInterval = setInterval(() => {
+      scribeSeconds++;
+      const mins = String(Math.floor(scribeSeconds / 60)).padStart(2, '0');
+      const secs = String(scribeSeconds % 60).padStart(2, '0');
+      if (timerDisp) timerDisp.textContent = `${mins}:${secs}`;
+    }, 1000);
+  } catch (err) {
+    alert('Failed to start scribe recording: ' + err.message);
+  }
+}
+
+async function stopScribeAndGenerateReport() {
+  if (!state.activeConsultation) return;
+  clearInterval(scribeTimerInterval);
+  scribeTimerInterval = null;
+
+  const btnStop = document.getElementById('btn-scribe-stop');
+  const banner = document.getElementById('scribe-processing-banner');
+  const wave = document.getElementById('scribe-audio-wave');
+  if (btnStop) btnStop.disabled = true;
+  if (wave) wave.style.display = 'none';
+  if (banner) banner.style.display = 'flex';
+
+  try {
+    const audioBlob = await window.audioManager.stopRecording();
+    if (!audioBlob || audioBlob.size === 0) {
+      throw new Error('No audio captured. Please speak into the microphone and try again.');
+    }
+    const docLang = state.doctor ? state.doctor.preferred_language : 'en-IN';
+    const patLang = state.activeConsultation.patient_language || 'hi-IN';
+
+    const draft = await window.api.processScribeAudio(state.activeConsultation.id, audioBlob, docLang, patLang);
+    state.draft = draft;
+    renderDraftReview(draft);
+    showView('draftReview');
+  } catch (err) {
+    alert('Scribe processing failed: ' + err.message);
+  } finally {
+    if (banner) banner.style.display = 'none';
+    const btnStart = document.getElementById('btn-scribe-start');
+    if (btnStart) btnStart.disabled = false;
+    const pill = document.getElementById('scribe-status-pill');
+    if (pill) {
+      pill.style.background = '#f1f5f9';
+      pill.style.color = 'var(--text-muted)';
+      pill.innerHTML = '<i class="fa-solid fa-circle" style="font-size: 8px;"></i> Standby - Ready to Record';
+    }
+    const instr = document.getElementById('scribe-instruction-text');
+    if (instr) instr.textContent = 'Click "Start Recording" to begin consultation listening';
+  }
+}
+
+/* ==========================================================================
    DRAFT MEDICAL RECORD GENERATION & REVIEW
    ========================================================================== */
 
@@ -1629,12 +1886,12 @@ function renderDraftReview(draft) {
   const tempInput = document.getElementById('vitals-temp');
   const spo2Input = document.getElementById('vitals-spo2');
 
-  if (weightInput) weightInput.value = vitals.weight_kg ?? '';
-  if (heightInput) heightInput.value = vitals.height_cm ?? '';
-  if (bpInput) bpInput.value = vitals.blood_pressure ?? '';
-  if (pulseInput) pulseInput.value = vitals.pulse_bpm ?? '';
-  if (tempInput) tempInput.value = vitals.temperature_f ?? '';
-  if (spo2Input) spo2Input.value = vitals.spo2_percent ?? '';
+  if (weightInput) weightInput.value = (vitals.weight_kg ?? vitals.weight ?? '').toString().replace('kg', '').trim();
+  if (heightInput) heightInput.value = (vitals.height_cm ?? vitals.height ?? '').toString().replace('cm', '').trim();
+  if (bpInput) bpInput.value = vitals.blood_pressure ?? vitals.bp ?? '';
+  if (pulseInput) pulseInput.value = (vitals.pulse_bpm ?? vitals.pulse ?? '').toString().replace('bpm', '').trim();
+  if (tempInput) tempInput.value = (vitals.temperature_f ?? vitals.temperature ?? vitals.temp ?? '').toString().replace('°F', '').trim();
+  if (spo2Input) spo2Input.value = (vitals.spo2_percent ?? vitals.spo2 ?? '').toString().replace('%', '').trim();
 
   // Symptoms
   const symptomsContainer = document.getElementById('draft-symptoms-list');
@@ -1861,11 +2118,17 @@ async function approveClinicalRecord() {
 
     payload.vitals = {
       weight_kg: !isNaN(weightVal) ? weightVal : null,
+      weight: !isNaN(weightVal) ? `${weightVal} kg` : null,
       height_cm: !isNaN(heightVal) ? heightVal : null,
+      height: !isNaN(heightVal) ? `${heightVal} cm` : null,
       blood_pressure: bpVal || null,
+      bp: bpVal || null,
       pulse_bpm: !isNaN(pulseVal) ? pulseVal : null,
+      pulse: !isNaN(pulseVal) ? `${pulseVal} bpm` : null,
       temperature_f: !isNaN(tempVal) ? tempVal : null,
+      temperature: !isNaN(tempVal) ? `${tempVal} °F` : null,
       spo2_percent: !isNaN(spo2Val) ? spo2Val : null,
+      spo2: !isNaN(spo2Val) ? `${spo2Val}%` : null,
     };
 
     await window.api.updateDraft(state.activeConsultation.id, payload);
@@ -2103,6 +2366,14 @@ function setupEventListeners() {
 
   // Review Draft / Generate AI Report Button
   on('btn-review-draft', 'click', loadDraftReview);
+
+  // Consultation Mode Switcher Listeners
+  on('btn-mode-conversation', 'click', () => switchConsultationMode('CONVERSATION'));
+  on('btn-mode-scribe', 'click', () => switchConsultationMode('SCRIBE'));
+
+  // Ambient Scribe Action Listeners
+  on('btn-scribe-start', 'click', startScribeRecording);
+  on('btn-scribe-stop', 'click', stopScribeAndGenerateReport);
 
   // Doctor AI Scribe Voice / Text Assistant Listeners
   on('btn-doctor-ai-mic', 'click', toggleDoctorAIRecording);

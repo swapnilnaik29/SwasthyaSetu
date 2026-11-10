@@ -20,13 +20,13 @@ async def seed_demo_data():
         res = await session.execute(select(Doctor))
         if not res.scalars().first():
             doc = Doctor(
-                name="Dr. Priya Sharma",
+                name="Dr. Swapnil Naik",
                 credentials="MBBS, MD (General Medicine)",
                 preferred_language="en-IN",
                 spoken_languages="en-IN,mr-IN,hi-IN",
             )
             session.add(doc)
-            logger.info("Seeded default doctor profile.")
+            logger.info("Seeded default doctor profile (Dr. Swapnil Naik).")
 
         # Seed UI Localizations into SQLite database
         for lang_code, data in DEFAULT_UI_LOCALIZATIONS.items():
@@ -86,14 +86,25 @@ app.include_router(cache.router, prefix=settings.API_V1_PREFIX)
 app.include_router(translate.router, prefix=settings.API_V1_PREFIX)
 
 # Mount Web Frontend (HTML, CSS, JS) for instant browser access on desktop and mobile
-FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
-if FRONTEND_DIR.is_dir():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+FRONTEND_CANDIDATES = [
+    Path(__file__).resolve().parent.parent / "frontend",  # backend/frontend
+    Path(__file__).resolve().parent / "frontend",         # backend/app/frontend
+    Path("frontend").resolve(),
+    Path("backend/frontend").resolve(),
+]
+FRONTEND_DIR = next((p for p in FRONTEND_CANDIDATES if p.is_dir()), None)
 
+if FRONTEND_DIR and FRONTEND_DIR.is_dir():
+    logger.info(f"Serving static web frontend from {FRONTEND_DIR}")
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+else:
+    logger.warning("Web frontend directory not found. API routes only active.")
 
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    # Bind to 0.0.0.0 for physical mobile phone testing on private LAN
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    # Bind to 0.0.0.0 for physical mobile phone testing on private LAN & Render cloud deployment
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
 

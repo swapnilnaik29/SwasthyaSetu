@@ -8,6 +8,8 @@ class DoctorSettings(BaseModel):
     credentials: str = "MBBS, MD (General Medicine)"
     preferred_language: str = Field(default="en-IN")
     spoken_languages: Union[str, List[str]] = Field(default="en-IN,mr-IN")
+    doctor_voice: Optional[str] = "Deven (Male)"
+    patient_voice: Optional[str] = "Auto (Matches Gender)"
 
     @field_validator("spoken_languages", mode="before")
     @classmethod
@@ -22,6 +24,8 @@ class DoctorUpdate(BaseModel):
     credentials: Optional[str] = None
     preferred_language: Optional[str] = None
     spoken_languages: Optional[Union[str, List[str]]] = None
+    doctor_voice: Optional[str] = None
+    patient_voice: Optional[str] = None
 
     @field_validator("spoken_languages", mode="before")
     @classmethod
@@ -39,5 +43,7 @@ class DoctorOut(BaseModel):
     credentials: str
     preferred_language: str
     spoken_languages: Optional[str] = "en-IN,mr-IN"
+    doctor_voice: Optional[str] = "Deven (Male)"
+    patient_voice: Optional[str] = "Auto (Matches Gender)"
     created_at: datetime
     updated_at: datetime

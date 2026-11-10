@@ -270,6 +270,35 @@ class ApiClient {
     throw Exception('Failed to generate draft: ${res.statusCode}');
   }
 
+  // Ambient Scribe Audio Processing
+  Future<DraftRecord> processScribeAudio({
+    required String consultationId,
+    required List<int> audioBytes,
+    required String doctorLanguage,
+    required String patientLanguage,
+    String filename = 'ambient_scribe.wav',
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$_baseUrl/api/v1/consultations/$consultationId/scribe'),
+    );
+    request.fields['doctor_language'] = doctorLanguage;
+    request.fields['patient_language'] = patientLanguage;
+    request.files.add(http.MultipartFile.fromBytes(
+      'audio',
+      audioBytes,
+      filename: filename,
+      contentType: MediaType('audio', 'wav'),
+    ));
+
+    final streamedRes = await request.send();
+    final res = await http.Response.fromStream(streamedRes);
+    if (res.statusCode == 200) {
+      return DraftRecord.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
+    }
+    throw Exception('Failed to process scribe audio (${res.statusCode}): ${res.body}');
+  }
+
   // Doctor AI Assist (Vitals dictation)
   Future<Map<String, dynamic>> doctorAIAssist({
     required String consultationId,
@@ -280,7 +309,9 @@ class ApiClient {
       Uri.parse('$_baseUrl/api/v1/consultations/$consultationId/ai-assist'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
+        'message': doctorUtterance,
         'doctor_utterance': doctorUtterance,
+        'language': doctorLanguage,
         'doctor_language': doctorLanguage,
       }),
     );
@@ -317,6 +348,7 @@ class ApiClient {
         'consultation_id': consultationId,
         'patient_id': patientId,
         'scheduled_date': scheduledDate,
+        'appointment_at': scheduledDate.contains('T') ? scheduledDate : '${scheduledDate}T10:00:00',
         'instructions': instructions ?? '',
       }),
     );

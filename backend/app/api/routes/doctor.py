@@ -14,10 +14,10 @@ async def get_or_create_default_doctor(db: AsyncSession) -> Doctor:
     doc = res.scalar_one_or_none()
     if not doc:
         doc = Doctor(
-            name="Dr. Priya Sharma",
+            name="Dr. Swapnil Naik",
             credentials="MBBS, MD (General Medicine)",
             preferred_language="en-IN",
-            spoken_languages="en-IN,mr-IN",
+            spoken_languages="en-IN,mr-IN,hi-IN",
         )
         db.add(doc)
         await db.commit()
@@ -40,6 +40,10 @@ async def update_doctor_settings(settings_in: DoctorSettings, db: AsyncSession =
     doctor.credentials = settings_in.credentials
     doctor.preferred_language = settings_in.preferred_language
     doctor.spoken_languages = settings_in.spoken_languages
+    if hasattr(settings_in, "doctor_voice") and settings_in.doctor_voice:
+        doctor.doctor_voice = settings_in.doctor_voice
+    if hasattr(settings_in, "patient_voice") and settings_in.patient_voice:
+        doctor.patient_voice = settings_in.patient_voice
     await db.commit()
     await db.refresh(doctor)
     return doctor

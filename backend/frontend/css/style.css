@@ -9,6 +9,7 @@
   --primary-green: #059669;
   --primary-green-hover: #047857;
   --primary-green-active: #064e3b;
+  --primary-green-dark: #047857;
   --primary-green-deep: #064e3b;
   
   --green-50: #f0fdf4;
@@ -488,19 +489,39 @@ main.app-main {
   user-select: none;
 }
 
+#btn-add-patient,
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-  color: #ffffff;
-  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.28);
+  background-color: #059669 !important;
+  background: #059669 !important;
+  color: #ffffff !important;
+  border: 1px solid #047857 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
 }
 
+#btn-add-patient *,
+.btn-primary *,
+#btn-add-patient span,
+.btn-primary span,
+#btn-add-patient i,
+.btn-primary i {
+  color: #ffffff !important;
+}
+
+#btn-add-patient:hover,
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-green-hover) 0%, var(--primary-green-active) 100%);
-  box-shadow: 0 5px 16px rgba(5, 150, 105, 0.38);
+  background-color: #047857 !important;
+  background: #047857 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.45) !important;
   transform: translateY(-1px);
 }
 
+#btn-add-patient:active,
 .btn-primary:active {
+  background-color: #064e3b !important;
+  background: #064e3b !important;
+  color: #ffffff !important;
   transform: translateY(0);
 }
 
@@ -1317,6 +1338,27 @@ main.app-main {
   justify-content: flex-end;
   gap: 12px;
   margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+#view-draft-review,
+#view-draft-review *,
+#modal-view-report,
+#modal-view-report * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.card,
+.pre-consultation-card,
+.modal-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prescription-item,
+.autofill-item {
+  min-width: 0;
 }
 
 /* ==========================================================================

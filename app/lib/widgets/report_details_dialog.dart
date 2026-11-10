@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import '../core/i18n_service.dart';
+import '../core/report_printer.dart';
+import '../models/patient.dart';
+import '../models/doctor.dart';
 
 class ReportDetailsDialog extends StatelessWidget {
   final Map<String, dynamic> report;
+  final Patient? patient;
+  final Doctor? doctor;
 
-  const ReportDetailsDialog({super.key, required this.report});
+  const ReportDetailsDialog({
+    super.key,
+    required this.report,
+    this.patient,
+    this.doctor,
+  });
 
-  static void show(BuildContext context, Map<String, dynamic> report) {
+  static void show(BuildContext context, Map<String, dynamic> report, {Patient? patient, Doctor? doctor}) {
     showDialog(
       context: context,
-      builder: (context) => ReportDetailsDialog(report: report),
+      builder: (context) => ReportDetailsDialog(report: report, patient: patient, doctor: doctor),
     );
   }
 
@@ -38,14 +48,15 @@ class ReportDetailsDialog extends StatelessWidget {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+      clipBehavior: Clip.antiAlias,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: mediaWidth > 600 ? 560 : mediaWidth * 0.95,
-          maxHeight: mediaHeight * 0.85,
+          maxWidth: mediaWidth > 600 ? 540 : mediaWidth,
+          maxHeight: mediaHeight * 0.88,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -194,16 +205,16 @@ class ReportDetailsDialog extends StatelessWidget {
                           spacing: 6,
                           runSpacing: 6,
                           children: [
-                            if (vitals['blood_pressure'] != null)
-                              _chip('BP: ${vitals['blood_pressure']}'),
-                            if (vitals['weight_kg'] != null)
-                              _chip('Wt: ${vitals['weight_kg']} kg'),
-                            if (vitals['pulse_bpm'] != null)
-                              _chip('Pulse: ${vitals['pulse_bpm']} bpm'),
-                            if (vitals['temperature_f'] != null)
-                              _chip('Temp: ${vitals['temperature_f']} °F'),
-                            if (vitals['spo2_percent'] != null)
-                              _chip('SpO2: ${vitals['spo2_percent']}%'),
+                            if (vitals['blood_pressure'] != null || vitals['bp'] != null)
+                              _chip('BP: ${vitals['blood_pressure'] ?? vitals['bp']}'),
+                            if (vitals['weight_kg'] != null || vitals['weight'] != null)
+                              _chip('Wt: ${(vitals['weight_kg'] ?? vitals['weight']).toString().replaceAll('kg', '').trim()} kg'),
+                            if (vitals['pulse_bpm'] != null || vitals['pulse'] != null)
+                              _chip('Pulse: ${(vitals['pulse_bpm'] ?? vitals['pulse']).toString().replaceAll('bpm', '').trim()} bpm'),
+                            if (vitals['temperature_f'] != null || vitals['temperature'] != null || vitals['temp'] != null)
+                              _chip('Temp: ${(vitals['temperature_f'] ?? vitals['temperature'] ?? vitals['temp']).toString().replaceAll('°F', '').trim()} °F'),
+                            if (vitals['spo2_percent'] != null || vitals['spo2'] != null)
+                              _chip('SpO2: ${(vitals['spo2_percent'] ?? vitals['spo2']).toString().replaceAll('%', '').trim()}%'),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -357,10 +368,16 @@ class ReportDetailsDialog extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(i18n.t('recordExportedMsg'))),
-                        );
+                      onPressed: () async {
+                        try {
+                          await ReportPrinter.printReport(report, patient: patient, doctor: doctor);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Print error: $e')),
+                            );
+                          }
+                        }
                       },
                     ),
                   ),
