@@ -255,6 +255,15 @@ class ApiService {
       }),
     });
   }
+
+  // Database-backed UI Localization Cache
+  async getAllUICaches() {
+    return this.request('/api/v1/cache/ui');
+  }
+
+  async getUICache(languageCode) {
+    return this.request(`/api/v1/cache/ui/${languageCode}`);
+  }
 }
 
 window.api = new ApiService();

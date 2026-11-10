@@ -3,97 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>SwasthyaSetu — Multilingual Healthcare Communication</title>
+  <title>SwasthyaSetu — Clinical Communication Suite</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-container">
-    <!-- Main Top Header -->
+    <!-- Top Commercial Clinical Header -->
     <header class="app-header">
-      <div class="brand-section">
+      <div class="brand-section" id="brand-header-link" title="SwasthyaSetu Dashboard">
         <div class="brand-icon">
-          <i class="fa-solid fa-hospital-user"></i>
+          <i class="fa-solid fa-heart-pulse"></i>
         </div>
         <div>
-          <div class="brand-title">SwasthyaSetu</div>
-          <div class="brand-subtitle">Clinical Communication Portal</div>
+          <div class="brand-title">Swasthya<span class="brand-accent">Setu</span></div>
+          <div class="brand-subtitle" id="brand-subtitle-text">Clinical Communication Suite</div>
         </div>
       </div>
+
+      <!-- Quick Navigation Tabs (Finished Product Bar) -->
+      <nav class="header-nav-pills" id="header-nav-tabs">
+        <button id="nav-btn-dashboard" class="nav-pill active" title="Go to Dashboard">
+          <i class="fa-solid fa-hospital-user"></i>
+          <span>Dashboard</span>
+        </button>
+        <button id="nav-btn-onboard" class="nav-pill" title="Register New Patient">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Onboard</span>
+        </button>
+        <button id="nav-btn-consultation" class="nav-pill" style="display: none;" title="Active Consultation in Progress">
+          <span class="pulse-dot"></span>
+          <span>Consultation</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions -->
       <div class="header-actions">
+        <!-- Quick App Language Switcher (Backed by Database Cache) -->
+        <div class="lang-select-pill" title="Switch Portal Language">
+          <i class="fa-solid fa-globe" style="color: var(--primary-green);"></i>
+          <select id="header-lang-switcher" aria-label="Portal Language">
+            <option value="en-IN">English</option>
+            <option value="mr-IN">मराठी (Marathi)</option>
+            <option value="hi-IN">हिंदी (Hindi)</option>
+          </select>
+        </div>
+
+        <!-- Doctor Online Status Badge -->
+        <div class="doctor-status-badge" id="header-doctor-badge" title="Attending Physician">
+          <span class="status-dot"></span>
+          <span id="header-doctor-name">Dr. Swapnil Naik</span>
+        </div>
+
+        <!-- Settings Gear Button -->
         <button id="btn-open-settings" class="icon-btn" title="Doctor & App Settings">
           <i class="fa-solid fa-gear"></i>
         </button>
       </div>
     </header>
 
-    <!-- Connection Status Banner (Friendly & Minimalist) -->
-    <div id="connection-banner" class="connection-banner" style="display: none;">
-      <span class="banner-text">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        <span id="connection-status-text">Connecting...</span>
-      </span>
-    </div>
-
     <!-- Main Views Container -->
     <main class="app-main">
 
-      <!-- VIEW 1: DASHBOARD -->
+      <!-- ====================================================================
+           VIEW 1: DASHBOARD
+           ==================================================================== -->
       <section id="view-dashboard" class="view-section active">
-        <!-- Doctor Profile Card -->
-        <div class="card doctor-profile-card">
-          <div class="avatar-circle">
-            <i class="fa-solid fa-user-doctor"></i>
-          </div>
-          <div class="doctor-info">
-            <h3 id="dash-doctor-name">Dr. Priya Sharma</h3>
-            <p id="dash-doctor-creds">MBBS, MD (General Medicine)</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
-              <div class="lang-pill">
-                <i class="fa-solid fa-language"></i>
-                <span id="dash-doctor-lang">Primary: English (en-IN)</span>
+        <!-- Doctor Hero Profile Card -->
+        <div class="doctor-hero-card">
+          <div class="doctor-hero-left">
+            <div class="doctor-avatar-circle">
+              <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div class="doctor-hero-info">
+              <h3 id="dash-doctor-name">Dr. Swapnil Naik</h3>
+              <p id="dash-doctor-creds">MBBS, MD (General Medicine)</p>
+              <div class="doctor-tags-row">
+                <span class="badge-chip badge-green" id="dash-doctor-lang">Primary: English</span>
+                <span class="badge-chip badge-green" id="dash-doctor-spoken">
+                  <i class="fa-solid fa-comments"></i> <span>Speaks: English, Marathi, Hindi</span>
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Search & New Patient Action -->
+        <!-- Search & New Patient Action Row -->
         <div class="search-bar-row">
           <div class="search-input-wrapper">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
             <input type="text" id="input-patient-search" placeholder="Search patients by name or phone...">
           </div>
-          <button id="btn-add-patient" class="btn btn-primary" title="Launch Patient Onboarding">
-            <i class="fa-solid fa-user-plus"></i> Onboard Patient
+          <button id="btn-add-patient" class="btn btn-primary" title="Launch Interactive Patient Onboarding">
+            <i class="fa-solid fa-user-plus"></i> <span id="label-onboard-btn">Onboard Patient</span>
           </button>
         </div>
 
         <!-- Patients List Section -->
         <div>
           <div class="section-header">
-            <h2 id="dash-registered-title">Registered Patients</h2>
+            <h2 id="dash-registered-title">
+              <i class="fa-solid fa-hospital-user" style="color: var(--primary-green); font-size: 17px;"></i>
+              Registered Patients
+            </h2>
             <span class="count-badge" id="patient-count-badge">0 registered</span>
           </div>
           <div id="patient-list-container" class="patient-list">
-            <!-- Rendered dynamically -->
+            <!-- Dynamically populated -->
           </div>
         </div>
       </section>
 
-      <!-- VIEW: CONVERSATIONAL AI ONBOARDING WITH FLOATING BUBBLE UI -->
+      <!-- ====================================================================
+           VIEW: CONVERSATIONAL AI ONBOARDING WITH FLOATING BUBBLES
+           ==================================================================== -->
       <section id="view-onboard-patient" class="view-section">
         <!-- STEP A: FLOATING BUBBLE LANGUAGE SELECTOR -->
-        <div id="onboard-step-language" style="display: flex; flex-direction: column; gap: 14px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
+        <div id="onboard-step-language" style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
             <button id="btn-back-onboard-lang" class="icon-btn" title="Back to Dashboard">
               <i class="fa-solid fa-arrow-left"></i>
             </button>
-            <h3 style="font-size: 16px; font-weight: 700;">Patient Onboarding</h3>
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--primary-green-deep);">Patient Onboarding</h3>
           </div>
 
           <div class="floating-bubble-header">
-            <h2>अपनी भाषा चुनें • Select Language</h2>
-            <p>आपली भाषा निवडा • Choose your language for interactive AI onboarding</p>
+            <h2>अपनी भाषा चुनें • Select Language • आपली भाषा निवडा</h2>
+            <p>Choose your native language for interactive voice/text intake assistant</p>
           </div>
 
           <!-- Interactive Floating Bubble Stage -->
@@ -167,7 +206,7 @@
         </div>
 
         <!-- STEP B: CONVERSATIONAL AI INTAKE INTERVIEW -->
-        <div id="onboard-step-chat" style="display: none; flex-direction: column; gap: 14px;">
+        <div id="onboard-step-chat" style="display: none; flex-direction: column; gap: 16px;">
           <!-- Top bar with change language button -->
           <div class="intake-header-card">
             <div class="ai-assistant-badge">
@@ -186,7 +225,7 @@
 
           <!-- AI Question Card -->
           <div class="intake-question-card">
-            <div class="question-step-badge" id="intake-step-indicator">Question 1 of 5 • Name & Age</div>
+            <div class="question-step-badge" id="intake-step-indicator">Question 1 of 5 • Name</div>
             <div class="question-text-native" id="intake-question-text">
               नमस्ते! आपका शुभ नाम क्या है?
             </div>
@@ -194,44 +233,50 @@
               (Hello! What is your full name?)
             </div>
 
-            <!-- Question Audio Bar -->
+            <!-- Question Audio Bar with Live Equalizer Animation -->
             <div class="question-audio-bar">
-              <button id="btn-play-intake-tts" class="btn btn-outline btn-sm" style="color: var(--primary-teal);">
-                <i class="fa-solid fa-volume-high"></i> Listen Aloud (TTS)
+              <button id="btn-play-intake-tts" class="btn btn-outline-green btn-sm">
+                <i class="fa-solid fa-volume-high"></i> <span id="label-listen-aloud">Listen Aloud</span>
               </button>
-              <span style="font-size: 11px; color: var(--text-muted);">Male voice synthesis</span>
+              <div class="soundwave-visualizer" id="intake-audio-wave" style="display: none;">
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+                <span class="soundwave-bar"></span>
+              </div>
             </div>
 
             <!-- Quick Suggestion Chips -->
             <div id="intake-quick-chips" class="quick-options-row">
-              <!-- Dynamically populated per question -->
+              <!-- Dynamically populated -->
             </div>
           </div>
 
           <!-- Voice / Text Response Input Area -->
-          <div class="card" style="padding: 16px;">
+          <div class="card" style="padding: 18px;">
             <div class="intake-voice-area">
               <button id="btn-intake-mic" class="intake-mic-btn" title="Tap to Speak Your Answer">
                 <i class="fa-solid fa-microphone"></i>
               </button>
-              <div id="intake-mic-status" style="font-size: 13px; font-weight: 700; color: var(--primary-teal);">
+              <div id="intake-mic-status" style="font-size: 13px; font-weight: 700; color: var(--primary-green);">
                 Tap mic to speak your answer
               </div>
-              <div id="intake-rec-timer" style="display: none; font-size: 13px; font-weight: 700; color: var(--error-red);">
+              <div id="intake-rec-timer" style="display: none; font-size: 13px; font-weight: 800; color: var(--error-color);">
                 00:00
               </div>
             </div>
 
             <!-- AI Validation / Correction Alert Banner -->
-            <div id="intake-validation-alert" style="display: none; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 14px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-sm); color: #be123c; font-size: 13px; font-weight: 600;">
-              <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px; flex-shrink: 0;"></i>
+            <div id="intake-validation-alert" style="display: none; align-items: center; gap: 10px; margin-top: 12px; padding: 12px 16px; background: var(--error-light); border: 1.5px solid var(--error-border); border-radius: var(--radius-md); color: var(--error-color); font-size: 13px; font-weight: 700;">
+              <i class="fa-solid fa-circle-exclamation" style="font-size: 17px; flex-shrink: 0;"></i>
               <span id="intake-validation-text"></span>
             </div>
 
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-              <input type="text" id="input-intake-text" placeholder="Or type answer here..." style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+              <input type="text" id="input-intake-text" placeholder="Or type answer here..." style="flex: 1; padding: 12px 16px; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px;">
               <button id="btn-submit-intake-text" class="btn btn-primary">
-                <i class="fa-solid fa-arrow-right"></i> Next
+                <span id="label-intake-next">Next</span> <i class="fa-solid fa-arrow-right"></i>
               </button>
             </div>
           </div>
@@ -239,8 +284,13 @@
           <!-- Live Autofill Form Card -->
           <div class="autofill-preview-card">
             <div class="autofill-header">
-              <span id="autofill-header-title"><i class="fa-solid fa-file-waveform" style="color: var(--primary-teal); margin-right: 6px;"></i> Live Autofilled Intake Form</span>
-              <span class="badge-chip" id="autofill-sync-badge" style="background: var(--primary-light); color: var(--primary-teal); font-size: 10px;">Syncing in Real Time</span>
+              <span id="autofill-header-title">
+                <i class="fa-solid fa-file-waveform" style="color: var(--primary-green); margin-right: 6px;"></i>
+                Live Autofilled Intake Form
+              </span>
+              <span class="badge-chip badge-green" id="autofill-sync-badge">
+                <i class="fa-solid fa-bolt" style="font-size: 9px;"></i> Live Sync
+              </span>
             </div>
 
             <div class="autofill-grid">
@@ -270,41 +320,41 @@
               </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
-              <button id="btn-finish-intake-early" class="btn btn-outline btn-sm">
-                <i class="fa-solid fa-check"></i> Complete & Submit Form
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+              <button id="btn-finish-intake-early" class="btn btn-outline-green btn-sm">
+                <i class="fa-solid fa-check"></i> <span id="label-intake-complete">Complete & Submit Form</span>
               </button>
             </div>
           </div>
         </div>
 
         <!-- STEP C: PRE-CONSULTATION SUMMARY (DOCTOR VIEW) -->
-        <div id="onboard-step-summary" style="display: none; flex-direction: column; gap: 16px;">
+        <div id="onboard-step-summary" style="display: none; flex-direction: column; gap: 18px;">
           <div class="pre-consultation-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="avatar-circle" style="background: var(--success-green); width: 44px; height: 44px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="avatar-circle" style="background: var(--primary-green); width: 48px; height: 48px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px;">
                   <i class="fa-solid fa-clipboard-user"></i>
                 </div>
                 <div>
-                  <h3 id="summary-patient-name" style="font-size: 17px; font-weight: 800;">Patient Name</h3>
-                  <p id="summary-patient-meta" style="font-size: 12px; color: var(--text-muted);">Age • Gender • Phone</p>
+                  <h3 id="summary-patient-name" style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep);">Patient Name</h3>
+                  <p id="summary-patient-meta" style="font-size: 13px; color: var(--text-muted);">Age • Gender • Phone</p>
                 </div>
               </div>
-              <span class="badge-chip badge-ambient" id="summary-patient-lang">Marathi [mr-IN]</span>
+              <span class="badge-chip badge-green" id="summary-patient-lang">Marathi [mr-IN]</span>
             </div>
 
             <div class="triage-summary-box">
-              <strong style="color: var(--primary-teal); display: block; margin-bottom: 4px;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Pre-Consultation Clinical Brief (in Doctor's Language):
+              <strong style="color: var(--primary-green-deep); display: block; margin-bottom: 4px;">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary-green);"></i> Clinical Triage Briefing:
               </strong>
-              <span id="summary-intake-brief">Patient completed interactive voice intake. Clinical briefing will render here.</span>
+              <span id="summary-intake-brief">Patient completed interactive intake. Clinical summary will render here.</span>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
               <div class="autofill-item" style="background: #ffffff;">
-                <div class="autofill-label">Chief Complaint (Doctor's View)</div>
-                <div class="autofill-value" id="summary-complaint" style="font-size: 13px; font-weight: 700; color: #b45309;">-</div>
+                <div class="autofill-label">Chief Complaint</div>
+                <div class="autofill-value" id="summary-complaint" style="font-size: 14px; font-weight: 700; color: #b45309;">-</div>
               </div>
               <div class="autofill-item" style="background: #ffffff;">
                 <div class="autofill-label">Symptom Duration</div>
@@ -328,88 +378,98 @@
         </div>
       </section>
 
-      <!-- VIEW 2: PATIENT DETAIL & CONSULTATION HISTORY -->
+      <!-- ====================================================================
+           VIEW 2: PATIENT DETAIL & CONSULTATION HISTORY
+           ==================================================================== -->
       <section id="view-patient-detail" class="view-section">
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
           <button id="btn-back-to-dashboard" class="icon-btn" title="Back to Dashboard">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
-          <h2 id="detail-patient-name" style="font-size: 18px; font-weight: 700;">Patient Profile</h2>
+          <h2 id="detail-patient-name" style="font-size: 19px; font-weight: 800; color: var(--primary-green-deep);">Patient Profile</h2>
         </div>
 
         <div class="card">
-          <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-            <div class="avatar-circle" style="background: var(--patient-color);">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <div class="avatar-circle" style="background: var(--patient-color); width: 50px; height: 50px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 22px;">
               <i class="fa-solid fa-user"></i>
             </div>
             <div>
-              <h3 id="card-patient-name" style="font-size: 18px; font-weight: 700;">Patient Name</h3>
-              <p id="card-patient-meta" style="font-size: 13px; color: var(--text-muted);">Age • Phone</p>
+              <h3 id="card-patient-name" style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep);">Patient Name</h3>
+              <p id="card-patient-meta" style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Age • Phone</p>
             </div>
           </div>
-          <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
-            <i class="fa-solid fa-language" style="color: var(--primary-teal);"></i>
+          <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
+            <i class="fa-solid fa-language" style="color: var(--primary-green);"></i>
             <strong id="label-pref-lang">Preferred Language:</strong>
-            <span id="card-patient-lang" class="badge-chip badge-hi">Hindi</span>
+            <span id="card-patient-lang" class="badge-chip badge-green">Hindi</span>
           </div>
 
           <!-- Pre-Consultation Summary Snippet if present -->
-          <div id="card-patient-intake-box" style="display: none; margin-top: 12px; padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); border-left: 3px solid var(--primary-teal); font-size: 12px;">
-            <strong id="label-intake-summary">Intake Summary:</strong> <span id="card-patient-intake-text"></span>
+          <div id="card-patient-intake-box" style="display: none; margin-top: 14px; padding: 12px 16px; background: var(--green-subtle); border-radius: var(--radius-md); border-left: 4px solid var(--primary-green); font-size: 13px;">
+            <strong id="label-intake-summary" style="color: var(--primary-green-deep);">Intake Summary:</strong>
+            <span id="card-patient-intake-text" style="color: var(--text-main); margin-left: 4px;"></span>
           </div>
         </div>
 
         <!-- Start Consultation Button -->
-        <button id="btn-start-consultation" class="btn btn-primary" style="padding: 16px; font-size: 16px;">
-          <i class="fa-solid fa-play"></i> Start Consultation
+        <button id="btn-start-consultation" class="btn btn-primary btn-lg" style="width: 100%;">
+          <i class="fa-solid fa-play"></i> <span id="label-start-consultation">Start Consultation</span>
         </button>
 
         <div>
           <div class="section-header">
-            <h2 id="header-medical-history"><i class="fa-solid fa-notes-medical" style="color: var(--primary-teal); margin-right: 6px;"></i> Medical History & Reports</h2>
+            <h2 id="header-medical-history">
+              <i class="fa-solid fa-notes-medical" style="color: var(--primary-green); margin-right: 6px;"></i>
+              Medical History & Reports
+            </h2>
             <span class="count-badge" id="consultation-count-badge">0 saved reports</span>
           </div>
           <div id="consultation-history-list" class="patient-list">
-            <!-- Rendered dynamically -->
+            <!-- Dynamically populated -->
           </div>
         </div>
       </section>
 
-      <!-- VIEW 3: LIVE TURN-BASED CONSULTATION -->
-      <section id="view-consultation" class="view-section" style="padding: 12px; gap: 12px; flex: 1;">
+      <!-- ====================================================================
+           VIEW 3: LIVE TURN-BASED CONSULTATION
+           ==================================================================== -->
+      <section id="view-consultation" class="view-section" style="padding: 16px; gap: 14px; flex: 1;">
         <!-- Top consultation bar -->
-        <div class="consultation-header-bar card" style="padding: 12px 16px;">
+        <div class="consultation-header-bar card" style="padding: 14px 20px;">
           <div>
-            <h3 id="cons-patient-title" style="font-size: 15px; font-weight: 700;">Consultation</h3>
-            <span style="font-size: 11px; color: var(--success-green); font-weight: 600;" id="cons-status-badge">Active Session</span>
+            <h3 id="cons-patient-title" style="font-size: 16px; font-weight: 800; color: var(--primary-green-deep);">Consultation</h3>
+            <span style="font-size: 12px; color: var(--primary-green); font-weight: 700;" id="cons-status-badge">
+              <i class="fa-solid fa-circle" style="font-size: 8px; margin-right: 4px;"></i> Active Session
+            </span>
           </div>
-          <button id="btn-review-draft" class="btn btn-primary btn-sm" title="Send full chat history to AI to generate clinical report">
-            <i class="fa-solid fa-file-waveform"></i> Generate AI Report
+          <button id="btn-review-draft" class="btn btn-primary btn-sm" title="Synthesize consultation transcript into official clinical record">
+            <i class="fa-solid fa-file-waveform"></i> <span id="label-generate-ai-report">Generate AI Report</span>
           </button>
         </div>
 
         <!-- Language Pair Bar -->
-        <div class="lang-pair-container card" id="cons-lang-pair-bar" style="padding: 8px 14px; justify-content: space-between;">
+        <div class="lang-pair-container card" id="cons-lang-pair-bar" style="padding: 10px 18px; display: flex; align-items: center; justify-content: space-between;">
           <span class="badge-chip badge-hi" id="cons-badge-patient">Patient: Hindi</span>
-          <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 12px;"></i>
+          <i class="fa-solid fa-arrow-right-arrow-left" style="color: var(--text-muted); font-size: 13px;"></i>
           <span class="badge-chip badge-en" id="cons-badge-doctor">Doctor: English</span>
         </div>
 
         <!-- Speaker Selector -->
         <div class="speaker-toggle-container" id="cons-speaker-toggle">
           <button id="btn-speaker-patient" class="speaker-btn active patient">
-            <i class="fa-solid fa-user"></i> PATIENT SPEAKS
+            <i class="fa-solid fa-user"></i> <span id="label-patient-speaks-btn">PATIENT SPEAKS</span>
           </button>
           <button id="btn-speaker-doctor" class="speaker-btn doctor">
-            <i class="fa-solid fa-user-doctor"></i> DOCTOR SPEAKS
+            <i class="fa-solid fa-user-doctor"></i> <span id="label-doctor-speaks-btn">DOCTOR SPEAKS</span>
           </button>
         </div>
 
         <!-- Doctor Speaking Language Selector (Doctor can speak in any language) -->
-        <div id="doctor-speak-lang-bar" style="display: none; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); font-size: 12px;">
-          <span style="font-weight: 700; color: #166534;" id="label-doc-speaking-in">Doctor Speaking In:</span>
-          <select id="doctor-speak-lang" style="padding: 4px 10px; border-radius: 6px; border: 1px solid #86efac; font-weight: 700; color: #15803d; background: #ffffff;">
+        <div id="doctor-speak-lang-bar" style="display: none; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--green-light); border: 1.5px solid var(--green-border); border-radius: var(--radius-md); font-size: 13px;">
+          <span style="font-weight: 800; color: var(--primary-green-deep);" id="label-doc-speaking-in">Doctor Speaking In:</span>
+          <select id="doctor-speak-lang" style="padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--green-300); font-weight: 700; color: var(--primary-green-deep); background: #ffffff; outline: none; cursor: pointer;">
             <option value="en-IN">English</option>
             <option value="mr-IN">Marathi (मराठी)</option>
             <option value="hi-IN">Hindi (हिंदी)</option>
@@ -430,9 +490,9 @@
           <span id="turn-direction-text">Patient Speaks ➔ Doctor Listens</span>
         </div>
 
-        <!-- Clean Loading Symbol Indicator (No developer messages) -->
-        <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; padding: 10px;">
-          <i class="fa-solid fa-spinner fa-spin" style="font-size: 22px; color: var(--primary-teal);"></i>
+        <!-- Clean Loading Symbol Indicator -->
+        <div id="turn-processing-banner" style="display: none; align-items: center; justify-content: center; padding: 12px;">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 26px; color: var(--primary-green);"></i>
         </div>
 
         <!-- Transcript Timeline -->
@@ -442,9 +502,9 @@
 
         <!-- Recording & Control Footer -->
         <div class="recorder-footer-card">
-          <div style="display: flex; align-items: center; gap: 20px;">
-            <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance">
-              <i class="fa-solid fa-keyboard"></i> Type
+          <div style="display: flex; align-items: center; gap: 24px;">
+            <button id="btn-open-text-turn" class="btn btn-outline btn-sm" title="Type Utterance Manually">
+              <i class="fa-solid fa-keyboard"></i> <span id="label-type-btn">Type</span>
             </button>
 
             <!-- Large Microphone Button -->
@@ -454,137 +514,143 @@
           </div>
 
           <div id="record-timer" class="recording-timer" style="display: none;">
-            <i class="fa-solid fa-circle fa-beat" style="font-size: 8px; margin-right: 4px;"></i>
+            <i class="fa-solid fa-circle fa-beat" style="font-size: 8px; margin-right: 6px; color: var(--error-color);"></i>
             <span id="timer-display">00:00</span>
           </div>
-          <div id="record-instruction" style="font-size: 11px; color: var(--text-muted);">
+
+          <!-- Animated Soundwave Visualizer for Consultation -->
+          <div class="soundwave-visualizer" id="consultation-audio-wave" style="display: none; margin: 6px auto;">
+            <span class="soundwave-bar"></span>
+            <span class="soundwave-bar"></span>
+            <span class="soundwave-bar"></span>
+            <span class="soundwave-bar"></span>
+            <span class="soundwave-bar"></span>
+          </div>
+
+          <div id="record-instruction" style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
             Tap microphone to speak turn in native language
           </div>
         </div>
       </section>
 
-      <!-- VIEW 4: DRAFT REVIEW & PHYSICIAN SUPERVISION -->
+      <!-- ====================================================================
+           VIEW 4: DRAFT REVIEW & PHYSICIAN SUPERVISION
+           ==================================================================== -->
       <section id="view-draft-review" class="view-section">
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
           <button id="btn-back-to-consultation" class="icon-btn" title="Back to Consultation">
             <i class="fa-solid fa-arrow-left"></i>
           </button>
-          <h2 id="draft-review-title" style="font-size: 18px; font-weight: 700;">Review Consultation Draft</h2>
+          <h2 id="draft-review-title" style="font-size: 19px; font-weight: 800; color: var(--primary-green-deep);">Review Clinical Draft</h2>
         </div>
 
-        <!-- Mandatory AI Draft Disclaimer Banner -->
-        <div class="card" style="background: var(--warning-light); border-color: #fde68a; padding: 12px 16px;">
+        <!-- Clinical Supervision Notice -->
+        <div class="card" style="background: var(--warning-light); border: 1.5px solid var(--warning-border); padding: 14px 18px;">
           <div id="ai-disclaimer-title" style="display: flex; align-items: center; gap: 8px; color: var(--warning-amber); font-weight: 800; font-size: 13px;">
             <i class="fa-solid fa-triangle-exclamation"></i> AI-GENERATED DRAFT — PENDING DOCTOR REVIEW
           </div>
-          <p id="ai-disclaimer-desc" style="font-size: 11px; color: #92400e; margin-top: 4px;">
+          <p id="ai-disclaimer-desc" style="font-size: 12px; color: #92400e; margin-top: 4px; line-height: 1.5;">
             The AI never diagnoses or prescribes autonomously. Doctor review and confirmation are legally required.
           </p>
         </div>
 
-        <!-- Talk to AI Scribe Assistant (Dictate Vitals & Clinical Details in Any Language -> English Report) -->
-        <div class="card" style="border: 1.5px solid var(--ambient-border); background: #faf5ff;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--ambient-purple); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px;">
+        <!-- Talk to AI Clinical Assistant (Dictate Vitals & Notes in Any Language) -->
+        <div class="card" style="border: 1.5px solid var(--green-border); background: var(--green-subtle);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
               </div>
               <div>
-                <h3 id="talk-ai-title" style="font-size: 14px; font-weight: 800; color: #581c87;">Talk to AI Scribe Assistant</h3>
-                <p id="talk-ai-desc" style="font-size: 11px; color: #7e22ce;">Dictate vitals (Weight, Height, BP, Pulse, Temp) or notes in English, Hindi, or Marathi</p>
+                <h3 id="talk-ai-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep);">Talk to AI Clinical Assistant</h3>
+                <p id="talk-ai-desc" style="font-size: 12px; color: var(--primary-green);">Dictate vitals (Weight, Height, BP, Pulse, Temp) or notes in English, Hindi, or Marathi</p>
               </div>
             </div>
-            <span class="badge-chip" style="background: var(--ambient-light); color: var(--ambient-purple); border: 1px solid var(--ambient-border); font-size: 10px;">Voice Scribe</span>
+            <span class="badge-chip badge-green">Voice Assist</span>
           </div>
 
-          <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
-            <button id="btn-doctor-ai-mic" class="recorder-btn-large" style="width: 44px; height: 44px; font-size: 18px; background: var(--ambient-purple); box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3); flex-shrink: 0;" title="Speak Vitals & Clinical Details">
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 12px;">
+            <button id="btn-doctor-ai-mic" class="recorder-btn-large" style="width: 46px; height: 46px; font-size: 18px; flex-shrink: 0;" title="Speak Vitals & Clinical Details">
               <i class="fa-solid fa-microphone"></i>
             </button>
-            <input type="text" id="input-doctor-ai-text" placeholder="e.g. Weight 70 kg, height 175 cm, BP 120/80 mmHg, pulse 74..." style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px;">
-            <button id="btn-submit-doctor-ai" class="btn btn-primary" style="background: var(--ambient-purple); padding: 10px 16px; flex-shrink: 0;">
-              <i class="fa-solid fa-paper-plane"></i> Send
+            <input type="text" id="input-doctor-ai-text" placeholder="e.g. Weight 70 kg, height 175 cm, BP 120/80 mmHg, pulse 74..." style="flex: 1; padding: 11px 16px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;">
+            <button id="btn-submit-doctor-ai" class="btn btn-primary" style="padding: 11px 18px; flex-shrink: 0;">
+              <i class="fa-solid fa-paper-plane"></i> <span id="label-send-btn">Send</span>
             </button>
           </div>
 
-          <div id="doctor-ai-mic-status" style="font-size: 11px; font-weight: 600; color: #7e22ce; margin-top: 6px;">
-            Tap microphone to speak or type additional vitals & notes
-          </div>
-
-          <!-- AI Feedback / Confirmation Banner -->
-          <div id="doctor-ai-feedback" style="display: none; margin-top: 10px; padding: 10px 14px; background: #f3e8ff; border: 1px solid #d8b4fe; border-radius: var(--radius-sm); font-size: 12px; color: #581c87;">
-            <div style="display: flex; align-items: center; gap: 6px; font-weight: 700;">
-              <i class="fa-solid fa-robot"></i> <span id="doctor-ai-feedback-text">Vitals updated</span>
-            </div>
+          <div id="doctor-ai-mic-status" style="font-size: 12px; font-weight: 600; color: var(--primary-green); margin-top: 8px;">
+            Tap microphone to dictate additional vitals & clinical instructions
           </div>
         </div>
 
         <!-- Patient Vitals Card -->
         <div class="card">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <h3 id="vitals-card-title" style="font-size: 14px; font-weight: 700;">
-              <i class="fa-solid fa-heart-pulse" style="color: #e11d48; margin-right: 6px;"></i> Patient Vitals
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <h3 id="vitals-card-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep);">
+              <i class="fa-solid fa-heart-pulse" style="color: var(--primary-green); margin-right: 6px;"></i> Patient Vitals
             </h3>
-            <span id="vitals-card-sub" style="font-size: 11px; color: var(--text-muted);">Auto-filled by AI / Editable</span>
+            <span id="vitals-card-sub" style="font-size: 12px; color: var(--text-muted);">Auto-filled / Editable</span>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
             <div class="form-group">
-              <label id="label-vitals-weight" style="font-size: 11px; font-weight: 600;">Weight (kg)</label>
+              <label id="label-vitals-weight">Weight (kg)</label>
               <input type="number" step="0.1" id="vitals-weight" placeholder="e.g. 70">
             </div>
             <div class="form-group">
-              <label id="label-vitals-height" style="font-size: 11px; font-weight: 600;">Height (cm)</label>
+              <label id="label-vitals-height">Height (cm)</label>
               <input type="number" step="0.5" id="vitals-height" placeholder="e.g. 175">
             </div>
             <div class="form-group">
-              <label id="label-vitals-bp" style="font-size: 11px; font-weight: 600;">Blood Pressure</label>
+              <label id="label-vitals-bp">Blood Pressure</label>
               <input type="text" id="vitals-bp" placeholder="e.g. 120/80 mmHg">
             </div>
             <div class="form-group">
-              <label id="label-vitals-pulse" style="font-size: 11px; font-weight: 600;">Pulse (bpm)</label>
+              <label id="label-vitals-pulse">Pulse (bpm)</label>
               <input type="number" id="vitals-pulse" placeholder="e.g. 74">
             </div>
             <div class="form-group">
-              <label id="label-vitals-temp" style="font-size: 11px; font-weight: 600;">Temp (°F)</label>
+              <label id="label-vitals-temp">Temp (°F)</label>
               <input type="number" step="0.1" id="vitals-temp" placeholder="e.g. 98.6">
             </div>
             <div class="form-group">
-              <label id="label-vitals-spo2" style="font-size: 11px; font-weight: 600;">SpO2 (%)</label>
+              <label id="label-vitals-spo2">SpO2 (%)</label>
               <input type="number" id="vitals-spo2" placeholder="e.g. 98">
             </div>
           </div>
         </div>
 
         <!-- Recommended Next Consultation Card (AI Analyzed) -->
-        <div class="card" style="border-left: 4px solid var(--primary-teal); background: #f0fdfa;">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div class="card" style="border-left: 4px solid var(--primary-green); background: var(--green-subtle);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div>
-              <div style="font-size: 13px; font-weight: 800; color: #0f766e;">
-                <i class="fa-regular fa-calendar-check" style="margin-right: 6px;"></i> <span id="label-draft-next-consultation">Recommended Next Consultation</span>
+              <div style="font-size: 14px; font-weight: 800; color: var(--primary-green-deep);">
+                <i class="fa-regular fa-calendar-check" style="margin-right: 6px; color: var(--primary-green);"></i>
+                <span id="label-draft-next-consultation">Recommended Next Consultation</span>
               </div>
-              <div id="draft-followup-text" style="font-size: 12px; color: #115e59; margin-top: 3px;">
+              <div id="draft-followup-text" style="font-size: 13px; color: var(--primary-green); margin-top: 3px; font-weight: 600;">
                 Review after 3 days if symptoms persist
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <label style="font-size: 12px; font-weight: 700; color: #0f766e;" id="label-draft-next-date">Date:</label>
-              <input type="date" id="draft-next-date" style="padding: 8px 12px; border: 1px solid #99f6e4; border-radius: 6px; font-weight: 700; color: #0f766e; background: #ffffff;">
+              <label style="font-size: 13px; font-weight: 700; color: var(--primary-green-deep);" id="label-draft-next-date">Date:</label>
+              <input type="date" id="draft-next-date" style="padding: 8px 14px; border: 1.5px solid var(--green-border); border-radius: var(--radius-sm); font-weight: 700; color: var(--primary-green-deep); background: #ffffff;">
             </div>
           </div>
         </div>
 
         <!-- Patient Symptoms (AI Extracted) -->
         <div class="card">
-          <h3 id="symptoms-card-title" style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Patient-Reported Symptoms</h3>
-          <div id="draft-symptoms-list" style="display: flex; flex-direction: column; gap: 6px;">
-            <!-- Rendered dynamically -->
+          <h3 id="symptoms-card-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 12px;">Patient-Reported Symptoms</h3>
+          <div id="draft-symptoms-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated -->
           </div>
         </div>
 
         <!-- Doctor Diagnosis & Notes Form -->
         <div class="card">
-          <h3 id="assessment-card-title" style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Physician Assessment</h3>
-          <div class="form-group" style="margin-bottom: 12px;">
+          <h3 id="assessment-card-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 14px;">Physician Assessment</h3>
+          <div class="form-group" style="margin-bottom: 14px;">
             <label id="label-draft-diagnosis">Doctor Diagnosis *</label>
             <input type="text" id="draft-diagnosis" placeholder="Enter confirmed clinical diagnosis..." value="">
           </div>
@@ -596,10 +662,10 @@
 
         <!-- Prescriptions Builder -->
         <div class="card">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-            <h3 id="prescriptions-card-title" style="font-size: 14px; font-weight: 700;">Prescriptions</h3>
-            <button id="btn-add-prescription" class="btn btn-outline btn-sm">
-              <i class="fa-solid fa-plus"></i> Add Medicine
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <h3 id="prescriptions-card-title" style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep);">Prescriptions</h3>
+            <button id="btn-add-prescription" class="btn btn-outline-green btn-sm">
+              <i class="fa-solid fa-plus"></i> <span id="label-add-medicine">Add Medicine</span>
             </button>
           </div>
           <div id="prescriptions-list" style="display: flex; flex-direction: column; gap: 8px;">
@@ -608,59 +674,54 @@
         </div>
 
         <!-- Approval Action -->
-        <div style="display: flex; gap: 10px; margin-top: 4px;">
-          <button id="btn-approve-record" class="btn btn-primary" style="flex: 1; padding: 16px; font-size: 15px;">
-            <i class="fa-solid fa-check-double"></i> Approve & Finalize Record
+        <div style="display: flex; gap: 12px; margin-top: 6px;">
+          <button id="btn-approve-record" class="btn btn-primary btn-lg" style="flex: 1;">
+            <i class="fa-solid fa-check-double"></i> <span id="label-approve-record">Approve & Finalize Record</span>
           </button>
         </div>
       </section>
 
-      <!-- VIEW 5: APPROVAL SUCCESS & FOLLOW-UP -->
+      <!-- ====================================================================
+           VIEW 5: APPROVAL SUCCESS & FOLLOW-UP
+           ==================================================================== -->
       <section id="view-approval-success" class="view-section">
-        <div class="card" style="text-align: center; padding: 32px 20px; background: #f0fdf4; border-color: #bbf7d0;">
-          <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--success-green); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px;">
+        <div class="card" style="text-align: center; padding: 36px 24px; background: var(--green-light); border: 2px solid var(--green-border);">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary-green); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
             <i class="fa-solid fa-check"></i>
           </div>
-          <h2 id="approval-title" style="font-size: 20px; font-weight: 800; color: #166534;">Clinical Record Approved</h2>
-          <p id="approval-subtitle" style="font-size: 13px; color: #15803d; margin-top: 6px;">
+          <h2 id="approval-title" style="font-size: 22px; font-weight: 800; color: var(--primary-green-deep);">Clinical Record Approved</h2>
+          <p id="approval-subtitle" style="font-size: 14px; color: var(--primary-green); margin-top: 6px; font-weight: 600;">
             Medical record safely archived in <strong>canonical English strictly</strong>.
           </p>
         </div>
 
         <!-- Appointment Follow-up Section -->
         <div class="card">
-          <h3 id="followup-card-title" style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Schedule Follow-up Appointment</h3>
-          <div class="form-group" style="margin-bottom: 12px;">
+          <h3 id="followup-card-title" style="font-size: 16px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 14px;">Schedule Follow-up Appointment</h3>
+          <div class="form-group" style="margin-bottom: 14px;">
             <label id="label-followup-date">Follow-up Date *</label>
             <input type="date" id="followup-date">
           </div>
-          <div class="form-group" style="margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 18px;">
             <label id="label-followup-notes">Follow-up Instructions (Appointment Only)</label>
             <input type="text" id="followup-notes" placeholder="e.g. Review if fever persists after 3 days">
           </div>
-          <button id="btn-schedule-followup" class="btn btn-primary" style="width: 100%;">
-            <i class="fa-solid fa-calendar-check"></i> Schedule Follow-up
+          <button id="btn-schedule-followup" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 15px;">
+            <i class="fa-solid fa-calendar-check"></i> <span id="label-schedule-followup">Schedule Follow-up</span>
           </button>
         </div>
 
         <button id="btn-finish-consultation" class="btn btn-outline" style="width: 100%; padding: 14px;">
-          <i class="fa-solid fa-house"></i> Return to Dashboard
-        </button>
-      </section>
-            <input type="text" id="followup-notes" placeholder="e.g. Review if fever persists after 3 days">
-          </div>
-          <button id="btn-schedule-followup" class="btn btn-primary" style="width: 100%;">
-            <i class="fa-solid fa-calendar-check"></i> Schedule Follow-up
-          </button>
-        </div>
-
-        <button id="btn-finish-consultation" class="btn btn-outline" style="width: 100%; padding: 14px;">
-          <i class="fa-solid fa-house"></i> Return to Dashboard
+          <i class="fa-solid fa-house"></i> <span id="label-return-dashboard">Return to Dashboard</span>
         </button>
       </section>
 
     </main>
   </div>
+
+  <!-- ====================================================================
+       MODALS
+       ==================================================================== -->
 
   <!-- MODAL: DOCTOR & APP SETTINGS -->
   <div id="modal-settings" class="modal-overlay">
@@ -672,7 +733,7 @@
 
       <div class="form-group">
         <label id="label-setting-doc-name">Doctor Full Name</label>
-        <input type="text" id="setting-doc-name" value="Dr. Priya Sharma">
+        <input type="text" id="setting-doc-name" value="Dr. Swapnil Naik">
       </div>
       <div class="form-group">
         <label id="label-setting-doc-creds">Doctor Credentials</label>
@@ -687,12 +748,10 @@
         </select>
       </div>
 
-      <div class="form-actions" style="margin-top: 12px;">
+      <div class="form-actions" style="margin-top: 14px;">
         <button class="btn btn-outline btn-close-modal">Cancel</button>
         <button id="btn-save-settings" class="btn btn-primary">Save Settings</button>
       </div>
-    </div>
-  </div>
     </div>
   </div>
 
@@ -712,19 +771,6 @@
       <div class="form-actions">
         <button class="btn btn-outline btn-close-modal">Cancel</button>
         <button id="btn-submit-text-turn" class="btn btn-primary">Submit Turn</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: SCRIPTED DEMO PRESETS -->
-  <div id="modal-presets" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modal-presets-title">Demo Presets</h3>
-        <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="presets-list-container" style="display: flex; flex-direction: column; gap: 8px;">
-        <!-- Preset pills -->
       </div>
     </div>
   </div>
@@ -767,26 +813,26 @@
 
   <!-- MODAL: VIEW FULL MEDICAL REPORT -->
   <div id="modal-view-report" class="modal-overlay">
-    <div class="modal-content" style="max-width: 640px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary-teal); display: flex; align-items: center; justify-content: center; font-size: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--primary-green); display: flex; align-items: center; justify-content: center; font-size: 17px;">
             <i class="fa-solid fa-file-waveform"></i>
           </div>
           <div>
-            <h3 id="report-modal-title" style="font-size: 16px; font-weight: 800;">Official Medical Report</h3>
-            <p id="report-modal-subtitle" style="font-size: 11px; color: var(--text-muted);">Verified Clinical Record</p>
+            <h3 id="report-modal-title" style="font-size: 17px; font-weight: 800; color: var(--primary-green-deep);">Official Medical Report</h3>
+            <p id="report-modal-subtitle" style="font-size: 12px; color: var(--text-muted);">Verified Clinical Record</p>
           </div>
         </div>
         <button class="icon-btn btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div id="report-modal-body" style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+      <div id="report-modal-body" style="display: flex; flex-direction: column; gap: 16px; font-size: 14px;">
         <!-- Dynamically rendered full clinical report -->
       </div>
 
-      <div class="form-actions" style="margin-top: 18px; justify-content: space-between;">
-        <button id="btn-print-report" class="btn btn-outline" style="gap: 6px;">
+      <div class="form-actions" style="margin-top: 20px; justify-content: space-between;">
+        <button id="btn-print-report" class="btn btn-outline" style="gap: 8px;">
           <i class="fa-solid fa-print"></i> Print / Save PDF
         </button>
         <button class="btn btn-primary btn-close-modal">Close</button>

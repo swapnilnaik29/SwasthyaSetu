@@ -7,6 +7,7 @@ from app.models.medical_history import MedicalHistory
 from app.models.consultation_draft import ConsultationDraft
 from app.models.clinical_record import ClinicalRecord
 from app.models.followup import Followup
+from app.models.ui_cache import UILocalization
 
 __all__ = [
     "Doctor",
@@ -18,5 +19,6 @@ __all__ = [
     "ConsultationDraft",
     "ClinicalRecord",
     "Followup",
+    "UILocalization",
 ]
 

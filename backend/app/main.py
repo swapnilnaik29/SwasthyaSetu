@@ -1,3 +1,4 @@
+import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,11 +8,13 @@ from app.db.session import init_db, AsyncSessionLocal
 from app.api.routes import health, doctor, patients, consultations, transcripts, audio, cache
 from app.models.doctor import Doctor
 from app.models.patient import Patient
+from app.models.ui_cache import UILocalization
+from app.services.translation.ui_dictionary import DEFAULT_UI_LOCALIZATIONS
 from sqlalchemy import select
 
 
 async def seed_demo_data():
-    """Seeds default doctor profile for hackathon presentation."""
+    """Seeds default doctor profile and UI language localizations for SQLite database."""
     async with AsyncSessionLocal() as session:
         # Check doctor
         res = await session.execute(select(Doctor))
@@ -23,8 +26,23 @@ async def seed_demo_data():
                 spoken_languages="en-IN,mr-IN,hi-IN",
             )
             session.add(doc)
-            await session.commit()
             logger.info("Seeded default doctor profile.")
+
+        # Seed UI Localizations into SQLite database
+        for lang_code, data in DEFAULT_UI_LOCALIZATIONS.items():
+            loc_res = await session.execute(
+                select(UILocalization).where(UILocalization.language_code == lang_code)
+            )
+            if not loc_res.scalars().first():
+                loc = UILocalization(
+                    language_code=lang_code,
+                    language_name=data["name"],
+                    translations_json=json.dumps(data["translations"], ensure_ascii=False),
+                )
+                session.add(loc)
+
+        await session.commit()
+        logger.info("Seeded UI language localizations in SQLite database.")
 
 
 @asynccontextmanager

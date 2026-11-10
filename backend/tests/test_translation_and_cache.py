@@ -114,3 +114,38 @@ async def test_reverse_direction_separate_cache(test_db):
     key2, _ = compute_cache_key(text, "hi-IN", "en-IN")
     assert key1 != key2  # Distinct keys
 
+
+@pytest.mark.asyncio
+async def test_ui_database_cache_endpoints(client):
+    """Test retrieving and storing UI language caches in the SQLite database."""
+    # 1. Fetch all UI caches
+    res = await client.get("/api/v1/cache/ui")
+    assert res.status_code == 200
+    data = res.json()
+    assert "en-IN" in data or "hi-IN" in data
+
+    # 2. Fetch specific language cache
+    res_mr = await client.get("/api/v1/cache/ui/mr-IN")
+    assert res_mr.status_code == 200
+    mr_data = res_mr.json()
+    assert mr_data["language_code"] == "mr-IN"
+    assert "translations" in mr_data
+    assert "brandSubtitle" in mr_data["translations"]
+
+    # 3. Upsert a custom or new language cache in DB
+    custom_ui = {
+        "name": "Gujarati (ગુજરાતી)",
+        "translations": {
+            "brandSubtitle": "ક્લિનિકલ કમ્યુનિકેશન પોર્ટલ",
+            "searchPatientsPlaceholder": "દર્દી શોધો...",
+        },
+    }
+    post_res = await client.post("/api/v1/cache/ui/gu-IN", json=custom_ui)
+    assert post_res.status_code == 200
+
+    # 4. Verify stored in DB
+    get_gu = await client.get("/api/v1/cache/ui/gu-IN")
+    assert get_gu.status_code == 200
+    assert get_gu.json()["translations"]["brandSubtitle"] == "ક્લિનિકલ કમ્યુનિકેશન પોર્ટલ"
+
+

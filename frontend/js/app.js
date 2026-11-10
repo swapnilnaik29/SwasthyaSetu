@@ -344,16 +344,75 @@ function on(id, event, handler) {
   }
 }
 
+// Promise-based Sequential API Queue to serialize requests and prevent collisions
+class ApiQueue {
+  constructor() {
+    this.queue = Promise.resolve();
+  }
+
+  enqueue(asyncFn) {
+    const next = this.queue.then(async () => {
+      return await asyncFn();
+    }).catch(err => {
+      console.warn('[SwasthyaSetu Queue] Request error:', err);
+      throw err;
+    });
+    this.queue = next.catch(() => {});
+    return next;
+  }
+}
+
+const consultationApiQueue = new ApiQueue();
+const intakeApiQueue = new ApiQueue();
+
 // Navigation Helper
 function showView(viewName) {
-  Object.keys(views).forEach(key => {
-    if (views[key]) {
-      views[key].classList.remove('active');
-    }
+  const allViewIds = [
+    'view-dashboard',
+    'view-onboard-patient',
+    'view-patient-detail',
+    'view-consultation',
+    'view-draft-review',
+    'view-approval-success'
+  ];
+
+  const targetId = {
+    dashboard: 'view-dashboard',
+    onboard: 'view-onboard-patient',
+    onboardPatient: 'view-onboard-patient',
+    patientDetail: 'view-patient-detail',
+    consultation: 'view-consultation',
+    draftReview: 'view-draft-review',
+    approval: 'view-approval-success'
+  }[viewName] || viewName;
+
+  allViewIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
   });
-  if (views[viewName]) {
-    views[viewName].classList.add('active');
+
+  const targetEl = document.getElementById(targetId);
+  if (targetEl) {
+    targetEl.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Update Header Navigation Active State
+  const navDash = document.getElementById('nav-btn-dashboard');
+  const navOnboard = document.getElementById('nav-btn-onboard');
+  const navConsult = document.getElementById('nav-btn-consultation');
+
+  if (navDash) navDash.classList.toggle('active', viewName === 'dashboard' || viewName === 'patientDetail');
+  if (navOnboard) navOnboard.classList.toggle('active', viewName === 'onboard' || viewName === 'onboardPatient');
+  if (navConsult) navConsult.classList.toggle('active', viewName === 'consultation' || viewName === 'draftReview' || viewName === 'approval');
+
+  // Show/Hide active consultation pill
+  if (navConsult) {
+    if (state.activeConsultation) {
+      navConsult.style.display = 'inline-flex';
+    } else {
+      navConsult.style.display = 'none';
+    }
   }
 
   // Apply localized UI
@@ -388,6 +447,15 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
 
 // App Initialization
 document.addEventListener('DOMContentLoaded', async () => {
+  // Sync localized UI from SQLite database cache on startup
+  if (window.syncUILocalizationsFromDB) {
+    try {
+      await window.syncUILocalizationsFromDB();
+    } catch (e) {
+      console.warn('UI localizations DB sync fallback:', e);
+    }
+  }
+
   setupBubbleLanguageSelector();
   setupEventListeners();
   setupAudioCallbacks();
@@ -420,10 +488,14 @@ async function loadDoctorSettings() {
     const nameEl = document.getElementById('dash-doctor-name');
     const credsEl = document.getElementById('dash-doctor-creds');
     const langEl = document.getElementById('dash-doctor-lang');
+    const headerDocName = document.getElementById('header-doctor-name');
+    const headerLangSwitcher = document.getElementById('header-lang-switcher');
 
     if (nameEl) nameEl.textContent = doc.name;
+    if (headerDocName) headerDocName.textContent = doc.name;
     if (credsEl) credsEl.textContent = doc.credentials;
     if (langEl) langEl.textContent = `Primary: ${LANG_LABELS[doc.preferred_language] || doc.preferred_language}`;
+    if (headerLangSwitcher) headerLangSwitcher.value = doc.preferred_language || 'en-IN';
 
     // Apply doctor's cached UI language instantly
     if (window.applyDoctorLanguage) {
@@ -1024,149 +1096,151 @@ async function processAutoVoiceIntake() {
   }
 }
 
-// Process and Validate Answer with AI (GPT-6 Luna)
+// Process and Validate Answer with AI (GPT-6 Luna) via Serialized Queue
 async function handleIntakeAnswer(answer) {
   const clean = (answer || '').trim();
   if (!clean) return;
 
-  const questions = getQuestionsForLanguage(onboardingState.selectedLanguage);
-  const q = questions[onboardingState.currentStep];
-  if (!q) return;
+  return intakeApiQueue.enqueue(async () => {
+    const questions = getQuestionsForLanguage(onboardingState.selectedLanguage);
+    const q = questions[onboardingState.currentStep];
+    if (!q) return;
 
-  const micStatus = document.getElementById('intake-mic-status');
-  const submitBtn = document.getElementById('btn-submit-intake-text');
-  const alertBanner = document.getElementById('intake-validation-alert');
-  const alertText = document.getElementById('intake-validation-text');
+    const micStatus = document.getElementById('intake-mic-status');
+    const submitBtn = document.getElementById('btn-submit-intake-text');
+    const alertBanner = document.getElementById('intake-validation-alert');
+    const alertText = document.getElementById('intake-validation-text');
 
-  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-  if (submitBtn) submitBtn.disabled = true;
+    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    if (submitBtn) submitBtn.disabled = true;
 
-  try {
-    // Call AI validation endpoint to check if answer matches the question asked
-    const valResult = await window.api.validateIntakeAnswer(
-      q.id,
-      q.text,
-      clean,
-      onboardingState.selectedLanguage
-    );
+    try {
+      // Call AI validation endpoint to check if answer matches the question asked
+      const valResult = await window.api.validateIntakeAnswer(
+        q.id,
+        q.text,
+        clean,
+        onboardingState.selectedLanguage
+      );
 
-    // CASE 1: REJECTED (e.g. user said symptoms when asked for their name)
-    if (!valResult.is_valid) {
-      console.warn('[SwasthyaSetu] AI Validation rejected answer:', clean, valResult);
-      const reprompt = valResult.reprompt_native || 'कृपया विचारलेल्या प्रश्नाचे उत्तर द्या.';
+      // CASE 1: REJECTED (e.g. user said symptoms when asked for their name)
+      if (!valResult.is_valid) {
+        console.warn('[SwasthyaSetu] AI Validation rejected answer:', clean, valResult);
+        const reprompt = valResult.reprompt_native || 'कृपया विचारलेल्या प्रश्नाचे उत्तर द्या.';
 
-      // Show alert in UI
-      if (alertBanner && alertText) {
-        alertText.textContent = reprompt;
-        alertBanner.style.display = 'flex';
-      }
-
-      if (micStatus) {
-        micStatus.innerHTML = `<span style="color: #be123c; font-weight: 700;">⚠️ ${reprompt}</span>`;
-      }
-
-      // Speak correction aloud in native language (female voice)
-      await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-      await new Promise(r => setTimeout(r, 350));
-
-      // Automatically re-open mic to let patient answer the question properly!
-      startAutoListening();
-      return;
-    }
-
-    // CASE 2: VALID ANSWER!
-    if (alertBanner) alertBanner.style.display = 'none';
-
-    const extracted = (valResult.extracted_value || clean).trim();
-    const parsed = valResult.parsed_fields || {};
-
-    // Reflect the AI corrected format response in the input box
-    const inputEl = document.getElementById('input-intake-text');
-    if (inputEl) inputEl.value = extracted;
-
-    if (q.id === 'name') {
-      const cleanName = parsed.name || extracted;
-      onboardingState.data.name = cleanName;
-      updateAutofillField('item-name', 'field-preview-name', cleanName);
-    } else if (q.id === 'age_gender') {
-      // Must extract both age and gender in any sequence; no default fallbacks
-      const ageVal = parsed.age ? parseInt(parsed.age) : (extracted.match(/\d+/) ? parseInt(extracted.match(/\d+/)[0]) : null);
-      let genderVal = parsed.gender;
-      if (!genderVal) {
-        const lowerExt = extracted.toLowerCase();
-        if (lowerExt.includes('female') || extracted.includes('महिला') || extracted.includes('स्त्री') || extracted.includes('बाई') || extracted.includes('aurat') || extracted.includes('लड़की')) {
-          genderVal = 'Female';
-        } else if (lowerExt.includes('male') || extracted.includes('पुरुष') || extracted.includes('माणूस') || extracted.includes('aadmi') || extracted.includes('लड़का')) {
-          genderVal = 'Male';
+        // Show alert in UI
+        if (alertBanner && alertText) {
+          alertText.textContent = reprompt;
+          alertBanner.style.display = 'flex';
         }
+
+        if (micStatus) {
+          micStatus.innerHTML = `<span style="color: #be123c; font-weight: 700;">⚠️ ${reprompt}</span>`;
+        }
+
+        // Speak correction aloud in native language (female voice)
+        await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+        await new Promise(r => setTimeout(r, 350));
+
+        // Automatically re-open mic to let patient answer the question properly!
+        startAutoListening();
+        return;
+      }
+
+      // CASE 2: VALID ANSWER!
+      if (alertBanner) alertBanner.style.display = 'none';
+
+      const extracted = (valResult.extracted_value || clean).trim();
+      const parsed = valResult.parsed_fields || {};
+
+      // Reflect the AI corrected format response in the input box
+      const inputEl = document.getElementById('input-intake-text');
+      if (inputEl) inputEl.value = extracted;
+
+      if (q.id === 'name') {
+        const cleanName = parsed.name || extracted;
+        onboardingState.data.name = cleanName;
+        updateAutofillField('item-name', 'field-preview-name', cleanName);
+      } else if (q.id === 'age_gender') {
+        // Must extract both age and gender in any sequence; no default fallbacks
+        const ageVal = parsed.age ? parseInt(parsed.age) : (extracted.match(/\d+/) ? parseInt(extracted.match(/\d+/)[0]) : null);
+        let genderVal = parsed.gender;
+        if (!genderVal) {
+          const lowerExt = extracted.toLowerCase();
+          if (lowerExt.includes('female') || extracted.includes('महिला') || extracted.includes('स्त्री') || extracted.includes('बाई') || extracted.includes('aurat') || extracted.includes('लड़की')) {
+            genderVal = 'Female';
+          } else if (lowerExt.includes('male') || extracted.includes('पुरुष') || extracted.includes('माणूस') || extracted.includes('aadmi') || extracted.includes('लड़का')) {
+            genderVal = 'Male';
+          }
+        } else {
+          genderVal = (genderVal.toLowerCase().includes('fem') || genderVal.includes('महिला') || genderVal.includes('स्त्री')) ? 'Female' : 'Male';
+        }
+
+        if (!ageVal || !genderVal) {
+          // Missing either age or gender -> reprompt!
+          const reprompt = valResult.reprompt_native || (!ageVal 
+            ? (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले वय सांगा.' : 'कृपया अपनी उम्र बताइए।')
+            : (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले लिंग (पुरुष किंवा स्त्री) सांगा.' : 'कृपया अपना लिंग (पुरुष या महिला) बताइए।'));
+          
+          if (alertBanner && alertText) {
+            alertText.textContent = reprompt;
+            alertBanner.style.display = 'flex';
+          }
+          await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+          await new Promise(r => setTimeout(r, 350));
+          startAutoListening();
+          return;
+        }
+
+        onboardingState.data.age = ageVal;
+        onboardingState.data.gender = genderVal;
+        updateAutofillField('item-age', 'field-preview-age-gender', `${ageVal} yrs • ${genderVal}`);
+      } else if (q.id === 'phone') {
+        const phoneDigits = (parsed.mobile_number || parsed.phone || extracted || '').toString().replace(/\D/g, '');
+        const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : '';
+        if (!phoneClean || phoneClean.length < 10) {
+          const reprompt = valResult.reprompt_native || (onboardingState.selectedLanguage.includes('mr') ? 'कृपया वैध १० अंकी मोबाईल नंबर सांगा.' : 'कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।');
+          if (alertBanner && alertText) {
+            alertText.textContent = reprompt;
+            alertBanner.style.display = 'flex';
+          }
+          await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
+          await new Promise(r => setTimeout(r, 350));
+          startAutoListening();
+          return;
+        }
+        onboardingState.data.mobile_number = phoneClean;
+        updateAutofillField('item-phone', 'field-preview-phone', phoneClean);
+      } else if (q.id === 'complaint') {
+        const compVal = parsed.chief_complaint || extracted;
+        const durVal = parsed.symptoms_duration || '';
+        onboardingState.data.chief_complaint = compVal;
+        onboardingState.data.symptoms_duration = durVal;
+        const displayVal = durVal && !compVal.includes(durVal) ? `${compVal} (${durVal})` : compVal;
+        updateAutofillField('item-complaint', 'field-preview-complaint', displayVal);
+      } else if (q.id === 'history_allergies') {
+        const histVal = parsed.past_medical_history || extracted;
+        const allVal = parsed.known_allergies || '';
+        onboardingState.data.past_medical_history = histVal;
+        onboardingState.data.known_allergies = allVal;
+        updateAutofillField('item-history', 'field-preview-history', histVal || 'None');
+        updateAutofillField('item-allergies', 'field-preview-allergies', allVal || 'None');
+      }
+
+      // Advance to next question
+      onboardingState.currentStep++;
+      if (onboardingState.currentStep < questions.length) {
+        renderIntakeQuestion();
       } else {
-        genderVal = (genderVal.toLowerCase().includes('fem') || genderVal.includes('महिला') || genderVal.includes('स्त्री')) ? 'Female' : 'Male';
+        submitOnboardingForm();
       }
-
-      if (!ageVal || !genderVal) {
-        // Missing either age or gender -> reprompt!
-        const reprompt = valResult.reprompt_native || (!ageVal 
-          ? (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले वय सांगा.' : 'कृपया अपनी उम्र बताइए।')
-          : (onboardingState.selectedLanguage.includes('mr') ? 'कृपया आपले लिंग (पुरुष किंवा स्त्री) सांगा.' : 'कृपया अपना लिंग (पुरुष या महिला) बताइए।'));
-        
-        if (alertBanner && alertText) {
-          alertText.textContent = reprompt;
-          alertBanner.style.display = 'flex';
-        }
-        await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-        await new Promise(r => setTimeout(r, 350));
-        startAutoListening();
-        return;
-      }
-
-      onboardingState.data.age = ageVal;
-      onboardingState.data.gender = genderVal;
-      updateAutofillField('item-age', 'field-preview-age-gender', `${ageVal} yrs • ${genderVal}`);
-    } else if (q.id === 'phone') {
-      const phoneDigits = (parsed.mobile_number || parsed.phone || extracted || '').toString().replace(/\D/g, '');
-      const phoneClean = phoneDigits.length >= 10 ? phoneDigits.slice(-10) : '';
-      if (!phoneClean || phoneClean.length < 10) {
-        const reprompt = valResult.reprompt_native || (onboardingState.selectedLanguage.includes('mr') ? 'कृपया वैध १० अंकी मोबाईल नंबर सांगा.' : 'कृपया 10 अंकों का वैध मोबाइल नंबर बताइए।');
-        if (alertBanner && alertText) {
-          alertText.textContent = reprompt;
-          alertBanner.style.display = 'flex';
-        }
-        await playIntakeQuestionTTS(reprompt, onboardingState.selectedLanguage);
-        await new Promise(r => setTimeout(r, 350));
-        startAutoListening();
-        return;
-      }
-      onboardingState.data.mobile_number = phoneClean;
-      updateAutofillField('item-phone', 'field-preview-phone', phoneClean);
-    } else if (q.id === 'complaint') {
-      const compVal = parsed.chief_complaint || extracted;
-      const durVal = parsed.symptoms_duration || '';
-      onboardingState.data.chief_complaint = compVal;
-      onboardingState.data.symptoms_duration = durVal;
-      const displayVal = durVal && !compVal.includes(durVal) ? `${compVal} (${durVal})` : compVal;
-      updateAutofillField('item-complaint', 'field-preview-complaint', displayVal);
-    } else if (q.id === 'history_allergies') {
-      const histVal = parsed.past_medical_history || extracted;
-      const allVal = parsed.known_allergies || '';
-      onboardingState.data.past_medical_history = histVal;
-      onboardingState.data.known_allergies = allVal;
-      updateAutofillField('item-history', 'field-preview-history', histVal || 'None');
-      updateAutofillField('item-allergies', 'field-preview-allergies', allVal || 'None');
+    } catch (err) {
+      console.error('Validation error:', err);
+      // On unexpected error, do not break flow
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
-
-    // Advance to next question
-    onboardingState.currentStep++;
-    if (onboardingState.currentStep < questions.length) {
-      renderIntakeQuestion();
-    } else {
-      submitOnboardingForm();
-    }
-  } catch (err) {
-    console.error('Validation error:', err);
-    // On unexpected error, do not break flow
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
-  }
+  });
 }
 
 function updateAutofillField(itemId, fieldId, value) {
@@ -1354,70 +1428,74 @@ async function toggleRecording() {
 async function processAudioTurn(audioBlob) {
   if (!state.activeConsultation) return;
 
-  const isPatient = state.activeSpeaker === 'PATIENT';
-  const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
-  const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
-  const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
+  return consultationApiQueue.enqueue(async () => {
+    const isPatient = state.activeSpeaker === 'PATIENT';
+    const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
+    const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
+    const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
 
-  setProcessing(true);
+    setProcessing(true);
 
-  try {
-    const result = await window.api.processAudioTurn(
-      state.activeConsultation.id,
-      state.activeSpeaker,
-      sourceLang,
-      targetLang,
-      audioBlob
-    );
+    try {
+      const result = await window.api.processAudioTurn(
+        state.activeConsultation.id,
+        state.activeSpeaker,
+        sourceLang,
+        targetLang,
+        audioBlob
+      );
 
-    appendTurn(result);
+      appendTurn(result);
 
-    // Auto-play synthesized audio for recipient
-    if (result.audio_url) {
-      const fullUrl = window.api.resolveAudioUrl(result.audio_url);
-      window.audioManager.playAudio(fullUrl);
+      // Auto-play synthesized audio for recipient
+      if (result.audio_url) {
+        const fullUrl = window.api.resolveAudioUrl(result.audio_url);
+        window.audioManager.playAudio(fullUrl);
+      }
+
+      promptTurnHandoff();
+    } catch (err) {
+      alert('Turn processing failed: ' + err.message);
+    } finally {
+      setProcessing(false);
     }
-
-    promptTurnHandoff();
-  } catch (err) {
-    alert('Turn processing failed: ' + err.message);
-  } finally {
-    setProcessing(false);
-  }
+  });
 }
 
 async function processTextTurn(text) {
   if (!state.activeConsultation || !text.trim()) return;
 
-  const isPatient = state.activeSpeaker === 'PATIENT';
-  const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
-  const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
-  const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
+  return consultationApiQueue.enqueue(async () => {
+    const isPatient = state.activeSpeaker === 'PATIENT';
+    const docSpeakLang = document.getElementById('doctor-speak-lang')?.value || state.doctor?.preferred_language || 'en-IN';
+    const sourceLang = isPatient ? state.activeConsultation.patient_language : docSpeakLang;
+    const targetLang = isPatient ? (state.doctor?.preferred_language || 'en-IN') : state.activeConsultation.patient_language;
 
-  setProcessing(true);
+    setProcessing(true);
 
-  try {
-    const result = await window.api.processTextTurn(
-      state.activeConsultation.id,
-      state.activeSpeaker,
-      sourceLang,
-      targetLang,
-      text.trim()
-    );
+    try {
+      const result = await window.api.processTextTurn(
+        state.activeConsultation.id,
+        state.activeSpeaker,
+        sourceLang,
+        targetLang,
+        text.trim()
+      );
 
-    appendTurn(result);
+      appendTurn(result);
 
-    if (result.audio_url) {
-      const fullUrl = window.api.resolveAudioUrl(result.audio_url);
-      window.audioManager.playAudio(fullUrl);
+      if (result.audio_url) {
+        const fullUrl = window.api.resolveAudioUrl(result.audio_url);
+        window.audioManager.playAudio(fullUrl);
+      }
+
+      promptTurnHandoff();
+    } catch (err) {
+      alert('Turn processing error: ' + err.message);
+    } finally {
+      setProcessing(false);
     }
-
-    promptTurnHandoff();
-  } catch (err) {
-    alert('Turn processing error: ' + err.message);
-  } finally {
-    setProcessing(false);
-  }
+  });
 }
 
 function promptTurnHandoff() {
@@ -1447,12 +1525,11 @@ function renderTimeline(turns) {
   if (!container) return;
 
   if (turns.length === 0) {
-    const isAmbient = state.activeConsultation && state.activeConsultation.mode === 'AMBIENT_BACKGROUND';
     container.innerHTML = `
       <div style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
-        <i class="fa-solid fa-${isAmbient ? 'microphone-lines' : 'microphone-slash'}" style="font-size: 42px; margin-bottom: 12px; color: #cbd5e1;"></i>
-        <h4 style="font-size: 15px; font-weight: 700; color: #475569;">${isAmbient ? 'Background Scribe Ready' : 'No speech recorded yet'}</h4>
-        <p style="font-size: 12px; margin-top: 4px;">${isAmbient ? 'Tap the record button to speak naturally in your shared language.' : 'Select active speaker above, then tap the record button to speak.'}</p>
+        <i class="fa-solid fa-microphone-slash" style="font-size: 42px; margin-bottom: 12px; color: #cbd5e1;"></i>
+        <h4 style="font-size: 15px; font-weight: 700; color: #475569;">Turn-by-Turn Consultation Active</h4>
+        <p style="font-size: 12px; margin-top: 4px;">Select the active speaker above, then tap the microphone to speak.</p>
       </div>
     `;
     return;
@@ -1669,34 +1746,53 @@ async function submitDoctorAIText(customText) {
     return;
   }
 
-  const micStatus = document.getElementById('doctor-ai-mic-status');
-  const feedback = document.getElementById('doctor-ai-feedback');
-  const feedbackText = document.getElementById('doctor-ai-feedback-text');
-  const sendBtn = document.getElementById('btn-submit-doctor-ai');
+  return consultationApiQueue.enqueue(async () => {
+    const micStatus = document.getElementById('doctor-ai-mic-status');
+    const feedback = document.getElementById('doctor-ai-feedback');
+    const feedbackText = document.getElementById('doctor-ai-feedback-text');
+    const sendBtn = document.getElementById('btn-submit-doctor-ai');
 
-  if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> AI Scribe analyzing & updating report details...`;
-  if (sendBtn) sendBtn.disabled = true;
+    if (micStatus) micStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Analyzing vitals & clinical details...`;
+    if (sendBtn) sendBtn.disabled = true;
 
-  try {
-    const docLang = state.doctor?.primary_language || 'en-IN';
-    const res = await window.api.doctorAIAssist(state.activeConsultation.id, text, docLang);
-    if (res && res.updated_payload) {
-      if (!state.draft) state.draft = { structured_payload: {} };
-      state.draft.structured_payload = res.updated_payload;
-      renderDraftReview(state.draft);
+    try {
+      const docLang = state.doctor?.preferred_language || 'en-IN';
+      const res = await window.api.doctorAIAssist(state.activeConsultation.id, text, docLang);
+      if (res && res.updated_payload) {
+        if (!state.draft) state.draft = { structured_payload: {} };
+        state.draft.structured_payload = res.updated_payload;
+        renderDraftReview(state.draft);
 
-      if (feedback && feedbackText) {
-        feedbackText.textContent = res.ai_reply || 'Vitals and details updated successfully.';
-        feedback.style.display = 'block';
+        // Directly update patient vitals card inputs on active consultation screen
+        if (res.updated_payload.vitals) {
+          const v = res.updated_payload.vitals;
+          const w = document.getElementById('vitals-weight');
+          const h = document.getElementById('vitals-height');
+          const bp = document.getElementById('vitals-bp');
+          const p = document.getElementById('vitals-pulse');
+          const t = document.getElementById('vitals-temp');
+          const s = document.getElementById('vitals-spo2');
+          if (w && v.weight_kg != null) w.value = v.weight_kg;
+          if (h && v.height_cm != null) h.value = v.height_cm;
+          if (bp && v.blood_pressure) bp.value = v.blood_pressure;
+          if (p && v.pulse_bpm != null) p.value = v.pulse_bpm;
+          if (t && v.temperature_f != null) t.value = v.temperature_f;
+          if (s && v.spo2_percent != null) s.value = v.spo2_percent;
+        }
+
+        if (feedback && feedbackText) {
+          feedbackText.textContent = res.ai_reply || 'Vitals and clinical details updated successfully.';
+          feedback.style.display = 'block';
+        }
+        if (textInput) textInput.value = '';
       }
-      if (textInput) textInput.value = '';
+    } catch (err) {
+      alert('AI Assistant error: ' + err.message);
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+      if (micStatus) micStatus.textContent = 'Tap microphone to dictate additional vitals & clinical instructions';
     }
-  } catch (err) {
-    alert('AI Scribe Assist error: ' + err.message);
-  } finally {
-    if (sendBtn) sendBtn.disabled = false;
-    if (micStatus) micStatus.textContent = 'Tap microphone to speak or type additional vitals & notes';
-  }
+  });
 }
 
 function renderPrescriptions(prescriptions) {
@@ -1842,6 +1938,27 @@ async function saveFollowupAppointment() {
    ========================================================================== */
 
 function setupEventListeners() {
+  // Top Navigation Tabs
+  on('nav-btn-dashboard', 'click', () => showView('dashboard'));
+  on('brand-header-link', 'click', () => showView('dashboard'));
+  on('nav-btn-onboard', 'click', showOnboardingView);
+  on('nav-btn-consultation', 'click', () => {
+    if (state.activeConsultation) {
+      showView('consultation');
+    }
+  });
+
+  // Header Quick Language Switcher (Database Cache Synchronized)
+  const headerLangSwitcher = document.getElementById('header-lang-switcher');
+  if (headerLangSwitcher) {
+    headerLangSwitcher.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      if (window.switchAppLanguage) {
+        window.switchAppLanguage(selected);
+      }
+    });
+  }
+
   // Settings modal
   on('btn-open-settings', 'click', () => openModal('modal-settings'));
   on('link-configure-ip', 'click', () => openModal('modal-settings'));
@@ -1984,40 +2101,6 @@ function setupEventListeners() {
     }
   });
 
-  // Scripted Demo Presets
-  on('btn-open-presets', 'click', () => {
-    const isPatient = state.activeSpeaker === 'PATIENT';
-    const patientPresets = [
-      'Mujhe three days se fever hai aur headache bhi hai.',
-      'Mala teen divasapasun taap aani dukhane ahe.',
-      'I have severe stomach ache since yesterday morning.',
-    ];
-    const doctorPresets = [
-      'Take paracetamol 500mg twice daily after meals for three days.',
-      'तुम्हाला किती दिवसांपासून ताप येत आहे?',
-      'Drink plenty of warm water and take complete bed rest.',
-    ];
-    const presets = isPatient ? patientPresets : doctorPresets;
-
-    const listContainer = document.getElementById('presets-list-container');
-    if (listContainer) {
-      listContainer.innerHTML = presets.map(p => `
-        <button class="btn btn-outline" style="text-align: left; justify-content: flex-start; font-size: 13px;" onclick="selectPreset('${p.replace(/'/g, "\\'")}')">
-          <i class="fa-solid fa-comment-dots"></i> "${p}"
-        </button>
-      `).join('');
-    }
-
-    const modalTitle = document.getElementById('modal-presets-title');
-    if (modalTitle) modalTitle.textContent = `Demo Presets (${isPatient ? 'Patient' : 'Doctor'})`;
-    openModal('modal-presets');
-  });
-
-  window.selectPreset = function(phrase) {
-    closeModal('modal-presets');
-    processTextTurn(phrase);
-  };
-
   // Review Draft / Generate AI Report Button
   on('btn-review-draft', 'click', loadDraftReview);
 
@@ -2074,24 +2157,34 @@ function setupEventListeners() {
   on('btn-schedule-followup', 'click', saveFollowupAppointment);
 }
 
-// Audio Callbacks for Single-Device Echo Management & Timer
+// Audio Callbacks for Single-Device Echo Management, Visualizer & Timer
 function setupAudioCallbacks() {
   const recordInstruction = document.getElementById('record-instruction');
   const recordTimer = document.getElementById('record-timer');
   const timerDisplay = document.getElementById('timer-display');
   const recordBtn = document.getElementById('btn-record-turn');
   const intakeTimer = document.getElementById('intake-rec-timer');
+  const intakeWave = document.getElementById('intake-audio-wave');
+  const consultWave = document.getElementById('consultation-audio-wave');
 
   window.audioManager.onStateChange = ({ isRecording, isPlaying }) => {
+    // Show/hide animated audio visualizers
+    if (intakeWave) {
+      intakeWave.style.display = (isRecording || isPlaying) ? 'flex' : 'none';
+    }
+    if (consultWave) {
+      consultWave.style.display = (isRecording || isPlaying) ? 'flex' : 'none';
+    }
+
     if (isPlaying) {
       if (recordBtn) recordBtn.disabled = true;
-      if (recordInstruction) recordInstruction.textContent = 'TTS PLAYING — AUDIO PLAYBACK ACTIVE';
+      if (recordInstruction) recordInstruction.textContent = 'Audio playback in progress...';
     } else {
       if (recordBtn) recordBtn.disabled = false;
       if (isRecording) {
         if (recordBtn) recordBtn.classList.add('recording');
         if (recordTimer) recordTimer.style.display = 'flex';
-        if (recordInstruction) recordInstruction.textContent = 'Recording in progress... Tap mic to finish turn';
+        if (recordInstruction) recordInstruction.textContent = 'Listening... Speak your turn or tap mic to finish';
       } else {
         if (recordBtn) recordBtn.classList.remove('recording');
         if (recordTimer) recordTimer.style.display = 'none';

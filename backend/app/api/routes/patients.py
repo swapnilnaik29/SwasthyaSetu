@@ -178,19 +178,27 @@ async def validate_intake_step(req: IntakeValidationRequest):
     symptom_markers = [
         "taap", "ताप", "doke", "डोके", "dukh", "दुख", "pain", "fever", "headache",
         "bukhar", "बुखार", "dard", "दर्द", "khansi", "खांसी", "khokla", "खोकला",
-        "sardi", "सर्दी", "potat", "पोटात", "vomit", "उलटी", "divas", "दिवस", "days",
-        "pasun", "पासून", "kal", "काल", "yesterday", "since"
+        "sardi", "सर्दी", "pot", "पोट", "vomit", "उलटी", "divas", "दिवस", "days",
+        "pasun", "पासून", "kal", "काल", "yesterday", "since", "tras", "त्रास",
+        "trass", "angdukhi", "kamre", "कमर", "chakkar", "चक्कर", "bimar", "बीमार",
+        "taklif", "तकलीफ", "cough", "cold", "chhati", "छाती", "ultee", "kamjori",
+        "kamzori", "ashaktapana", "कमजोरी", "mala", "मला", "mujhe", "मुझे",
+        "teen", "तीन", "chaar", "चार", "don", "दोन", "ek", "एक", "mahina", "महिना"
     ]
+    sentence_markers = ["ahe", "aahe", "आहे", "hai", "है", "hoto", "hoti", "hote", "tha", "thi", "suffering", "having"]
     lower_u = clean_text.lower()
-    if req.step_id == "name" and any(m in lower_u for m in symptom_markers):
-        is_mr = "mr" in req.language.lower()
-        return IntakeValidationResponse(
-            is_valid=False,
-            extracted_value=None,
-            parsed_fields={},
-            reprompt_native="हे आपले लक्षण वाटते. कृपया आधी आपले पूर्ण नाव सांगा." if is_mr else "यह आपकी तकलीफ़ लग रही है। कृपया पहले अपना शुभ नाम बताएं।",
-            reprompt_english="This seems like a symptom. Please tell me your full name first.",
-        )
+    if req.step_id == "name":
+        is_symptom = any(m in lower_u for m in symptom_markers)
+        is_sentence = len(clean_text.split()) >= 4 and any(sm in lower_u for sm in sentence_markers)
+        if is_symptom or is_sentence:
+            is_mr = "mr" in req.language.lower()
+            return IntakeValidationResponse(
+                is_valid=False,
+                extracted_value=None,
+                parsed_fields={},
+                reprompt_native="हे आपले लक्षण वाटते. कृपया आधी आपले पूर्ण नाव सांगा." if is_mr else "यह आपकी तकलीफ़ लग रही है। कृपया पहले अपना शुभ नाम बताएं।",
+                reprompt_english="This seems like a symptom. Please tell me your full name first.",
+            )
 
     client = get_openai_client(settings.OPENAI_API_KEY)
 
@@ -260,6 +268,18 @@ async def validate_intake_step(req: IntakeValidationRequest):
                 digits_only = re.sub(r"\D", "", str(extracted_val))
                 if len(digits_only) >= 10:
                     parsed_fields["mobile_number"] = digits_only[-10:]
+
+        if req.step_id == "name":
+            val_str = str(extracted_val or "").lower()
+            if any(m in val_str for m in symptom_markers) or len(val_str.split()) > 3:
+                is_mr = "mr" in req.language.lower()
+                return IntakeValidationResponse(
+                    is_valid=False,
+                    extracted_value=None,
+                    parsed_fields={},
+                    reprompt_native=data.get("reprompt_native") or ("हे आपले लक्षण वाटते. कृपया आधी आपले पूर्ण नाव सांगा." if is_mr else "यह आपकी तकलीफ़ लग रही है। कृपया पहले अपना शुभ नाम बताएं।"),
+                    reprompt_english=data.get("reprompt_english") or "This seems like a symptom. Please tell me your full name first.",
+                )
 
         return IntakeValidationResponse(
             is_valid=data.get("is_valid", True),
