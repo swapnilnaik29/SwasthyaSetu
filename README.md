@@ -231,7 +231,7 @@ If creating a manual Web Service on Render:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/SwasthyaSetu.git
+git clone https://github.com/swapnilnaik29/SwasthyaSetu.git
 cd SwasthyaSetu/backend
 
 # Create virtual environment
@@ -294,5 +294,5 @@ All integration tests covering Turn-by-Turn consultations, Ambient Scribing, Gna
 
 - **Project**: SwasthyaSetu (स्वास्थ्यसेतु)
 - **Hackathon**: Gnani.ai AI Internship Hackathon
-- **Developer**: Dr. Swapnil Naik & Pair Programming Assistant
+- **Developer**: Swapnil Naik
 - **Primary Voice AI**: [Gnani.ai](https://gnani.ai/) Voice Intelligence Engine

@@ -57,3 +57,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ## Render Deployment
 
 This directory contains `render.yaml`, `Procfile`, and `runtime.txt`. You can deploy this directory directly on Render as a Python Web Service. Set `GNANI_API_KEY` and `OPENAI_API_KEY` as environment variables in the Render dashboard.
+
+---
+
+## Submission Credits
+
+- **Project**: SwasthyaSetu
+- **Hackathon**: Gnani.ai AI Internship Hackathon
+- **Developer**: Swapnil Naik
+
