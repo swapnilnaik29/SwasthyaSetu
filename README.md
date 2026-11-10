@@ -180,7 +180,6 @@ SwasthyaSetu/
 │   │   └── main.dart         # Flutter app entrypoint
 │   └── pubspec.yaml          # Flutter dependencies
 ├── docs/                     # Architecture & demonstration guides
-├── render.yaml               # Root Render blueprint (points to backend/)
 └── README.md                 # Project documentation
 ```
 
@@ -190,29 +189,28 @@ SwasthyaSetu/
 
 The backend and web frontend are unified inside `backend/` to deploy seamlessly as a single Render Web Service.
 
-### Quick Deploy via Render Blueprint
+### Easy Deploy as Web Service
 
 1. Fork or push this repository to GitHub.
 2. Log in to [Render Dashboard](https://dashboard.render.com/).
-3. Click **New +** ➔ **Blueprint**.
-4. Connect your GitHub repository. Render automatically reads `render.yaml`.
-5. Configure the following environment variables under **Environment**:
-   - `GNANI_API_KEY`: Your Gnani.ai API access token.
-   - `OPENAI_API_KEY`: Your OpenAI API key for GPT-6 Luna clinical extraction.
-6. Click **Apply**. Render will automatically:
+3. Click **New +** ➔ **Web Service**.
+4. Connect your GitHub repository `swapnilnaik29/SwasthyaSetu`.
+5. Configure the following service settings:
+   - **Root Directory**: `backend` *(Enter `backend`)*
+   - **Environment**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
+6. Add the following **Environment Variables**:
+   - `PYTHON_VERSION`: `3.11.9`
+   - `DATABASE_URL`: `sqlite+aiosqlite:///swasthyasetu.db`
+   - `GNANI_API_KEY`: *(Your Gnani.ai API Key)*
+   - `OPENAI_API_KEY`: *(Your OpenAI API Key)*
+7. Click **Create Web Service**. Render will automatically:
    - Install dependencies from `requirements.txt`.
-   - Start the service using `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+   - Start the service with `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
    - Serve the complete web frontend at `https://<your-subdomain>.onrender.com/`.
    - Expose the REST API at `https://<your-subdomain>.onrender.com/api/v1`.
-
-### Manual Render Web Service Setup (Alternative)
-
-If creating a manual Web Service on Render:
-- **Root Directory**: `backend`
-- **Environment**: `Python`
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- **Environment Variables**:
   - `PYTHON_VERSION`: `3.11.9`
   - `DATABASE_URL`: `sqlite+aiosqlite:///swasthyasetu.db`
   - `GNANI_API_KEY`: `<Your Gnani Key>`
