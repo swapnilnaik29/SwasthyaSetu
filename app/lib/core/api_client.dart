@@ -15,38 +15,37 @@ class ApiClient {
   factory ApiClient() => _instance;
   ApiClient._internal();
 
-  String _baseUrl = 'http://localhost:8000';
+  // Wi-Fi LAN IP for physical mobile & PC on the same Wi-Fi router
+  static const String defaultWifiBaseUrl = 'http://192.168.1.4:8000';
+
+  String _baseUrl = defaultWifiBaseUrl;
 
   String get baseUrl => _baseUrl;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString('swasthya_api_url');
-    if (saved != null && saved.trim().isNotEmpty) {
-      _baseUrl = saved.trim();
-    } else {
-      // Default to localhost:8000 (which works for physical phone via ADB reverse, desktop, and web)
-      _baseUrl = 'http://localhost:8000';
-      if (!kIsWeb && Platform.isAndroid) {
-        // Test localhost:8000 first (ADB reverse)
+    if (saved != null && saved.trim().isNotEmpty && !saved.contains('10.0.2.2')) {
+      // If previously set to localhost, check if localhost is responding (e.g. adb reverse)
+      if (!kIsWeb && Platform.isAndroid && saved.contains('localhost')) {
         try {
-          final res = await http.get(Uri.parse('http://localhost:8000/health')).timeout(const Duration(milliseconds: 1500));
+          final res = await http.get(Uri.parse('$saved/health')).timeout(const Duration(milliseconds: 1000));
           if (res.statusCode == 200) {
-            _baseUrl = 'http://localhost:8000';
+            _baseUrl = saved.trim();
             return;
           }
-        } catch (_) {}
-
-        // If localhost didn't respond, test 10.0.2.2:8000 (Android Emulator)
-        try {
-          final emuRes = await http.get(Uri.parse('http://10.0.2.2:8000/health')).timeout(const Duration(milliseconds: 1500));
-          if (emuRes.statusCode == 200) {
-            _baseUrl = 'http://10.0.2.2:8000';
-            return;
-          }
-        } catch (_) {}
+        } catch (_) {
+          // Switch to Wi-Fi router IP
+        }
+      } else {
+        _baseUrl = saved.trim();
+        return;
       }
     }
+
+    // Default to Wi-Fi network address
+    _baseUrl = defaultWifiBaseUrl;
+    await prefs.setString('swasthya_api_url', _baseUrl);
   }
 
   Future<void> setBaseUrl(String url) async {
