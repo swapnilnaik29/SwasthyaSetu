@@ -103,20 +103,58 @@ async def create_patient(
     patient_in: PatientCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register a new patient."""
+    """
+    Register a new patient and canonicalize all clinical intake fields to English
+    for consistent database persistence and international healthcare reporting.
+    """
+    from app.services.translation.sarvam_service import SarvamTranslationService
+    complaint_en = patient_in.chief_complaint or ""
+    history_en = patient_in.past_medical_history or ""
+    allergies_en = patient_in.known_allergies or "None"
+    meds_en = patient_in.current_medications or "None"
+    summary_en = patient_in.intake_summary_english or ""
+    name_en = patient_in.name
+
+    # If intake was spoken/typed in Marathi, Hindi, or contains non-ASCII characters, canonicalize to English
+    if (patient_in.preferred_language and patient_in.preferred_language != "en-IN") or any(ord(c) > 127 for c in (patient_in.name + (patient_in.chief_complaint or ""))):
+        try:
+            intake_sub = PatientIntakeSubmission(
+                patient_name=patient_in.name,
+                preferred_language=patient_in.preferred_language or "hi-IN",
+                chief_complaint=patient_in.chief_complaint,
+                symptoms_duration=patient_in.symptoms_duration,
+                past_medical_history=patient_in.past_medical_history,
+                known_allergies=patient_in.known_allergies,
+                current_medications=patient_in.current_medications,
+            )
+            trans_data = await translate_and_summarize_intake(intake_sub)
+            complaint_en = trans_data.get("chief_complaint_english") or complaint_en
+            history_en = trans_data.get("past_medical_history_english") or history_en
+            allergies_en = trans_data.get("known_allergies_english") or allergies_en
+            meds_en = trans_data.get("current_medications_english") or meds_en
+            summary_en = trans_data.get("intake_summary_english") or summary_en
+
+            if any(ord(c) > 127 for c in patient_in.name):
+                sarvam = SarvamTranslationService()
+                name_trans = await sarvam.translate(patient_in.name, target_lang="en-IN", source_lang=patient_in.preferred_language or "hi-IN")
+                if name_trans.strip():
+                    name_en = name_trans.strip()
+        except Exception as e:
+            logger.warning(f"Error canonicalizing intake to English: {e}")
+
     patient = Patient(
-        name=patient_in.name,
+        name=name_en,
         age=patient_in.age,
         gender=patient_in.gender,
         date_of_birth=patient_in.date_of_birth,
         mobile_number=patient_in.mobile_number,
         preferred_language=patient_in.preferred_language,
-        chief_complaint=patient_in.chief_complaint,
+        chief_complaint=complaint_en,
         symptoms_duration=patient_in.symptoms_duration,
-        known_allergies=patient_in.known_allergies,
-        current_medications=patient_in.current_medications,
-        past_medical_history=patient_in.past_medical_history,
-        intake_summary_english=patient_in.intake_summary_english,
+        known_allergies=allergies_en,
+        current_medications=meds_en,
+        past_medical_history=history_en,
+        intake_summary_english=summary_en or f"Patient presents with: {complaint_en}. Ready for doctor consultation.",
     )
     db.add(patient)
     await db.commit()

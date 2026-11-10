@@ -11,9 +11,6 @@ void main() async {
   final api = ApiClient();
   await api.init();
 
-  final i18n = I18nService();
-  await i18n.init(api);
-
   Doctor doctor;
   try {
     doctor = await api.getDoctorSettings();
@@ -27,6 +24,10 @@ void main() async {
       spokenLanguages: 'en-IN,mr-IN,hi-IN',
     );
   }
+
+  final i18n = I18nService();
+  await i18n.init(api, doctor.preferredLanguage);
+  await i18n.setLanguage(doctor.preferredLanguage);
 
   runApp(SwasthyaSetuApp(api: api, doctor: doctor));
 }

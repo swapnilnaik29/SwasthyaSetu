@@ -29,11 +29,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Patient> _patients = [];
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
+  final I18nService _i18n = I18nService();
 
   @override
   void initState() {
     super.initState();
+    _i18n.addListener(_onLocaleChanged);
     _loadPatients();
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _i18n.removeListener(_onLocaleChanged);
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPatients([String query = '']) async {
@@ -55,6 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _openSettingsDialog() {
+    final i18n = I18nService();
     final nameController = TextEditingController(text: widget.doctor.name);
     final credsController = TextEditingController(text: widget.doctor.credentials);
     final urlController = TextEditingController(text: widget.api.baseUrl);
@@ -66,11 +80,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.settings, color: AppColors.primaryGreen),
-              SizedBox(width: 8),
-              Text('Doctor & App Settings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              const Icon(Icons.settings, color: AppColors.primaryGreen),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  i18n.t('doctorSettingsTitle'),
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -78,15 +99,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Doctor Full Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                Text(i18n.t('doctorFullName'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 const SizedBox(height: 4),
                 TextField(controller: nameController),
                 const SizedBox(height: 12),
-                const Text('Credentials & Specialty', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                Text(i18n.t('credentialsSpecialty'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 const SizedBox(height: 4),
                 TextField(controller: credsController),
                 const SizedBox(height: 12),
-                const Text('Primary Language (Storage)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                Text(i18n.t('preferredLanguageLabel'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 const SizedBox(height: 4),
                 DropdownButtonFormField<String>(
                   initialValue: selectedLang,
@@ -101,7 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                const Text('Backend Server URL / LAN IP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                Text(i18n.t('backendServerUrl'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
                 const SizedBox(height: 4),
                 TextField(
                   controller: urlController,
@@ -113,7 +134,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textMuted)),
+              child: Text(i18n.t('cancelBtn'), style: const TextStyle(color: AppColors.textMuted)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -130,6 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
                 try {
                   final saved = await widget.api.updateDoctorSettings(updated);
+                  await i18n.setLanguage(saved.preferredLanguage);
                   widget.onDoctorUpdated(saved);
                   if (context.mounted) Navigator.pop(context);
                 } catch (e) {
@@ -140,7 +162,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   }
                 }
               },
-              child: const Text('Save Settings'),
+              child: Text(i18n.t('saveSettingsBtn')),
             ),
           ],
         ),

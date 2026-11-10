@@ -322,6 +322,7 @@ async def update_draft(
 
 
 @router.post("/{consultation_id}/ai-assist", response_model=DoctorAIAssistResponse)
+@router.post("/{consultation_id}/doctor-assist", response_model=DoctorAIAssistResponse)
 async def doctor_ai_assist(
     consultation_id: str,
     payload: DoctorAIAssistRequest,

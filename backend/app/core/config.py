@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     GNANI_LEGACY_ACCESS_KEY: str = ""
     GNANI_LEGACY_CERT_PATH: str = ""
 
+    # Sarvam AI Translation
+    SARVAM_API_KEY: str = ""
+    SARVAM_TRANSLATE_URL: str = "https://api.sarvam.ai/translate"
+
     # OpenAI GPT-6 Luna
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-6-luna"

@@ -277,7 +277,7 @@ class ApiClient {
     required String doctorLanguage,
   }) async {
     final res = await http.post(
-      Uri.parse('$_baseUrl/api/v1/consultations/$consultationId/doctor-assist'),
+      Uri.parse('$_baseUrl/api/v1/consultations/$consultationId/ai-assist'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'doctor_utterance': doctorUtterance,
@@ -342,6 +342,30 @@ class ApiClient {
       return jsonDecode(utf8.decode(res.bodyBytes));
     }
     return {};
+  }
+
+  // Sarvam AI Translation
+  Future<String> translateText({
+    required String text,
+    required String targetLanguage,
+    String sourceLanguage = 'en-IN',
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_baseUrl/api/v1/translate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'text': text,
+          'target_language': targetLanguage,
+          'source_language': sourceLanguage,
+        }),
+      ).timeout(const Duration(seconds: 5));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
+        return data['translated_text'] ?? text;
+      }
+    } catch (_) {}
+    return text;
   }
 }
 

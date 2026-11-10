@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logger import logger
 from app.db.session import init_db, AsyncSessionLocal
-from app.api.routes import health, doctor, patients, consultations, transcripts, audio, cache
+from app.api.routes import health, doctor, patients, consultations, transcripts, audio, cache, translate
 from app.models.doctor import Doctor
 from app.models.patient import Patient
 from app.models.ui_cache import UILocalization
@@ -83,6 +83,7 @@ app.include_router(consultations.router, prefix=settings.API_V1_PREFIX)
 app.include_router(transcripts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(audio.router, prefix=settings.API_V1_PREFIX)
 app.include_router(cache.router, prefix=settings.API_V1_PREFIX)
+app.include_router(translate.router, prefix=settings.API_V1_PREFIX)
 
 # Mount Web Frontend (HTML, CSS, JS) for instant browser access on desktop and mobile
 FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"

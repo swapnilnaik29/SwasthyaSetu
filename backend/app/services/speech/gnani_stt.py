@@ -38,6 +38,50 @@ class GnaniSTTService(STTProvider):
         self.base_url = base_url.rstrip("/")
         self.model = settings.GNANI_STT_MODEL or "prisma-v2.5"
 
+    async def _fallback_whisper(self, audio_bytes: bytes, language: str, filename: str) -> Tuple[str, dict]:
+        """High-accuracy fallback to OpenAI Whisper-1 when Gnani STT returns empty or encounters network/format issues."""
+        if not settings.OPENAI_API_KEY:
+            return "", {"provider": "none", "confidence": 0.0, "detected_language": language}
+        try:
+            import io
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+            # Map language code to ISO-639-1
+            whisper_lang = language.split("-")[0].lower() if "-" in language else language.lower()
+            if whisper_lang not in ["hi", "mr", "en", "gu", "ta", "te", "kn", "bn", "pa"]:
+                whisper_lang = None
+
+            fname = filename if filename.endswith((".wav", ".m4a", ".aac", ".mp3", ".ogg")) else "turn.wav"
+            audio_file = io.BytesIO(audio_bytes)
+            audio_file.name = fname
+
+            kwargs = {
+                "model": "whisper-1",
+                "file": audio_file,
+            }
+            if whisper_lang:
+                kwargs["language"] = whisper_lang
+
+            res = await client.audio.transcriptions.create(**kwargs)
+            text = (res.text or "").strip()
+            # Filter out hallucinations on pure silence like "you" or "thank you for watching"
+            silence_artifacts = ["you", "thank you", "subtitles by", "amara.org", "subscribe"]
+            if text.lower() in silence_artifacts:
+                text = ""
+
+            if text:
+                logger.info(f"OpenAI Whisper fallback STT succeeded ({len(text)} chars): '{text}'")
+                return text, {
+                    "provider": "openai_whisper",
+                    "model": "whisper-1",
+                    "confidence": 0.98,
+                    "detected_language": language,
+                }
+        except Exception as e:
+            logger.warning(f"Whisper STT fallback error: {e}")
+        return "", {"provider": "fallback_failed", "confidence": 0.0, "detected_language": language}
+
     async def transcribe(self, audio_bytes: bytes, language: str, filename: str = "turn.wav") -> Tuple[str, dict]:
         if not self.api_key:
             raise ValueError("GNANI_API_KEY is not configured")
@@ -83,8 +127,11 @@ class GnaniSTTService(STTProvider):
                 or ""
             )
 
-            # If empty from ambient silence or non-speech audio, return clean empty transcript
+            # If empty from ambient silence or non-speech audio, try Whisper fallback
             if not transcript.strip():
+                w_text, w_meta = await self._fallback_whisper(audio_bytes, language, filename)
+                if w_text.strip():
+                    return w_text, w_meta
                 logger.info("Empty transcript from live STT (silence or unintelligible audio).")
                 return "", {
                     "provider": "gnani_prisma",
@@ -103,8 +150,10 @@ class GnaniSTTService(STTProvider):
             return transcript.strip(), metadata
         except httpx.HTTPStatusError as e:
             logger.error(f"Gnani STT API error status={e.response.status_code}")
+            w_text, w_meta = await self._fallback_whisper(audio_bytes, language, filename)
+            if w_text.strip():
+                return w_text, w_meta
             if e.response.status_code >= 500:
-                logger.warning(f"Gnani STT upstream server error ({e.response.status_code}); returning clean empty transcript.")
                 return "", {
                     "provider": "gnani_prisma",
                     "model": self.model,
@@ -113,15 +162,9 @@ class GnaniSTTService(STTProvider):
                     "upstream_error": e.response.status_code,
                 }
             raise RuntimeError(f"Gnani STT API error ({e.response.status_code}): {e.response.text}")
-        except httpx.TimeoutException as e:
-            logger.warning(f"Gnani STT request timed out: {e}")
-            return "", {
-                "provider": "gnani_prisma",
-                "model": self.model,
-                "confidence": 0.0,
-                "detected_language": language,
-                "timeout": True,
-            }
         except Exception as e:
-            logger.error(f"Gnani STT API call failed: {e}")
+            logger.error(f"Gnani STT API call failed: {e}. Attempting Whisper fallback.")
+            w_text, w_meta = await self._fallback_whisper(audio_bytes, language, filename)
+            if w_text.strip():
+                return w_text, w_meta
             raise

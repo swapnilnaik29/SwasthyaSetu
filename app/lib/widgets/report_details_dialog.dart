@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme.dart';
+import '../core/i18n_service.dart';
 
 class ReportDetailsDialog extends StatelessWidget {
   final Map<String, dynamic> report;
@@ -16,6 +17,7 @@ class ReportDetailsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final i18n = I18nService();
     final diagnosis = report['doctor_diagnosis'] ?? 'Clinical Consultation Record';
     final doctorName = report['doctor_name'] ?? 'Dr. Swapnil Naik';
     final patientName = report['patient_name'] ?? 'Patient';
@@ -30,20 +32,26 @@ class ReportDetailsDialog extends StatelessWidget {
     final followUp = report['follow_up_recommendation']?.toString();
     final isApproved = report['status'] == 'APPROVED';
 
+    final mediaWidth = MediaQuery.of(context).size.width;
+    final mediaHeight = MediaQuery.of(context).size.height;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 550, maxHeight: 700),
+        constraints: BoxConstraints(
+          maxWidth: mediaWidth > 600 ? 560 : mediaWidth * 0.95,
+          maxHeight: mediaHeight * 0.85,
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Header
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
@@ -52,71 +60,99 @@ class ReportDetailsDialog extends StatelessWidget {
                         Text(
                           diagnosis,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 17,
                             fontWeight: FontWeight.w800,
                             color: AppColors.primaryGreenDeep,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          'Recorded: $dateStr',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                          '${i18n.t("recordedPrefix")}: $dateStr',
+                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
-              const Divider(height: 24),
+              const Divider(height: 20),
 
               // Scrollable Body
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Patient and Doctor Meta Row
+                      // Patient and Doctor Meta Container
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: AppColors.background,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Row(
                           children: [
                             Expanded(
+                              flex: 5,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('PATIENT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                                  Text(patientName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textMain)),
+                                  Text(
+                                    i18n.t('patientLabel').toUpperCase(),
+                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    patientName,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.textMain),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
                             ),
-                            Container(width: 1, height: 32, color: AppColors.border),
-                            const SizedBox(width: 12),
+                            Container(width: 1, height: 30, color: AppColors.border, margin: const EdgeInsets.symmetric(horizontal: 8)),
                             Expanded(
+                              flex: 6,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('ATTENDING PHYSICIAN', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
-                                  Text(doctorName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.primaryGreen)),
-                                  const Text('MBBS, MD (General Medicine)', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                  Text(
+                                    i18n.t('doctorLabel').toUpperCase(),
+                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    doctorName,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.primaryGreen),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const Text(
+                                    'MBBS, MD',
+                                    style: TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                  ),
                                 ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
-                      // Status Badge
+                      // Status Badge (Guaranteed no overflow)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                         decoration: BoxDecoration(
                           color: isApproved ? AppColors.greenLight : AppColors.warningBg,
                           borderRadius: BorderRadius.circular(8),
@@ -124,33 +160,44 @@ class ReportDetailsDialog extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            Icon(isApproved ? Icons.check_circle : Icons.schedule, size: 16, color: isApproved ? AppColors.primaryGreen : AppColors.warningAmber),
+                            Icon(
+                              isApproved ? Icons.check_circle : Icons.schedule,
+                              size: 15,
+                              color: isApproved ? AppColors.primaryGreen : AppColors.warningAmber,
+                            ),
                             const SizedBox(width: 8),
-                            Text(
-                              isApproved ? 'Official Approved Record (Clinical English)' : 'Draft Record',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isApproved ? AppColors.primaryGreenDeep : AppColors.warningAmber,
+                            Expanded(
+                              child: Text(
+                                isApproved ? i18n.t('approvedBadge') : i18n.t('draftBadge'),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isApproved ? AppColors.primaryGreenDeep : AppColors.warningAmber,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 12),
 
                       // Vitals
                       if (vitals.isNotEmpty) ...[
-                        const Text('CLINICAL VITALS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                        Text(
+                          i18n.t('clinicalVitalsTitle').toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                        ),
                         const SizedBox(height: 6),
                         Wrap(
-                          spacing: 8,
+                          spacing: 6,
                           runSpacing: 6,
                           children: [
                             if (vitals['blood_pressure'] != null)
                               _chip('BP: ${vitals['blood_pressure']}'),
                             if (vitals['weight_kg'] != null)
-                              _chip('Weight: ${vitals['weight_kg']} kg'),
+                              _chip('Wt: ${vitals['weight_kg']} kg'),
                             if (vitals['pulse_bpm'] != null)
                               _chip('Pulse: ${vitals['pulse_bpm']} bpm'),
                             if (vitals['temperature_f'] != null)
@@ -159,12 +206,15 @@ class ReportDetailsDialog extends StatelessWidget {
                               _chip('SpO2: ${vitals['spo2_percent']}%'),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                       ],
 
                       // Symptoms
                       if (symptoms.isNotEmpty) ...[
-                        const Text('REPORTED SYMPTOMS', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                        Text(
+                          i18n.t('reportedSymptomsTitle').toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                        ),
                         const SizedBox(height: 6),
                         ...symptoms.map((s) {
                           final sym = s is Map ? s['symptom'] ?? '' : s.toString();
@@ -172,24 +222,36 @@ class ReportDetailsDialog extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.circle, size: 6, color: AppColors.primaryGreen),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 5),
+                                  child: Icon(Icons.circle, size: 5, color: AppColors.primaryGreen),
+                                ),
                                 const SizedBox(width: 8),
-                                Text('$sym$dur', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                                Expanded(
+                                  child: Text(
+                                    '$sym$dur',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
                               ],
                             ),
                           );
                         }),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                       ],
 
                       // Doctor Notes
                       if (notes.isNotEmpty) ...[
-                        const Text('PHYSICIAN NOTES & ADVISORY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                        Text(
+                          i18n.t('physicianNotesTitle').toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                        ),
                         const SizedBox(height: 6),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(8),
@@ -197,15 +259,18 @@ class ReportDetailsDialog extends StatelessWidget {
                           ),
                           child: Text(
                             notes,
-                            style: const TextStyle(fontSize: 13, color: AppColors.textMain, height: 1.4),
+                            style: const TextStyle(fontSize: 12, color: AppColors.textMain, height: 1.35),
                           ),
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                       ],
 
                       // Prescriptions
                       if (prescriptions.isNotEmpty) ...[
-                        const Text('PRESCRIBED MEDICINES', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textMuted)),
+                        Text(
+                          i18n.t('prescriptionsTitle').toUpperCase(),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textMuted),
+                        ),
                         const SizedBox(height: 6),
                         ...prescriptions.map((p) {
                           final med = p['medicine'] ?? 'Medicine';
@@ -215,7 +280,7 @@ class ReportDetailsDialog extends StatelessWidget {
                           final dur = p['duration'] ?? '';
                           return Container(
                             margin: const EdgeInsets.only(bottom: 6),
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: AppColors.greenSubtle,
                               borderRadius: BorderRadius.circular(8),
@@ -223,14 +288,24 @@ class ReportDetailsDialog extends StatelessWidget {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.medication, color: AppColors.primaryGreen, size: 20),
-                                const SizedBox(width: 10),
+                                const Icon(Icons.medication, color: AppColors.primaryGreen, size: 18),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('$med ${strength.isNotEmpty ? "($strength)" : ""}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                                      Text('$dose • $freq ${dur.isNotEmpty ? "• $dur" : ""}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                                      Text(
+                                        '$med ${strength.isNotEmpty ? "($strength)" : ""}',
+                                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '$dose • $freq ${dur.isNotEmpty ? "• $dur" : ""}',
+                                        style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -238,13 +313,13 @@ class ReportDetailsDialog extends StatelessWidget {
                             ),
                           );
                         }),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                       ],
 
                       // Follow-up
                       if (followUp != null && followUp.isNotEmpty) ...[
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.greenLight,
                             borderRadius: BorderRadius.circular(8),
@@ -252,12 +327,14 @@ class ReportDetailsDialog extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.calendar_today, size: 16, color: AppColors.primaryGreen),
+                              const Icon(Icons.calendar_today, size: 15, color: AppColors.primaryGreen),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Follow-up Recommendation: $followUp',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryGreenDeep),
+                                  '${i18n.t("followupPrefix")}: $followUp',
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.primaryGreenDeep),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -269,26 +346,32 @@ class ReportDetailsDialog extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      icon: const Icon(Icons.print, size: 18),
-                      label: const Text('Print / Save'),
+                      icon: const Icon(Icons.print, size: 16),
+                      label: Text(i18n.t('printSaveBtn'), style: const TextStyle(fontSize: 12)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('EHR record exported')),
+                          SnackBar(content: Text(i18n.t('recordExportedMsg'))),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
+                      child: Text(i18n.t('closeBtn'), style: const TextStyle(fontSize: 12)),
                     ),
                   ),
                 ],
@@ -302,7 +385,7 @@ class ReportDetailsDialog extends StatelessWidget {
 
   Widget _chip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(6),
@@ -310,9 +393,8 @@ class ReportDetailsDialog extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
       ),
     );
   }
 }
-

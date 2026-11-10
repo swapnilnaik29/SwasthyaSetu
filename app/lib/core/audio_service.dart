@@ -95,10 +95,15 @@ class AudioService extends ChangeNotifier {
       final path = await _recorder.stop();
       final actualPath = path ?? _currentRecordingPath;
       if (actualPath != null) {
+        // Ensure Android MediaRecorder finishes flushing to disk
+        await Future.delayed(const Duration(milliseconds: 150));
         final file = File(actualPath);
         if (await file.exists()) {
           final bytes = await file.readAsBytes();
-          return bytes;
+          if (bytes.isNotEmpty) {
+            _currentRecordingPath = null;
+            return bytes;
+          }
         }
       }
     } catch (e) {
