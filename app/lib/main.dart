@@ -18,7 +18,7 @@ void main() async {
     debugPrint('[SwasthyaSetu Mobile] Default doctor fallback: $e');
     doctor = Doctor(
       id: 'default_doctor',
-      name: 'Dr. Swapnil Naik',
+      name: 'Dr. John Doe',
       credentials: 'MBBS, MD (General Medicine)',
       preferredLanguage: 'en-IN',
       spokenLanguages: 'en-IN,mr-IN,hi-IN',

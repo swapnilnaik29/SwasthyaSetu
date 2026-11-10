@@ -15,7 +15,7 @@ class ReportPrinter {
     final doc = pw.Document();
 
     final diagnosis = report['doctor_diagnosis'] ?? 'Clinical Consultation Record';
-    final doctorName = doctor?.name ?? report['doctor_name'] ?? 'Dr. Swapnil Naik';
+    final doctorName = doctor?.name ?? report['doctor_name'] ?? 'Dr. John Doe';
     final doctorCreds = doctor?.credentials ?? report['doctor_credentials'] ?? 'MBBS, MD (General Medicine)';
     
     final patientName = patient?.name ?? report['patient_name'] ?? 'Patient';

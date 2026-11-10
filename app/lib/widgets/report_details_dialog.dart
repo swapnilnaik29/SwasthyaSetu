@@ -29,7 +29,7 @@ class ReportDetailsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final i18n = I18nService();
     final diagnosis = report['doctor_diagnosis'] ?? 'Clinical Consultation Record';
-    final doctorName = report['doctor_name'] ?? 'Dr. Swapnil Naik';
+    final doctorName = report['doctor_name'] ?? 'Dr. John Doe';
     final patientName = report['patient_name'] ?? 'Patient';
     final notes = report['doctor_notes'] ?? '';
     final dateStr = report['date'] != null

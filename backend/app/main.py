@@ -20,13 +20,13 @@ async def seed_demo_data():
         res = await session.execute(select(Doctor))
         if not res.scalars().first():
             doc = Doctor(
-                name="Dr. Swapnil Naik",
+                name="Dr. John Doe",
                 credentials="MBBS, MD (General Medicine)",
                 preferred_language="en-IN",
                 spoken_languages="en-IN,mr-IN,hi-IN",
             )
             session.add(doc)
-            logger.info("Seeded default doctor profile (Dr. Swapnil Naik).")
+            logger.info("Seeded default doctor profile (Dr. John Doe).")
 
         # Seed UI Localizations into SQLite database
         for lang_code, data in DEFAULT_UI_LOCALIZATIONS.items():

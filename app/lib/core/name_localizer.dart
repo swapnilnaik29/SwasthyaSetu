@@ -7,6 +7,8 @@ class NameLocalizer {
     'rahul sharma': 'राहुल शर्मा',
     'priya sharma': 'प्रिया शर्मा',
     'dr. priya sharma': 'डॉ. प्रिया शर्मा',
+    'john doe': 'जॉन डो',
+    'dr. john doe': 'डॉ. जॉन डो',
     'swapnil naik': 'स्वप्नील नाईक',
     'dr. swapnil naik': 'डॉ. स्वप्नील नाईक',
     'sanjay pawar': 'संजय पवार',

@@ -20,7 +20,7 @@ class Doctor {
   factory Doctor.fromJson(Map<String, dynamic> json) {
     return Doctor(
       id: json['id'] ?? 'default_doctor',
-      name: json['name'] ?? 'Dr. Swapnil Naik',
+      name: json['name'] ?? 'Dr. John Doe',
       credentials: json['credentials'] ?? 'MBBS, MD (General Medicine)',
       preferredLanguage: json['preferred_language'] ?? 'en-IN',
       spokenLanguages: json['spoken_languages'] ?? 'en-IN,mr-IN,hi-IN',

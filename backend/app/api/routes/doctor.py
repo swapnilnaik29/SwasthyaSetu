@@ -14,7 +14,7 @@ async def get_or_create_default_doctor(db: AsyncSession) -> Doctor:
     doc = res.scalar_one_or_none()
     if not doc:
         doc = Doctor(
-            name="Dr. Swapnil Naik",
+            name="Dr. John Doe",
             credentials="MBBS, MD (General Medicine)",
             preferred_language="en-IN",
             spoken_languages="en-IN,mr-IN,hi-IN",
