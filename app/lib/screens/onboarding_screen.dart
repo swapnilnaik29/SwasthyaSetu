@@ -53,35 +53,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'label': 'Question 1 of 5 • Full Name',
         'text': 'नमस्ते! आपका शुभ नाम क्या है?',
         'sub': '(Hello! What is your full name?)',
-        'chips': ['रमेश कुमार', 'सुनीता पाटील', 'विक्रम सिंह', 'अनिता शर्मा'],
       },
       {
         'id': 'age_gender',
         'label': 'Question 2 of 5 • Age & Gender',
         'text': 'आपकी उम्र कितनी है और आपका लिंग (पुरुष / महिला) क्या है?',
         'sub': '(What is your age and gender?)',
-        'chips': ['35 वर्ष, पुरुष', '28 वर्ष, महिला', '45 वर्ष, पुरुष'],
       },
       {
         'id': 'phone',
         'label': 'Question 3 of 5 • Mobile Number',
         'text': 'कृपया अपना 10 अंकों का मोबाइल फोन नंबर बताइए।',
         'sub': '(Please provide your 10-digit mobile phone number.)',
-        'chips': ['9822012345', '9876543210'],
       },
       {
         'id': 'complaint',
         'label': 'Question 4 of 5 • Health Problem',
         'text': 'आपको क्या तकलीफ़ या समस्या हो रही है और यह कितने दिनों से है?',
         'sub': '(What health problem are you facing and for how many days?)',
-        'chips': ['3 दिन से तेज बुखार और सिरदर्द है', 'कल से पेट में बहुत दर्द है', '5 दिन से खांसी और सर्दी है'],
       },
       {
         'id': 'history_allergies',
         'label': 'Question 5 of 5 • Medical History & Allergies',
         'text': 'क्या आपको पहले से बीपी, शुगर या दमा जैसी बीमारी है? और क्या किसी दवा से एलर्जी है?',
         'sub': '(Do you have conditions like BP/Diabetes, or any drug allergies?)',
-        'chips': ['कोई पुरानी बीमारी नहीं, कोई एलर्जी नहीं', 'बीपी की गोली लेता हूँ, पेनिसिलिन एलर्जी है'],
       },
     ],
     'mr-IN': [
@@ -90,35 +85,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'label': 'प्रश्न १ / ५ • पूर्ण नाव',
         'text': 'नमस्कार! आपले पूर्ण नाव काय आहे?',
         'sub': '(Hello! What is your full name?)',
-        'chips': ['रमेश कुमार', 'सुनीता पाटील', 'संजय पवार', 'अमोल जाधव'],
       },
       {
         'id': 'age_gender',
         'label': 'प्रश्न २ / ५ • वय आणि लिंग',
         'text': 'आपले वय किती आहे आणि आपले लिंग (पुरुष / स्त्री) काय आहे?',
         'sub': '(What is your age and gender?)',
-        'chips': ['२८ वर्षे, स्त्री', '३५ वर्षे, पुरुष', '४२ वर्षे, पुरुष'],
       },
       {
         'id': 'phone',
         'label': 'प्रश्न ३ / ५ • मोबाईल नंबर',
         'text': 'कृपया आपला १० अंकी मोबाईल नंबर सांगा.',
         'sub': '(Please provide your 10-digit mobile phone number.)',
-        'chips': ['9822012345', '9876543210'],
       },
       {
         'id': 'complaint',
         'label': 'प्रश्न ४ / ५ • आजार आणि कालावधी',
         'text': 'आपल्याला काय त्रास किंवा आजार होत आहे आणि किती दिवसांपासून आहे?',
         'sub': '(What health problem are you facing and for how many days?)',
-        'chips': ['३ दिवसांपासून ताप आणि डोकेदुखी आहे', 'कालपासून पोटात खूप दुखत आहे', '४ दिवसांपासून खोकला आणि सर्दी आहे'],
       },
       {
         'id': 'history_allergies',
         'label': 'प्रश्न ५ / ५ • मागील आजार आणि ॲलर्जी',
         'text': 'आपल्याला आधीपासून बीपी, शुगर, दमा असा कोणताही जुना आजार आहे का? आणि कोणत्या औषधाची ॲलर्जी आहे का?',
         'sub': '(Do you have conditions like BP/Diabetes, or any drug allergies?)',
-        'chips': ['कोणताही जुना आजार नाही, कोणतीही ॲलर्जी नाही', 'मला बीपी आहे, औषध चालू आहे'],
       },
     ],
     'en-IN': [
@@ -127,35 +117,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'label': 'Question 1 of 5 • Full Name',
         'text': 'Hello! What is your full name?',
         'sub': '(Please state your legal first and last name)',
-        'chips': ['Ramesh Kumar', 'Sunita Patil', 'Vikram Singh', 'Anita Sharma'],
       },
       {
         'id': 'age_gender',
         'label': 'Question 2 of 5 • Age & Gender',
         'text': 'What is your age and gender (Male / Female)?',
         'sub': '(You can mention in any sequence, e.g. 28 Female)',
-        'chips': ['28 years, Female', '35 years, Male', '42 years, Male'],
       },
       {
         'id': 'phone',
         'label': 'Question 3 of 5 • Mobile Phone Number',
         'text': 'Please provide your 10-digit mobile phone number.',
         'sub': '(Speak in digits or words)',
-        'chips': ['9822012345', '9876543210'],
       },
       {
         'id': 'complaint',
         'label': 'Question 4 of 5 • Primary Complaint',
         'text': 'What symptoms or health problem are you experiencing, and for how long?',
         'sub': '(Describe your primary complaint and duration)',
-        'chips': ['High fever and headache for 3 days', 'Severe abdominal pain since yesterday', 'Dry cough and sore throat for 4 days'],
       },
       {
         'id': 'history_allergies',
         'label': 'Question 5 of 5 • Medical History & Allergies',
         'text': 'Do you have chronic conditions (BP, Diabetes, Asthma) or known drug allergies?',
         'sub': '(Mention any ongoing health history)',
-        'chips': ['No chronic conditions, no known allergies', 'Hypertension on medication, allergic to Penicillin'],
       },
     ],
   };
@@ -410,7 +395,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // STAGE B: Interactive Conversational Intake Chat + Autofilled Preview Card
   Widget _buildChatStage() {
     final q = _currentQuestions[_questionIndex];
-    final chips = q['chips'] as List<String>? ?? [];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -536,22 +520,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             const SizedBox(height: 12),
           ],
 
-          // Quick Answer Chips
-          if (chips.isNotEmpty) ...[
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: chips.map((c) {
-                return ActionChip(
-                  label: Text(c, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  backgroundColor: AppColors.greenSubtle,
-                  side: const BorderSide(color: AppColors.greenBorder),
-                  onPressed: () => _handleAnswer(c),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-          ],
 
           // Voice / Text Input Row
           Container(

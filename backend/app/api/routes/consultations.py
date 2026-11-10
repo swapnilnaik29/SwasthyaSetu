@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -80,7 +81,15 @@ async def get_consultation(
     return consultation
 
 
+class TextTurnRequest(BaseModel):
+    speaker: str
+    source_language: Optional[str] = None
+    target_language: Optional[str] = None
+    text: str
+
+
 @router.post("/{consultation_id}/turns", response_model=TurnProcessResult)
+@router.post("/{consultation_id}/turns/audio", response_model=TurnProcessResult)
 async def process_consultation_turn(
     consultation_id: str,
     speaker: str = Form(..., description="Active speaker: PATIENT or DOCTOR"),
@@ -202,6 +211,24 @@ async def process_consultation_turn(
         cache_hit=trans_result.get("cache_hit", False),
         uncertainty_flags=trans_result.get("uncertainty_flags", []),
         needs_human_review=trans_result.get("needs_human_review", False),
+    )
+
+
+@router.post("/{consultation_id}/turns/text", response_model=TurnProcessResult)
+async def process_text_turn(
+    consultation_id: str,
+    payload: TextTurnRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Process a typed text turn with JSON payload."""
+    return await process_consultation_turn(
+        consultation_id=consultation_id,
+        speaker=payload.speaker,
+        source_language=payload.source_language,
+        target_language=payload.target_language,
+        text=payload.text,
+        audio=None,
+        db=db,
     )
 
 

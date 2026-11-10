@@ -66,3 +66,4 @@ async def translate_dictionary(payload: TranslateDictRequest):
         return {"translations": translated, "target_language": payload.target_language}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Dictionary translation failed: {str(e)}")
+

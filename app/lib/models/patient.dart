@@ -1,3 +1,5 @@
+import '../core/name_localizer.dart';
+
 class Patient {
   final String id;
   final String name;
@@ -49,6 +51,11 @@ class Patient {
       intakeSummaryEnglish: json['intake_summary_english'],
       createdAt: parsedDate,
     );
+  }
+
+  /// Returns patient name in the doctor's preferred language while database retains canonical English
+  String localizedName(String doctorLanguage) {
+    return NameLocalizer.localize(name, doctorLanguage);
   }
 
   Map<String, dynamic> toJson() {

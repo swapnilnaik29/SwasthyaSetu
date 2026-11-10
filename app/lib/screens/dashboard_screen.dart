@@ -438,7 +438,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          p.name,
+                          p.localizedName(widget.doctor.preferredLanguage),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textMain),
                         ),
                         const SizedBox(height: 2),

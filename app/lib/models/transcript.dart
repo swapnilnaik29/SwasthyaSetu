@@ -25,13 +25,13 @@ class TranscriptTurn {
 
   factory TranscriptTurn.fromJson(Map<String, dynamic> json) {
     return TranscriptTurn(
-      id: json['id'] ?? '',
+      id: json['id'] ?? json['transcript_id'] ?? '',
       consultationId: json['consultation_id'] ?? '',
       speaker: json['speaker'] ?? 'PATIENT',
       sourceLanguage: json['source_language'] ?? '',
       targetLanguage: json['recipient_language'] ?? json['target_language'] ?? '',
       recognizedSourceText: json['recognized_source_text'] ?? json['original_text'] ?? '',
-      translatedText: json['translated_text'] ?? '',
+      translatedText: json['recipient_translation'] ?? json['translated_text'] ?? '',
       audioUrl: json['audio_url'],
       cacheHit: json['cache_hit'] == true,
       timestamp: json['timestamp'] != null

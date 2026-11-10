@@ -37,6 +37,30 @@ class AudioService extends ChangeNotifier {
         notifyListeners();
       }
     });
+    _setupAudioContext();
+  }
+
+  Future<void> _setupAudioContext() async {
+    try {
+      await _player.setAudioContext(AudioContext(
+        android: const AudioContextAndroid(
+          isSpeakerphoneOn: true,
+          stayAwake: true,
+          contentType: AndroidContentType.speech,
+          usageType: AndroidUsageType.media,
+          audioFocus: AndroidAudioFocus.gainTransient,
+        ),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.playAndRecord,
+          options: const {
+            AVAudioSessionOptions.defaultToSpeaker,
+          },
+        ),
+      ));
+      await _player.setVolume(1.0);
+    } catch (e) {
+      debugPrint('[AudioService] Failed to set audio context: $e');
+    }
   }
 
   Future<bool> startRecording() async {
@@ -119,9 +143,11 @@ class AudioService extends ChangeNotifier {
     }
 
     try {
+      await _setupAudioContext();
       await _player.stop();
       _isPlaying = true;
       notifyListeners();
+      debugPrint('[AudioService] Playing audio via speaker: $url');
       await _player.play(UrlSource(url));
     } catch (e) {
       debugPrint('[AudioService] Playback failed: $e');

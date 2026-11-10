@@ -49,10 +49,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final p = widget.patient;
+    final displayName = p.localizedName(widget.doctor.preferredLanguage);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(p.name),
+        title: Text(displayName),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -82,7 +83,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                            Text(displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                             Text('${p.age ?? ""} yrs • ${p.gender ?? ""} • ${p.mobileNumber}', style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
                             const SizedBox(height: 4),
                             Container(
