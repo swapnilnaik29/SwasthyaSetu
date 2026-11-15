@@ -831,10 +831,7 @@
             </div>
           </div>
           <p style="font-size: 14px; color: #1e293b; line-height: 1.6; margin-bottom: 10px;">
-            <strong>SwasthyaSetu (स्वास्थ्य सेतु)</strong> is a real-time, multilingual clinical communication and autonomous medical documentation platform built for Indian healthcare. In India, patients frequently articulate their symptoms in regional Indic languages (Hindi, Marathi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia), while doctors communicate and document electronically in canonical medical English.
-          </p>
-          <p style="font-size: 14px; color: #1e293b; line-height: 1.6; margin-bottom: 14px;">
-            SwasthyaSetu bridges this communication barrier by leveraging <strong>Gnani.ai Indic voice AI (Vachana TTS & Speech STT)</strong> and <strong>GPT-6 Luna clinical LLM reasoning</strong> to deliver instantaneous speech-to-speech interpretation, conversational voice triage, and autonomous SOAP medical reports with zero clinician burnout.
+            <strong>SwasthyaSetu (स्वास्थ्य सेतु)</strong> is an end-to-end clinical communication platform engineered to eliminate language barriers in Indian outpatient departments (OPDs), emergency rooms, and telemedicine consultations.
           </p>
           <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-microphone-lines"></i> Gnani.ai Vachana TTS</span>
@@ -842,6 +839,244 @@
             <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-brain"></i> GPT-6 Luna Clinical LLM</span>
             <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-notes-medical"></i> Automated SOAP Notes</span>
             <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-mobile-screen"></i> Web & Mobile Suite</span>
+          </div>
+        </div>
+
+        <!-- 1. PROBLEM STATEMENT (PS) -->
+        <div class="card" style="padding: 24px; border-left: 5px solid #ef4444; background: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 18px; font-weight: 800; color: #991b1b; margin: 0;">Problem Statement (PS)</h3>
+              <p style="font-size: 12px; color: #64748b; margin-top: 2px;">The Language Discordance & Documentation Crisis in Indian Healthcare</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #334155; line-height: 1.6;">
+            <p>
+              In India, over <strong>70% of clinical consultations outside urban metropolises</strong> encounter severe language discordance. India has 22+ officially recognized languages with hundreds of regional dialects. While patients articulate intense symptoms, pain nuance, and medical history exclusively in regional mother tongues (Hindi, Marathi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia), doctors are trained in English, and hospital Electronic Health Records (EHR/EMR), prescriptions, and medico-legal audit documents must legally be recorded in canonical medical English.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 4px;">
+              <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: #b91c1c; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-circle-exclamation"></i> Diagnostic & Drug Dosage Errors
+                </strong>
+                <p style="font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.45;">
+                  Language discordance leads to misunderstood symptom onset, missed chronic drug allergies, dosing ambiguity, and patient non-compliance.
+                </p>
+              </div>
+              <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: #b91c1c; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-user-doctor"></i> Severe Clinician Burnout
+                </strong>
+                <p style="font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.45;">
+                  OPD physicians examine 60–100 patients every single day and lose 2–3 hours daily typing notes and prescriptions, causing fatigue and reduced face-to-face patient time.
+                </p>
+              </div>
+              <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: #b91c1c; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-file-excel"></i> Broken Registration & Triage
+                </strong>
+                <p style="font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.45;">
+                  Front-desk hospital intake lacks automated vernacular triage, forcing doctors to repeatedly restart basic intake questions from scratch during the clinical encounter.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. THE SOLUTION -->
+        <div class="card" style="padding: 24px; border-left: 5px solid var(--primary-green); background: #ffffff;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--green-subtle); color: var(--primary-green-deep); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+              <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep); margin: 0;">The SwasthyaSetu Solution</h3>
+              <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Real-Time Multilingual Clinical Bridge & Autonomous Medical Scribing</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #334155; line-height: 1.6;">
+            <p>
+              <strong>SwasthyaSetu</strong> introduces an autonomous, voice-first clinical pipeline that bridges the linguistic and documentation gap through a dual-loop AI architecture:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: var(--primary-green-deep); font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-headset"></i> 1. Real-time Speech-to-Speech Interpretation
+                </strong>
+                <p style="font-size: 12px; color: #334155; margin-top: 6px; line-height: 1.45;">
+                  Patients converse in their natural regional dialect while doctors speak English. Gnani.ai Vachana TTS provides instant voice synthesis matching regional dialect and gender.
+                </p>
+              </div>
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: var(--primary-green-deep); font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-file-waveform"></i> 2. Autonomous SOAP Clinical Documentation
+                </strong>
+                <p style="font-size: 12px; color: #334155; margin-top: 6px; line-height: 1.45;">
+                  Transcripts are continuously analyzed by GPT-6 Luna to extract subjective symptoms, objective vitals (BP, pulse, temp, SpO2, weight), clinical diagnoses, and prescriptions.
+                </p>
+              </div>
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: var(--primary-green-deep); font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-comments"></i> 3. Conversational AI Triage (Aarogya Mitra)
+                </strong>
+                <p style="font-size: 12px; color: #334155; margin-top: 6px; line-height: 1.45;">
+                  Patients complete a voice intake interview in their native language before meeting the doctor. Off-topic responses are reprompted, and clinical English summaries are pre-generated.
+                </p>
+              </div>
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-sm); padding: 14px;">
+                <strong style="color: var(--primary-green-deep); font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fa-solid fa-user-check"></i> 4. Physician-in-the-Loop Governance
+                </strong>
+                <p style="font-size: 12px; color: #334155; margin-top: 6px; line-height: 1.45;">
+                  Doctors have complete edit control and final signature authority before medical records are committed, ensuring patient safety, audit trail integrity, and one-click PDF printing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. FOUR CORE OPERATING MODES -->
+        <div class="card" style="padding: 24px; background: #ffffff;">
+          <div class="section-header" style="margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep);">
+              <i class="fa-solid fa-sliders" style="color: var(--primary-green); margin-right: 8px;"></i>
+              Four Dedicated Operating Modes
+            </h3>
+            <span class="badge-chip badge-green">Tailored Clinical Workflows</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+            <!-- Mode 1 -->
+            <div style="padding: 16px; border: 1.5px solid #bbf7d0; background: #f0fdf4; border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;">1</div>
+                <h4 style="font-size: 15px; font-weight: 800; color: var(--primary-green-deep); margin: 0;">Conversational AI Patient Intake (आरोग्य मित्र)</h4>
+              </div>
+              <p style="font-size: 13px; color: #334155; line-height: 1.5;">
+                Voice-guided 5-step interactive onboarding in 11 Indian languages. The virtual assistant speaks questions aloud via Gnani TTS. It validates patient speech in real-time, reprompts politely if off-topic, and populates a live English triage card for the attending doctor.
+              </p>
+            </div>
+
+            <!-- Mode 2 -->
+            <div style="padding: 16px; border: 1.5px solid #bae6fd; background: #f0f9ff; border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #0284c7; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;">2</div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0369a1; margin: 0;">Bilingual Conversation Mode (Turn-by-Turn)</h4>
+              </div>
+              <p style="font-size: 13px; color: #334155; line-height: 1.5;">
+                Active two-way clinical conversation. When the doctor speaks English, the patient hears their native language via authentic Gnani Indic voices; when the patient responds in their language, the doctor receives real-time translated medical English text and speech.
+              </p>
+            </div>
+
+            <!-- Mode 3 -->
+            <div style="padding: 16px; border: 1.5px solid #e9d5ff; background: #faf5ff; border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #7c3aed; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;">3</div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #6d28d9; margin: 0;">Ambient Background Clinical Scribe Mode</h4>
+              </div>
+              <p style="font-size: 13px; color: #334155; line-height: 1.5;">
+                Continuous room listening mode. The doctor taps record once at the start of the examination; the system passively records the ambient audio, diarizes speakers, transcribes the exchange, and autonomously synthesizes a full SOAP clinical record without requiring button clicks.
+              </p>
+            </div>
+
+            <!-- Mode 4 -->
+            <div style="padding: 16px; border: 1.5px solid #fde68a; background: #fffbeb; border-radius: var(--radius-md);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #d97706; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800;">4</div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #b45309; margin: 0;">Doctor AI Voice Scribe Assistant Mode</h4>
+              </div>
+              <p style="font-size: 13px; color: #334155; line-height: 1.5;">
+                Allows attending physicians to dictate vitals (e.g. <em>"BP 130/85, pulse 76, weight 68 kg, SpO2 98%"</em>) or additional physical examination findings into the active session, which are parsed and formatted into structured clinical parameters.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. TECH STACK & SPECIFIC APIS USED -->
+        <div class="card" style="padding: 24px; background: #ffffff;">
+          <div class="section-header" style="margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep);">
+              <i class="fa-solid fa-code-branch" style="color: var(--primary-green); margin-right: 8px;"></i>
+              Technology Stack & APIs Used
+            </h3>
+            <span class="badge-chip badge-green">Production API Architecture</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- API 1: Gnani Vachana TTS -->
+            <div style="padding: 16px 18px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #059669; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #0f172a; font-size: 15px;"><i class="fa-solid fa-volume-high" style="color: #059669; margin-right: 6px;"></i>Gnani.ai Vachana TTS API</strong>
+                  <span class="badge-chip" style="background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700;">Voice Synthesis</span>
+                </div>
+                <code style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #0f172a;">https://api.vachana.ai/api/v1/tts/inference</code>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
+                Generates authentic Indian voices matching speaker gender and regional dialect across all 11 languages (e.g. <strong>Deepak</strong> for Hindi Male doctor, <strong>Nalini</strong> for Hindi Female intake assistant, <strong>Omkar</strong> & <strong>Kaveri</strong> for Marathi, <strong>Deven</strong> & <strong>Devika</strong> for Indian English). Audio is returned in 16kHz WAV streaming format for low-latency browser playback.
+              </p>
+            </div>
+
+            <!-- API 2: Gnani Prisma STT / ASR -->
+            <div style="padding: 16px 18px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #0284c7; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #0f172a; font-size: 15px;"><i class="fa-solid fa-microphone-lines" style="color: #0284c7; margin-right: 6px;"></i>Gnani.ai Prisma STT / Indic ASR Engine</strong>
+                  <span class="badge-chip" style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700;">Speech Recognition</span>
+                </div>
+                <code style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #0f172a;">https://api.vachana.ai/stt/v3 (prisma-v2.5)</code>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
+                Accurately transcribes spoken regional Indian speech with high noise resilience for busy OPD environments, supporting colloquial code-mixed utterances (Hinglish, Marathish), with automatic failover to Whisper-1 for zero downtime.
+              </p>
+            </div>
+
+            <!-- API 3: OpenAI GPT-6 Luna Clinical Intelligence Engine -->
+            <div style="padding: 16px 18px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #7c3aed; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #0f172a; font-size: 15px;"><i class="fa-solid fa-brain" style="color: #7c3aed; margin-right: 6px;"></i>OpenAI GPT-6 Luna Clinical Intelligence Engine</strong>
+                  <span class="badge-chip" style="background: #f3e8ff; color: #6b21a8; font-size: 11px; font-weight: 700;">Reasoning & Translation</span>
+                </div>
+                <code style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-size: 12px; color: #0f172a;">Model: gpt-6-luna (Structured Outputs / JSON Schema)</code>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5; margin: 0;">
+                The central intelligence backbone powering:
+              </p>
+              <ul style="margin: 4px 0 0 18px; padding: 0; font-size: 12px; color: #475569; line-height: 1.6;">
+                <li><strong>Bidirectional Translation & Canonical English</strong>: Real-time translation between Doctor (English) and Patient (Indic), preserving medical terms, negation integrity, and archiving canonical English records.</li>
+                <li><strong>Conversational Intake Triage (Aarogya Mitra)</strong>: Real-time validation of patient responses, detecting off-topic answers and providing polite clarification prompts.</li>
+                <li><strong>Autonomous Clinical Scribing</strong>: Multi-speaker diarization formatting full SOAP notes, vitals normalization, and structured prescription tables (drug, dosage, frequency, duration, food timing).</li>
+                <li><strong>Doctor AI Voice Scribe Assistant</strong>: Real-time parsing of dictated clinical vitals and physical examination findings into draft records.</li>
+              </ul>
+            </div>
+
+            <!-- Full Stack Overview Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 6px;">
+              <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--primary-green-deep);">BACKEND FRAMEWORK</div>
+                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px;">FastAPI (Python 3.10+)</div>
+                <div style="font-size: 11px; color: #64748b;">Asynchronous REST, Uvicorn, Render cloud ready</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--primary-green-deep);">DATABASE ORM</div>
+                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px;">SQLAlchemy 2.0 (Async) + SQLite</div>
+                <div style="font-size: 11px; color: #64748b;">aiosqlite WAL mode with cascade deletion</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--primary-green-deep);">WEB FRONTEND</div>
+                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px;">Vanilla ES6+ SPA & Web Audio</div>
+                <div style="font-size: 11px; color: #64748b;">Zero build step, MediaRecorder, live waves</div>
+              </div>
+              <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--primary-green-deep);">MOBILE APPLICATION</div>
+                <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 2px;">Flutter 3.x (Dart)</div>
+                <div style="font-size: 11px; color: #64748b;">Cross-platform Android/iOS with LAN sync</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -893,9 +1128,9 @@
             <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #7c3aed;">
               <div style="width: 32px; height: 32px; border-radius: 50%; background: #7c3aed; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">4</div>
               <div>
-                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Dictate Vitals & Generate Autonomous SOAP Report</h4>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Generate SOAP Report & Dictate Vitals with Doctor AI Scribe</h4>
                 <p style="font-size: 13px; color: #475569; line-height: 1.5;">
-                  Use the <strong>Doctor AI Scribe</strong> input box to dictate vitals (e.g. <em>"BP 125/80, pulse 74, weight 65 kg"</em>) or additional notes. Click <strong>"Generate AI Report"</strong> to autonomously structure the entire conversation into a standardized medical record with diagnosis, prescription medications, and follow-up advice.
+                  Click <strong>"Generate AI Report"</strong> to synthesize the consultation into a standardized SOAP clinical record (Subjective, Objective, Assessment, Plan). On the draft review screen, use the <strong>"Talk to AI Clinical Assistant"</strong> input or mic to dictate vitals (e.g. <em>"BP 125/80, pulse 74, weight 65 kg, temp 98.6"</em>) or additional physical examination notes.
                 </p>
               </div>
             </div>
@@ -1003,24 +1238,60 @@
           </div>
         </div>
 
-        <!-- Supported Indic Languages Showcase -->
-        <div class="card" style="padding: 20px;">
-          <h4 style="font-size: 14px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 10px;">
-            <i class="fa-solid fa-globe" style="color: var(--primary-green); margin-right: 6px;"></i>
-            11 Supported Indian Languages & Authentic Gnani Voices
-          </h4>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <span class="badge-chip badge-green">हिन्दी (Hindi - hi-IN)</span>
-            <span class="badge-chip badge-green">मराठी (Marathi - mr-IN)</span>
-            <span class="badge-chip badge-green">ગુજરાતી (Gujarati - gu-IN)</span>
-            <span class="badge-chip badge-green">বাংলা (Bengali - bn-IN)</span>
-            <span class="badge-chip badge-green">தமிழ் (Tamil - ta-IN)</span>
-            <span class="badge-chip badge-green">తెలుగు (Telugu - te-IN)</span>
-            <span class="badge-chip badge-green">ಕನ್ನಡ (Kannada - kn-IN)</span>
-            <span class="badge-chip badge-green">മലയാളം (Malayalam - ml-IN)</span>
-            <span class="badge-chip badge-green">ਪੰਜਾਬੀ (Punjabi - pa-IN)</span>
-            <span class="badge-chip badge-green">ଓଡ଼ିଆ (Odia - or-IN)</span>
-            <span class="badge-chip badge-green">English (India - en-IN)</span>
+        <!-- Supported Indic Languages Showcase & Voice Personas -->
+        <div class="card" style="padding: 24px; background: #ffffff;">
+          <div class="section-header" style="margin-bottom: 14px;">
+            <h4 style="font-size: 16px; font-weight: 800; color: var(--primary-green-deep); margin: 0;">
+              <i class="fa-solid fa-globe" style="color: var(--primary-green); margin-right: 8px;"></i>
+              11 Supported Indic Languages & Authentic Gnani.ai Voice Personas
+            </h4>
+            <span class="badge-chip badge-green">timbre-v2.5 & prisma-v2.5</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">हिन्दी • Hindi (hi-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Deepak</strong> | Intake: <strong>Nalini</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">मराठी • Marathi (mr-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Omkar</strong> | Intake: <strong>Kaveri</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">English (India) (en-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Deven</strong> | Intake: <strong>Devika</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">ગુજરાતી • Gujarati (gu-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Nirav</strong> | Intake: <strong>Dhwani</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">বাংলা • Bengali (bn-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Tanmay</strong> | Intake: <strong>Mithu</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">தமிழ் • Tamil (ta-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Saravanan</strong> | Intake: <strong>Kavitha</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">తెలుగు • Telugu (te-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Chaitanya</strong> | Intake: <strong>Sandhya</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">ಕನ್ನಡ • Kannada (kn-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Gopal</strong> | Intake: <strong>Shweta</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">മലയാളം • Malayalam (ml-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Manoj</strong> | Intake: <strong>Arya</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">ਪੰਜਾਬੀ • Punjabi (pa-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Amrit</strong> | Intake: <strong>Kaur</strong></div>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px;">
+              <div style="font-weight: 700; color: #0f172a; font-size: 13px;">ଓଡ଼ିଆ • Odia (or-IN)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Doctor: <strong>Subhas</strong> | Intake: <strong>Ananya</strong></div>
+            </div>
           </div>
         </div>
 

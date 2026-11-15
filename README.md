@@ -1,231 +1,247 @@
-# SwasthyaSetu (स्वास्थ्यसेतु)
+# SwasthyaSetu (स्वास्थ्य सेतु)
 ### Multilingual Healthcare Communication & Ambient Clinical Scribe Platform
 
-[![Gnani.ai](https://img.shields.io/badge/Gnani.ai-Voice%20AI%20STT%20%7C%20TTS-059669?style=for-the-badge&logo=sound)](https://gnani.ai/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
+[![Gnani.ai](https://img.shields.io/badge/Gnani.ai-Vachana%20TTS%20%7C%20Prisma%20STT-059669?style=for-the-badge&logo=sound)](https://gnani.ai/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--6%20Luna%20%7C%20Structured%20Outputs-412991?style=for-the-badge&logo=openai)](https://openai.com/)
+[![Database](https://img.shields.io/badge/Database-SQLite%20Async%20WAL-4479A1?style=for-the-badge&logo=sqlite)](https://www.sqlite.org)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x%20Mobile-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![Render](https://img.shields.io/badge/Deploy%20on-Render-46E3B7?style=for-the-badge&logo=render)](https://render.com)
-[![Database](https://img.shields.io/badge/Database-SQLite%20WAL-4479A1?style=for-the-badge&logo=sqlite)](https://www.sqlite.org)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
 
-## Executive Summary
+## 📌 Problem Statement (PS)
 
-In India's diverse healthcare ecosystem, over **70% of clinical consultations** outside urban metropolises face language discordance between doctors (who predominantly practice and document in English) and rural or migrant patients who speak regional Indian languages (Hindi, Marathi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia). This barrier leads to misdiagnoses, poor medication adherence, patient anxiety, and administrative burnout.
-
-**SwasthyaSetu** bridges this critical healthcare divide on a single doctor-held smartphone or computer. Powered by **Gnani.ai Speech Intelligence (Prisma STT & Vachana TTS)** and clinical language models, SwasthyaSetu provides an end-to-end clinical workflow:
-1. **Interactive Conversational Patient Onboarding** in 11 Indian languages.
-2. **Turn-by-Turn Bidirectional Consultation** with instant voice translation.
-3. **Ambient Clinical Scribe Mode** that passively listens to continuous natural consultation dialogue and auto-generates structured clinical reports and patient vitals.
-4. **Physician-in-the-Loop Review** ensuring patient safety and regulatory compliance.
-5. **Canonical English EHR Archival & Automated PDF Report Printing**.
+### The Language Discordance & Documentation Crisis in Indian Healthcare
+In India's diverse healthcare ecosystem, over **70% of clinical consultations outside urban metropolises** encounter severe language discordance:
+1. **Linguistic Diversity vs. Medical Standard**: India has 22+ officially recognized languages and hundreds of regional dialects. Rural and migrant patients articulate intense symptoms, pain chronology, and medical history exclusively in regional mother tongues (Hindi, Marathi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia). Conversely, physicians are trained in English, and hospital Electronic Health Records (EHR/EMR), prescriptions, and medico-legal audit documents must legally be recorded in canonical medical English.
+2. **Diagnostic & Drug Dosage Risks**: Language barriers lead to misunderstood symptom onset, missed chronic drug allergies, wrong dosage instructions, and patient non-compliance.
+3. **Severe Physician Burnout**: Outpatient Department (OPD) physicians examine 60–100 patients daily and lose 2–3 hours every day manually typing notes, vitals, and prescriptions, reducing face-to-face patient examination time.
+4. **Inefficient Hospital Registration & Triage**: Traditional front-desk registration lacks automated vernacular triage, forcing doctors to re-ask repetitive baseline demographic and complaint questions during the clinical consultation.
 
 ---
 
-## Key Features
+## 💡 The SwasthyaSetu Solution
 
-### 1. Conversational AI Patient Intake (11 Indian Languages)
-- Patients select their native language via an interactive visual bubble selector: **Hindi (हिन्दी), Marathi (मराठी), Gujarati (ગુજરાતી), Bengali (বাংলা), Tamil (தமிழ்), Telugu (తెలుగు), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം), Punjabi (ਪੰਜਾਬੀ), Odia (ଓଡ଼ିଆ), or Indian English**.
-- Intake assistant **Aarogya Mitra** speaks questions aloud via **Gnani Vachana Female TTS**.
-- Patients speak or type answers naturally; the system validates name, age, gender, 10-digit mobile number, chief complaint, duration, past medical history, and allergies in real time.
-- Displays a **Live Autofilled Intake Form** in the patient's language and synthesizes a **Clinical Triage Briefing** in English for the attending doctor.
+**SwasthyaSetu (स्वास्थ्य सेतु)** is an end-to-end, voice-first clinical communication and autonomous medical documentation platform engineered for Indian clinics, OPDs, and telemedicine. It bridges the doctor-patient linguistic divide on a single computer or smartphone through a **dual-loop AI architecture**:
 
-### 2. Turn-by-Turn Bilingual Consultation
-- Designed for structured doctor-patient consultations:
-  - **Patient Speaks**: Captured via Gnani STT in native dialect ➔ Translated to English for the doctor ➔ Displayed with confidence metrics.
-  - **Doctor Speaks**: Captured in English (or doctor's preferred language) ➔ Translated to the patient's language ➔ Synthesized aloud via Gnani TTS.
-- Includes manual text override, transcription editing, and soundwave equalizer animations.
-
-### 3. Ambient Clinical Scribe Mode
-- Place the smartphone or laptop on the clinic desk and tap **Start Scribing**.
-- Doctor and patient converse freely without taking manual turns.
-- Audio is transcribed using high-accuracy speech recognition, translated contextually into English, and analyzed to extract:
-  - **Patient Vitals**: Blood Pressure (BP), Heart Pulse (BPM), Weight (kg), Height (cm), Temperature (°F), and SpO2 (%).
-  - **Clinical Subjective History**: Chief complaints, symptom chronology, lifestyle triggers.
-  - **Physician Assessment & Diagnosis**: Primary and differential clinical diagnoses.
-  - **Prescription Orders**: Drug name, dosage, frequency, route, duration, and food timing instructions.
-  - **Recommended Follow-up Date & Instructions**.
-
-### 4. Physician-in-the-Loop Review & Confirmation
-- Adheres strictly to healthcare AI safety standards: **The AI assistant never prescribes or diagnoses autonomously**.
-- Doctors review all extracted vitals and clinical drafts, dictate adjustments using speech or text, add or remove medications, and officially approve the record.
-
-### 5. Canonical English EHR Storage & Instant PDF Printing
-- All official patient consultations and EHR documents are persisted in **standardized clinical English** in a high-performance SQLite WAL database, ensuring cross-hospital interoperability.
-- Features a **Print / Save PDF** engine formatting clinical reports for official hospital documentation.
+- **Real-Time Speech-to-Speech Interpretation**: Doctors speak medical English (or their chosen language); patients hear fluent regional speech synthesized in authentic Indic accents matching gender via **Gnani.ai Vachana TTS**. Patients speak vernacular dialects transcribed by **Gnani.ai Prisma STT**; doctors receive instant medical English transcripts and audio.
+- **Autonomous SOAP Clinical Documentation**: Live consultation audio is parsed by **OpenAI GPT-6 Luna** into structured clinical parameters: Subjective history, Objective vitals (BP, HR, SpO2, Temp, Wt, Ht), Clinical Assessment/Diagnosis, Structured Prescriptions (drug, dosage, frequency, duration, food timing), and Follow-up instructions.
+- **Conversational AI Triage (Aarogya Mitra • आरोग्य मित्र)**: Front-desk virtual voice intake in 11 Indian languages that validates patient utterances in real-time, reprompts if off-topic, and pre-generates a canonical English clinical briefing for the attending physician.
+- **Physician-in-the-Loop Governance**: Strict compliance with medical AI safety guidelines. The AI assistant drafts notes and structures data, but the attending doctor retains complete edit authority and signs off before official EHR persistence and PDF printing.
 
 ---
 
-## Gnani.ai Voice AI Integration
+## 🔄 Four Dedicated Operating Modes
 
-SwasthyaSetu utilizes **Gnani.ai Speech Intelligence APIs** for Indian vernacular speech processing:
+SwasthyaSetu provides four specialized workflows tailored for clinical environments:
 
-| Feature | Gnani Service | Model / Configuration | Voice Persona |
-|---|---|---|---|
-| **Speech-to-Text (STT)** | Gnani Prisma / Vachana STT v3 | 16kHz Linear PCM Audio | Auto-language detection across 11 Indic dialects |
-| **Intake Voice (TTS)** | Gnani Vachana TTS | 16kHz Wav Streaming | **Female** (Nalini / Kaveri / Devika) |
-| **Doctor Voice (TTS)** | Gnani Vachana TTS | 16kHz Wav Streaming | **Male** (Deven / Madhav) |
-| **Patient Voice (TTS)** | Gnani Vachana TTS | Dynamic gender matching | Matches patient gender from intake form |
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           SWASTHYASETU CLINICAL MODES                           │
+├──────────────────────────┬──────────────────────────┬───────────────────────────┤
+│ Mode 1: AI Patient Intake│ Mode 2: Turn-by-Turn     │ Mode 3: Ambient Scribe    │
+│ (Aarogya Mitra Voice)    │ (Two-Way Interpretation) │ (Passive Room Diarization)│
+│  - 11 Indian Languages   │  - Doctor: English       │  - Continuous Recording   │
+│  - 5-step triage voice   │  - Patient: Indic Dialect│  - Multi-speaker SOAP     │
+│  - Real-time validation  │  - Live Speech Synthesis │  - Auto-Vitals & Rx Plan  │
+└──────────────────────────┴──────────────────────────┴───────────────────────────┘
+                                       │
+                                       ▼
+                       Mode 4: Doctor AI Voice Scribe
+                      (Dictate Vitals & Exam Findings)
+```
+
+### Mode 1: Conversational AI Patient Intake (आरोग्य मित्र / Aarogya Mitra)
+- **Endpoints**: `POST /api/v1/patients/intake/validate` & `POST /api/v1/patients/intake`
+- **Workflow**:
+  1. Patient selects their native language from an interactive visual selector across 11 Indic languages.
+  2. Virtual assistant **Aarogya Mitra** speaks questions aloud via **Gnani.ai Vachana Female TTS**.
+  3. Patient speaks naturally; the system extracts and validates Name, Age, Gender, Mobile Number, Chief Complaint, Duration, Chronic Illnesses, and Drug Allergies.
+  4. Real-time LLM validation detects off-topic answers (e.g., weather complaints) and politely reprompts in the patient's language.
+  5. Automatically pre-populates a canonical English **Clinical Triage Card** ready for the attending physician.
+
+### Mode 2: Bilingual Turn-by-Turn Consultation
+- **Endpoint**: `POST /api/v1/consultations/{id}/turns` (Audio or Text)
+- **Workflow**:
+  1. **Doctor Speaks**: Captured in English ➔ Contextually translated to patient's native dialect by GPT-6 Luna ➔ Synthesized aloud via **Gnani Vachana Indic TTS**.
+  2. **Patient Speaks**: Captured in native dialect via **Gnani Prisma STT** ➔ Contextually translated to medical English by GPT-6 Luna ➔ Displayed to doctor with confidence scores.
+  3. Includes live audio equalizer visualizers, manual text override, and transcript editing.
+
+### Mode 3: Ambient Background Clinical Scribe Mode
+- **Endpoint**: `POST /api/v1/consultations/{id}/scribe`
+- **Workflow**:
+  1. The physician taps **Start Scribing** once at the start of the examination and places the device on the clinic desk.
+  2. The system continuously listens to natural doctor-patient dialogue during physical exams without manual turn-taking.
+  3. Background multi-speaker diarization separates doctor instructions from patient answers.
+  4. Autonomously synthesizes a complete **SOAP Clinical Note** (Subjective, Objective, Assessment, Plan), extracts vitals, structures prescriptions, and suggests follow-up intervals.
+
+### Mode 4: Doctor AI Voice Scribe Assistant Mode
+- **Endpoint**: `POST /api/v1/consultations/{id}/ai-assist`
+- **Workflow**:
+  1. Doctors click the mic or text input on the clinical draft screen to quickly dictate vital signs (e.g., *"Blood pressure 130 over 85, pulse 76, temperature 98.6 Fahrenheit, weight 68 kg, SpO2 99%"*) or physical exam observations.
+  2. The LLM extracts and updates structured vitals fields, differential diagnoses, or drug instructions in the active draft instantaneously.
 
 ---
 
-## Supported Indic Languages
+## 🛠️ Technology Stack & Specific APIs Used
 
-| Language Code | Language | Native Script | Onboarding UI | Voice STT | Voice TTS |
-|---|---|---|---|---|---|
-| `hi-IN` | Hindi | हिन्दी | Native | Supported | Supported |
-| `mr-IN` | Marathi | मराठी | Native | Supported | Supported |
-| `gu-IN` | Gujarati | ગુજરાતી | Native | Supported | Supported |
-| `bn-IN` | Bengali | বাংলা | Native | Supported | Supported |
-| `ta-IN` | Tamil | தமிழ் | Native | Supported | Supported |
-| `te-IN` | Telugu | తెలుగు | Native | Supported | Supported |
-| `kn-IN` | Kannada | ಕನ್ನಡ | Native | Supported | Supported |
-| `ml-IN` | Malayalam | മലയാളം | Native | Supported | Supported |
-| `pa-IN` | Punjabi | ਪੰਜਾਬੀ | Native | Supported | Supported |
-| `or-IN` | Odia | ଓଡ଼ିଆ | Native | Supported | Supported |
-| `en-IN` | Indian English | English | Native | Supported | Supported |
+| Component / Layer | Technology / Service | Specific Model / Version | Exact API Endpoint / Method | Purpose in SwasthyaSetu |
+|---|---|---|---|---|
+| **Voice Synthesis (TTS)** | **Gnani.ai Vachana TTS** | `timbre-v2.5` (linear_pcm 16kHz WAV) | `POST https://api.vachana.ai/api/v1/tts/inference` | Generates 11 authentic Indian male and female regional voices with native phonetics. |
+| **Speech Recognition (STT)** | **Gnani.ai Prisma STT** | `prisma-v2.5` | `POST https://api.vachana.ai/stt/v3` | Transcribes 11 Indian languages with high noise tolerance and code-mixing (Hinglish/Marathish). |
+| **Resilient STT Fallback** | OpenAI Whisper | `whisper-1` | `POST https://api.openai.com/v1/audio/transcriptions` | Automatic seamless failover if primary STT experiences latency or connection issues. |
+| **Clinical Reasoning, Translation & Scribing** | **OpenAI GPT-6 Luna** | `gpt-6-luna` | Structured Outputs (`response_format: json_schema`) | Powers bidirectional clinical translation, canonical English archival, conversational triage validation, ambient SOAP scribing, vitals normalization, and prescription parsing. |
+| **Backend Framework** | **FastAPI** | Python 3.10+ / Uvicorn ASGI | Dynamic REST API & Static Asset Mount | High-throughput asynchronous routing, CORS handling, and streaming audio responses. |
+| **Database & ORM** | **SQLAlchemy 2.0 (Async) + aiosqlite** | SQLite 3 in WAL Mode | Local SQLite database file (`swasthyasetu.db`) | Zero-latency local data sovereignty, relational integrity, and cascade deletion of patient records. |
+| **Web Frontend** | **Vanilla ES6+ SPA** | HTML5, CSS3, Web Audio API | Hosted directly from `backend/frontend/` at `/` | Zero build step, zero npm bloat, low-latency browser audio recording and playback. |
+| **Mobile Application** | **Flutter 3.x** | Dart 3.x | Native Android / iOS / Desktop client | Mobile clinical companion with offline support and local network (LAN) sync. |
 
 ---
 
-## System Architecture
+## 🗣️ Supported Indic Languages & Authentic Voice Personas
+
+SwasthyaSetu supports 11 Indian languages with dedicated male and female voice personas mapped to regional phonetics via **Gnani.ai Timbre v2.5**:
+
+| Language Code | Language | Native Script | Male Voice (Doctor Persona) | Female Voice (Aarogya Mitra / Patient Persona) |
+|---|---|---|---|---|
+| `hi-IN` | Hindi | हिन्दी | **Deepak** | **Nalini** |
+| `mr-IN` | Marathi | मराठी | **Omkar** | **Kaveri** |
+| `en-IN` | Indian English | English | **Deven** | **Devika** |
+| `gu-IN` | Gujarati | ગુજરાતી | **Nirav** | **Dhwani** |
+| `bn-IN` | Bengali | বাংলা | **Tanmay** | **Mithu** |
+| `ta-IN` | Tamil | தமிழ் | **Saravanan** | **Kavitha** |
+| `te-IN` | Telugu | తెలుగు | **Chaitanya** | **Sandhya** |
+| `kn-IN` | Kannada | ಕನ್ನಡ | **Gopal** | **Shweta** |
+| `ml-IN` | Malayalam | മലയാളം | **Manoj** | **Arya** |
+| `pa-IN` | Punjabi | ਪੰਜਾਬੀ | **Amrit** | **Kaur** |
+| `or-IN` | Odia | ଓଡ଼ିଆ | **Subhas** | **Ananya** |
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Doctor & Clinic Interfaces"]
-        FLUTTER["Flutter Mobile App (Android / iOS / Desktop)"]
-        WEB["Responsive Web SPA (HTML5 / ES6 / CSS3)"]
+    subgraph ClientLayer["Client Layer (Clinic & Mobile)"]
+        WEB["Responsive Web SPA (Vanilla ES6+ / Web Audio API)"]
+        MOBILE["Flutter 3.x Mobile App (Android / iOS / LAN Sync)"]
     end
 
-    subgraph Backend["FastAPI Backend (backend/app)"]
-        MAIN["FastAPI Gateway (Uvicorn / Port binding)"]
-        AUTH["Doctor & Clinic Settings Router"]
-        CONSULT["Consultation & Turn Router"]
-        SCRIBE["Ambient Clinical Scribe Engine"]
-        INTAKE["Conversational Intake Router"]
-        STATIC["Static Web Files Mount (backend/frontend)"]
+    subgraph APIGateway["FastAPI Gateway (backend/app/main.py)"]
+        ROUTER_PATIENTS["/api/v1/patients\n(Registry & Aarogya Mitra Intake)"]
+        ROUTER_CONSULT["/api/v1/consultations\n(Turn-by-Turn, Scribe, AI-Assist)"]
+        ROUTER_DOCTOR["/api/v1/doctor\n(Settings & Attending Physician Profile)"]
+        ROUTER_AUDIO["/api/v1/audio\n(Transient Audio Streaming)"]
+        STATIC_SRV["Static Web Assets Mount\n(Serves SPA at /)"]
     end
 
-    subgraph AI["Speech & Language Intelligence"]
-        GNANI_STT["Gnani.ai Prisma STT (Indic Speech Recognition)"]
-        GNANI_TTS["Gnani.ai Vachana TTS (Indic Speech Synthesis)"]
-        LLM["Clinical GPT-6 Luna Engine (Extraction & Translation)"]
+    subgraph AIIntegrations["AI & Voice Intelligence Layer"]
+        GNANI_TTS["Gnani.ai Vachana TTS\nhttps://api.vachana.ai/api/v1/tts/inference\n(timbre-v2.5: 11 Indic Male & Female Voices)"]
+        GNANI_STT["Gnani.ai Prisma STT\nhttps://api.vachana.ai/stt/v3\n(prisma-v2.5 Indic ASR / Code-Mixing)"]
+        GPT_LUNA["OpenAI GPT-6 Luna Clinical Engine\n- Bidirectional Clinical Translation\n- Canonical English Persistence\n- Intake Validation & Clarification\n- SOAP Notes & Vitals Scribing"]
     end
 
-    subgraph DataStore["Persistence Layer"]
-        SQLITE[("SQLite Database (WAL Mode) - Canonical English EHR")]
-        UI_CACHE[("Persistent UI Localization Dictionary Cache")]
+    subgraph DataLayer["Persistence Layer (Data Sovereignty)"]
+        SQLITE[("SQLite Database (WAL Mode)\n- Patients & Medical Histories\n- Consultations & Transcripts\n- Clinical Records & Drafts\n- Follow-ups (Cascade Deletion)")]
     end
 
-    FLUTTER <-->|REST API / Audio Upload| MAIN
-    WEB <-->|REST API / Audio Upload| MAIN
-    STATIC -->|Serves Web UI at /| WEB
+    WEB <-->|REST API & Audio Blobs| APIGateway
+    MOBILE <-->|REST API & Audio Blobs| APIGateway
+    STATIC_SRV -->|Delivers UI| WEB
 
-    MAIN --> CONSULT
-    MAIN --> SCRIBE
-    MAIN --> INTAKE
+    ROUTER_PATIENTS <--> GNANI_TTS
+    ROUTER_PATIENTS <--> GPT_LUNA
+    ROUTER_PATIENTS --> SQLITE
 
-    CONSULT <--> GNANI_STT
-    CONSULT <--> GNANI_TTS
-    CONSULT <--> LLM
+    ROUTER_CONSULT <--> GNANI_STT
+    ROUTER_CONSULT <--> GNANI_TTS
+    ROUTER_CONSULT <--> GPT_LUNA
+    ROUTER_CONSULT --> SQLITE
 
-    SCRIBE <--> GNANI_STT
-    SCRIBE <--> LLM
-
-    INTAKE <--> GNANI_TTS
-    INTAKE <--> LLM
-
-    CONSULT --> SQLITE
-    SCRIBE --> SQLITE
-    INTAKE --> SQLITE
-    MAIN --> UI_CACHE
+    ROUTER_DOCTOR --> SQLITE
 ```
 
 ---
 
-## Repository Structure
+## 🗄️ Relational Database Schema & Data Models
 
-```text
-SwasthyaSetu/
-├── backend/                  # FastAPI Python Backend & Static Web Assets
-│   ├── app/
-│   │   ├── api/routes/       # Endpoints: audio, consultations, doctor, patients, cache
-│   │   ├── core/             # Configuration, logging, security
-│   │   ├── db/               # Async SQLAlchemy session (SQLite WAL mode initialization)
-│   │   ├── models/           # ORM models (Doctor, Patient, Consultation, Draft, etc.)
-│   │   ├── schemas/          # Pydantic v2 schemas for strict clinical validation
-│   │   ├── services/
-│   │   │   ├── speech/       # Gnani Prisma STT & Vachana TTS adapters
-│   │   │   ├── translation/  # GPT-6 Luna translation & UI dictionaries
-│   │   │   └── records/      # Scribe & EHR draft extraction engine
-│   │   └── main.py           # Application entrypoint & static frontend mount
-│   ├── frontend/             # Single-Page Web Frontend (HTML, CSS, JS)
-│   │   ├── css/style.css     # Clean clinical styling & responsive layout
-│   │   ├── js/app.js         # Core application logic & speech pipeline
-│   │   ├── js/api.js         # Backend REST API client
-│   │   ├── js/audio.js       # Browser audio recorder & streaming player
-│   │   ├── js/i18n.js        # 11-language localized UI dictionary
-│   │   └── index.html        # Web app entrypoint
-│   ├── tests/                # Automated pytest test suite
-│   ├── Procfile              # Render web process definition
-│   ├── render.yaml           # Render infrastructure blueprint
-│   ├── runtime.txt           # Python 3.11.9 runtime pinning
-│   └── requirements.txt      # Backend Python dependencies
-├── app/                      # Flutter Mobile Application
-│   ├── lib/
-│   │   ├── core/             # API client, audio service, i18n, report printer
-│   │   ├── models/           # Dart data models
-│   │   ├── screens/          # Dashboard, Onboarding, Consultation, Draft Review
-│   │   └── main.dart         # Flutter app entrypoint
-│   └── pubspec.yaml          # Flutter dependencies
-├── docs/                     # Architecture & demonstration guides
-└── README.md                 # Project documentation
-```
+All clinical records are managed using asynchronous SQLAlchemy with SQLite in **Write-Ahead Logging (WAL)** mode for concurrent high-speed reads and writes:
+
+- **Doctor**: Profiles attending physician credentials (`name`, `credentials`, `primary_language`, `spoken_languages`).
+- **Patient**: Patient demographics (`full_name`, `age`, `gender`, `phone_number`, `preferred_language`, `chief_complaint`).
+- **MedicalHistory**: Past chronic medical illnesses and known drug allergies.
+- **Consultation**: Active or completed doctor-patient encounters (`doctor_id`, `patient_id`, `status`, `mode`).
+- **Transcript**: Granular turn-by-turn dialogue preserving `speaker`, `source_text`, `translated_text`, `canonical_english`, audio duration, and confidence.
+- **ConsultationDraft**: Pre-finalization clinical drafts holding parsed SOAP components, vitals JSON, and prescriptions JSON.
+- **ClinicalRecord**: Approved, finalized, immutable legal EHR records ready for medical audits.
+- **Followup**: Scheduled follow-up dates with automated SMS reminder dispatch.
+
+> [!NOTE]
+> Deleting a patient triggers a cascading cleanup that permanently removes all associated consultations, transcripts, drafts, clinical records, and follow-ups.
 
 ---
 
-## Deployment on Render Cloud
+## 🔌 API Endpoints Catalog
 
-The backend and web frontend are unified inside `backend/` to deploy seamlessly as a single Render Web Service.
-
-### Easy Deploy as Web Service
-
-1. Fork or push this repository to GitHub.
-2. Log in to [Render Dashboard](https://dashboard.render.com/).
-3. Click **New +** ➔ **Web Service**.
-4. Connect your GitHub repository `swapnilnaik29/SwasthyaSetu`.
-5. Configure the following service settings:
-   - **Root Directory**: `backend` *(Enter `backend`)*
-   - **Environment**: `Python`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - **Instance Type**: `Free`
-6. Add the following **Environment Variables**:
-   - `PYTHON_VERSION`: `3.11.9`
-   - `DATABASE_URL`: `sqlite+aiosqlite:///swasthyasetu.db`
-   - `GNANI_API_KEY`: *(Your Gnani.ai API Key)*
-   - `OPENAI_API_KEY`: *(Your OpenAI API Key)*
-7. Click **Create Web Service**. Render will automatically:
-   - Install dependencies from `requirements.txt`.
-   - Start the service with `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-   - Serve the complete web frontend at `https://<your-subdomain>.onrender.com/`.
-   - Expose the REST API at `https://<your-subdomain>.onrender.com/api/v1`.
-  - `PYTHON_VERSION`: `3.11.9`
-  - `DATABASE_URL`: `sqlite+aiosqlite:///swasthyasetu.db`
-  - `GNANI_API_KEY`: `<Your Gnani Key>`
-  - `OPENAI_API_KEY`: `<Your OpenAI Key>`
+| HTTP Method | Route | Description |
+|---|---|---|
+| `GET` | `/health` | Service health status, database connection, LAN IP, and AI model configurations. |
+| `GET` | `/api/v1/patients` | Search and list registered patients by name or phone number. |
+| `POST` | `/api/v1/patients` | Manually register a new patient. |
+| `POST` | `/api/v1/patients/intake/validate` | Real-time AI validation and conversational feedback for intake questions. |
+| `POST` | `/api/v1/patients/intake` | Complete 5-step Aarogya Mitra intake and create patient with medical history. |
+| `GET` | `/api/v1/patients/{id}` | Retrieve patient profile, medical history, and summary. |
+| `DELETE` | `/api/v1/patients/{id}` | Permanently delete patient and all cascading consultations/records. |
+| `GET` | `/api/v1/patients/{id}/reports` | Retrieve all historical signed clinical reports for a patient. |
+| `POST` | `/api/v1/consultations` | Initialize a new consultation session. |
+| `GET` | `/api/v1/consultations/{id}` | Get consultation details and current status. |
+| `POST` | `/api/v1/consultations/{id}/turns` | Process a turn-by-turn audio/text dialogue turn (bilingual interpretation). |
+| `POST` | `/api/v1/consultations/{id}/scribe` | Process continuous ambient room recording for automated SOAP drafting. |
+| `POST` | `/api/v1/consultations/{id}/draft` | Manually trigger or refresh AI clinical draft generation from transcripts. |
+| `GET` | `/api/v1/consultations/{id}/draft` | Retrieve the active clinical draft (SOAP notes, vitals, prescriptions). |
+| `PATCH` | `/api/v1/consultations/{id}/draft` | Doctor edits to the clinical draft prior to final approval. |
+| `POST` | `/api/v1/consultations/{id}/ai-assist` | Doctor AI Voice Scribe dictation endpoint for vitals and examination notes. |
+| `POST` | `/api/v1/consultations/{id}/approve` | Attending physician sign-off committing draft into finalized clinical record. |
+| `POST` | `/api/v1/consultations/{id}/followups` | Schedule patient follow-up appointment and dispatch SMS reminder. |
+| `GET` | `/api/v1/doctor/settings` | Retrieve active doctor profile and clinic display configuration. |
+| `PUT` | `/api/v1/doctor/settings` | Update doctor name, credentials, and languages. |
+| `POST` | `/api/v1/audio/transient` | Store temporary audio blob for low-latency browser streaming. |
 
 ---
 
-## Local Development & Setup
+## 📖 How to Use the Web Interface (Step-by-Step)
 
-### 1. Prerequisites
-- **Python**: 3.11 or higher
-- **Flutter**: 3.24+ (if running the mobile application)
+1. **Step 1: Launch Conversational AI Intake (Aarogya Mitra)**
+   - Click **"+ Onboard Patient"** on the dashboard.
+   - Choose the patient's language from the 11 interactive language bubbles.
+   - Virtual assistant **Aarogya Mitra** guides the patient through Name, Age/Gender, Phone, Chief Complaint, and Allergies with audible speech synthesis via Gnani TTS.
+2. **Step 2: Real-Time AI Validation & Triage**
+   - Answers are validated instantaneously by the clinical LLM.
+   - Clinical summaries are canonicalized into English on the live triage card.
+   - Click **"Start Doctor Consultation"** to proceed to the clinical room.
+3. **Step 3: Conduct Consultation (Turn-by-Turn or Ambient Scribe)**
+   - **Conversation Mode**: Click the mic to take turns. The doctor speaks English, the patient hears their mother tongue; the patient speaks vernacular, the doctor receives clinical English audio and text.
+   - **Ambient Scribe**: Click the **"Ambient Scribe Mode"** tab, tap **"Start Recording"** once, and converse freely during physical examinations.
+4. **Step 4: Generate SOAP Report & Dictate Vitals with Doctor AI Scribe**
+   - Click **"Generate AI Report"** to structure the entire session into Subjective, Objective, Assessment, and Plan (Prescription medications).
+   - On the draft review screen, use the **"Talk to AI Clinical Assistant"** input or mic to dictate vitals (e.g., *"BP 125/80, pulse 74, weight 65 kg, temp 98.6"*) or physical examination findings.
+5. **Step 5: Approve, Sign, and Print Prescription**
+   - Doctor reviews and modifies any clinical fields.
+   - Click **"Approve & Sign Clinical Record"**.
+   - Print an official hospital prescription with credentials or schedule follow-up appointments with SMS reminders.
+
+---
+
+## 🚀 Local Development & Setup
+
+### Prerequisites
+- **Python**: 3.10, 3.11, or 3.12
+- **Flutter**: 3.x (optional, for mobile client)
 - **Git**
 
-### 2. Backend Setup
-
+### 1. Clone & Set Up Backend
 ```bash
 # Clone the repository
 git clone https://github.com/swapnilnaik29/SwasthyaSetu.git
@@ -243,52 +259,70 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file with your API keys
+# Configure environment variables
 cp .env.example .env
-# Edit .env and supply GNANI_API_KEY and OPENAI_API_KEY
+# Edit .env and supply your GNANI_API_KEY and OPENAI_API_KEY
+```
 
-# Start backend server
+### 2. Start the Backend Server
+```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+- **Web Interface (SPA)**: Open [http://localhost:8000/](http://localhost:8000/) in your browser.
+- **Interactive Swagger Docs**: Open [http://localhost:8000/docs](http://localhost:8000/docs).
+- **Alternative Redoc**: Open [http://localhost:8000/redoc](http://localhost:8000/redoc).
 
-- Web Interface: Open `http://localhost:8000/` in your browser.
-- Interactive API Docs: Open `http://localhost:8000/docs`.
-
-### 3. Flutter Mobile App Setup
-
+### 3. Run Automated Tests
 ```bash
-cd SwasthyaSetu/app
+cd backend
+python -m pytest tests/test_consultation_flow.py tests/test_provider_adapters.py -v
+```
 
-# Fetch Flutter dependencies
+### 4. Run Flutter Mobile App (Optional)
+```bash
+cd app
 flutter pub get
-
-# Run on connected physical device or emulator
 flutter run
 ```
-
-> **Tip for Local Testing**: Tap the **SwasthyaSetu** title on the dashboard screen **10 times** to open the developer dialog and enter your computer's local Wi-Fi IP address (e.g. `http://192.168.1.5:8000`).
-
-### 4. Running Automated Tests
-
-```bash
-cd SwasthyaSetu/backend
-.venv\Scripts\python -m pytest tests/test_consultation_flow.py tests/test_provider_adapters.py -v
-```
-
-All integration tests covering Turn-by-Turn consultations, Ambient Scribing, Gnani adapters, and record finalization run automatically.
+> **Tip for Local Testing**: Tap the **SwasthyaSetu** logo on the dashboard screen **10 times** to enter your computer's local Wi-Fi IP address (e.g. `http://192.168.1.4:8000`).
 
 ---
 
-## Security & Clinical Compliance
+## ☁️ Deployment on Render Cloud
 
-1. **Local Data Sovereignty**: All clinical databases operate with SQLite WAL mode stored on the device or hospital private cloud.
-2. **Canonical EHR Integrity**: Regional conversations are translated and archived in standard medical English, avoiding transcription ambiguities during medical audits.
-3. **Audit Trail**: Every consultation preserves the original Indic transcript, the translated English transcript, audio metrics, physician modifications, and approval timestamps.
+The backend and web frontend are unified inside `backend/` to deploy seamlessly as a single Render Web Service:
+
+1. Log in to [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** ➔ **Web Service**.
+3. Connect your repository `swapnilnaik29/SwasthyaSetu`.
+4. Configure service settings:
+   - **Root Directory**: `backend`
+   - **Environment**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
+5. Configure Environment Variables:
+   - `PYTHON_VERSION`: `3.11.9`
+   - `DATABASE_URL`: `sqlite+aiosqlite:///swasthyasetu.db`
+   - `GNANI_API_KEY`: *(Your Gnani.ai API Key)*
+   - `OPENAI_API_KEY`: *(Your OpenAI API Key)*
+6. Click **Create Web Service**. Render will deploy the application and serve both the web frontend and API.
 
 ---
 
-## Project Credits
+## 🔒 Security, Privacy & Clinical Compliance
 
-- **Project**: SwasthyaSetu (स्वास्थ्यसेतु)
-- **Developer**: Swapnil Naik
-- **Primary Voice AI**: [Gnani.ai](https://gnani.ai/) Voice Intelligence Engine
+1. **Local Data Sovereignty**: All clinical databases operate with SQLite WAL mode stored on the device or hospital private server, ensuring patient records never leave the local boundary without authorization.
+2. **Standardized Clinical English EHR**: Regional vernacular speech is translated and archived in standard medical English, preventing transcription ambiguities during medico-legal audits.
+3. **Immutable Audit Trail**: Every consultation maintains the original vernacular transcript, canonical English translation, acoustic metrics, physician modifications, and cryptographic approval timestamps.
+4. **Physician Oversight**: Fully compliant with medical AI governance standards; AI models never prescribe or finalize diagnoses autonomously.
+
+---
+
+## 👨‍💻 Project Credits
+
+- **Project**: SwasthyaSetu (स्वास्थ्य सेतु)
+- **Developer**: **Swapnil Naik**
+- **LinkedIn**: [https://www.linkedin.com/in/swapnilnaik29/](https://www.linkedin.com/in/swapnilnaik29/)
+- **GitHub Repository**: [https://github.com/swapnilnaik29/SwasthyaSetu](https://github.com/swapnilnaik29/SwasthyaSetu)
+- **Primary Voice AI**: [Gnani.ai](https://gnani.ai/) Voice Intelligence Engine (Vachana TTS & Prisma STT)
