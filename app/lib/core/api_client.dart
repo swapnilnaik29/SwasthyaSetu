@@ -121,6 +121,24 @@ class ApiClient {
     throw Exception('Failed to create patient: ${res.statusCode} ${res.body}');
   }
 
+  Future<void> deletePatient(String patientId) async {
+    final res = await http.delete(
+      Uri.parse('$_baseUrl/api/v1/patients/$patientId'),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to delete patient: ${res.statusCode} ${res.body}');
+    }
+  }
+
+  Future<void> deleteConsultation(String consultationId) async {
+    final res = await http.delete(
+      Uri.parse('$_baseUrl/api/v1/consultations/$consultationId'),
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to delete consultation: ${res.statusCode} ${res.body}');
+    }
+  }
+
   // Intake Validation
   Future<Map<String, dynamic>> validateIntakeAnswer({
     required String stepId,

@@ -488,6 +488,27 @@ async def update_patient(
     return patient
 
 
+@router.delete("/{patient_id}")
+async def delete_patient(
+    patient_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Permanently delete a patient and all their associated records
+    (consultations, transcripts, clinical records, drafts, follow-ups).
+    """
+    stmt = select(Patient).where(Patient.id == patient_id)
+    result = await db.execute(stmt)
+    patient = result.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    await db.delete(patient)
+    await db.commit()
+    logger.info(f"Permanently deleted patient {patient.name} ({patient_id}) and cascaded records.")
+    return {"success": True, "message": f"Patient {patient_id} and all related records deleted"}
+
+
 @router.get("/{patient_id}/consultations", response_model=List[ConsultationOut])
 async def get_patient_consultations(
     patient_id: str,

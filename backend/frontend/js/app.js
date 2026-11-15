@@ -741,6 +741,9 @@ function renderPatientsList(patients) {
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="badge-chip ${langClass}">${langName.split(' ')[0]}</span>
+          <button class="icon-btn" onclick="event.stopPropagation(); window.confirmDeletePatientById('${p.id}', '${(p.name || '').replace(/'/g, "\\'")}')" title="Delete Patient Record" style="color: #dc2626; width: 32px; height: 32px; border: 1px solid #fee2e2; border-radius: 6px; background: #ffffff;">
+            <i class="fa-solid fa-trash-can" style="font-size: 12px;"></i>
+          </button>
           <i class="fa-solid fa-chevron-right" style="color: #94a3b8; font-size: 13px;"></i>
         </div>
       </div>
@@ -836,9 +839,14 @@ async function loadConsultationHistory(patientId) {
                 <i class="fa-regular fa-calendar" style="margin-right: 4px;"></i>${dateStr} • By ${r.doctor_name || 'Dr. Priya Sharma'}
               </p>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="window.viewReportDetails('${r.consultation_id}')" style="white-space: nowrap; font-size: 12px; padding: 6px 12px;">
-              <i class="fa-solid fa-file-waveform"></i> View Full Report
-            </button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="btn btn-outline btn-sm" onclick="window.viewReportDetails('${r.consultation_id}')" style="white-space: nowrap; font-size: 12px; padding: 6px 12px;">
+                <i class="fa-solid fa-file-waveform"></i> View Full Report
+              </button>
+              <button class="btn btn-outline-danger btn-sm" onclick="window.confirmDeleteConsultation('${r.consultation_id}')" title="Delete this consultation record" style="font-size: 12px; padding: 6px 10px;">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
           </div>
 
           ${vitalsPills.length > 0 ? `
@@ -997,7 +1005,65 @@ window.viewReportDetails = function(consultationId) {
     ` : ''}
   `;
 
+  const deleteBtn = document.getElementById('btn-delete-report-modal');
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      window.confirmDeleteConsultation(consultationId, true);
+    };
+  }
+
   openModal('modal-view-report');
+};
+
+// Deletion Handlers for Patient and Consultation Records
+window.confirmDeleteCurrentPatient = async function() {
+  if (!state.selectedPatient) return;
+  const p = state.selectedPatient;
+  const ok = confirm(`Are you sure you want to permanently delete patient "${p.name}" and all their medical consultation records?\n\nThis action cannot be undone.`);
+  if (!ok) return;
+
+  try {
+    await window.api.deletePatient(p.id);
+    state.selectedPatient = null;
+    alert(`Patient "${p.name}" and all associated records have been permanently deleted.`);
+    switchView('view-dashboard');
+    await loadPatients();
+  } catch (err) {
+    alert('Failed to delete patient: ' + err.message);
+  }
+};
+
+window.confirmDeletePatientById = async function(patientId, patientName) {
+  const ok = confirm(`Are you sure you want to permanently delete patient "${patientName}" and all their medical consultation records?\n\nThis action cannot be undone.`);
+  if (!ok) return;
+
+  try {
+    await window.api.deletePatient(patientId);
+    if (state.selectedPatient && state.selectedPatient.id === patientId) {
+      state.selectedPatient = null;
+      switchView('view-dashboard');
+    }
+    await loadPatients();
+  } catch (err) {
+    alert('Failed to delete patient: ' + err.message);
+  }
+};
+
+window.confirmDeleteConsultation = async function(consultationId, fromModal = false) {
+  const ok = confirm('Are you sure you want to permanently delete this clinical consultation record?\n\nThis action cannot be undone.');
+  if (!ok) return;
+
+  try {
+    await window.api.deleteConsultation(consultationId);
+    if (fromModal) {
+      closeModal('modal-view-report');
+    }
+    if (state.selectedPatient) {
+      await loadConsultationHistory(state.selectedPatient.id);
+    }
+  } catch (err) {
+    alert('Failed to delete consultation record: ' + err.message);
+  }
 };
 
 /* ==========================================================================

@@ -142,3 +142,13 @@ async def test_ambient_scribe_consultation(client):
     assert "vitals" in payload
     assert "prescriptions" in payload
 
+    # 4. Delete Consultation
+    del_res = await client.delete(f"/api/v1/consultations/{consultation_id}")
+    assert del_res.status_code == 200
+    assert del_res.json()["success"] is True
+
+    # 5. Verify Consultation is deleted
+    get_res = await client.get(f"/api/v1/consultations/{consultation_id}")
+    assert get_res.status_code == 404
+
+

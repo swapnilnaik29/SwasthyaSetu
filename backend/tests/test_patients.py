@@ -43,6 +43,15 @@ async def test_patient_crud_and_search(client):
     assert patch_res.json()["preferred_language"] == "mr-IN"
     assert patch_res.json()["age"] == 33
 
+    # 6. Delete Patient
+    del_res = await client.delete(f"/api/v1/patients/{patient_id}")
+    assert del_res.status_code == 200
+    assert del_res.json()["success"] is True
+
+    # 7. Verify Patient is gone
+    get_after_del = await client.get(f"/api/v1/patients/{patient_id}")
+    assert get_after_del.status_code == 404
+
 
 @pytest.mark.asyncio
 async def test_patient_validation(client):

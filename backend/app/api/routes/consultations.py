@@ -82,6 +82,24 @@ async def get_consultation(
     return consultation
 
 
+@router.delete("/{consultation_id}")
+async def delete_consultation(
+    consultation_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Permanently delete a consultation record and its transcripts, drafts, and clinical reports.
+    """
+    consultation = await db.get(Consultation, consultation_id)
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    await db.delete(consultation)
+    await db.commit()
+    logger.info(f"Permanently deleted consultation {consultation_id} and associated records.")
+    return {"success": True, "message": f"Consultation {consultation_id} deleted successfully"}
+
+
 class TextTurnRequest(BaseModel):
     speaker: str
     source_language: Optional[str] = None

@@ -484,8 +484,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final res = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PatientDetailScreen(
@@ -495,6 +495,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           );
+          if (res == true) {
+            _loadPatients();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(14),

@@ -377,11 +377,16 @@
            VIEW 2: PATIENT DETAIL & CONSULTATION HISTORY
            ==================================================================== -->
       <section id="view-patient-detail" class="view-section">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <button id="btn-back-to-dashboard" class="icon-btn" title="Back to Dashboard">
-            <i class="fa-solid fa-arrow-left"></i>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button id="btn-back-to-dashboard" class="icon-btn" title="Back to Dashboard">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h2 id="detail-patient-name" style="font-size: 19px; font-weight: 800; color: var(--primary-green-deep);">Patient Profile</h2>
+          </div>
+          <button id="btn-delete-patient" class="btn btn-outline-danger btn-sm" onclick="window.confirmDeleteCurrentPatient()" title="Delete Patient Record">
+            <i class="fa-solid fa-trash-can"></i> <span id="label-delete-patient">Delete Patient</span>
           </button>
-          <h2 id="detail-patient-name" style="font-size: 19px; font-weight: 800; color: var(--primary-green-deep);">Patient Profile</h2>
         </div>
 
         <div class="card">
@@ -891,9 +896,14 @@
       </div>
 
       <div class="form-actions" style="margin-top: 20px; justify-content: space-between;">
-        <button id="btn-print-report" class="btn btn-outline" style="gap: 8px;">
-          <i class="fa-solid fa-print"></i> Print / Save PDF
-        </button>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-print-report" class="btn btn-outline" style="gap: 8px;">
+            <i class="fa-solid fa-print"></i> Print / Save PDF
+          </button>
+          <button id="btn-delete-report-modal" class="btn btn-outline-danger" style="gap: 8px;" title="Permanently delete this medical report">
+            <i class="fa-solid fa-trash-can"></i> Delete Record
+          </button>
+        </div>
         <button class="btn btn-primary btn-close-modal">Close</button>
       </div>
     </div>

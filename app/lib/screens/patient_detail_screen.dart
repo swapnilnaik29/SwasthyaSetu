@@ -55,6 +55,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(displayName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: AppColors.errorRed),
+            tooltip: 'Delete Patient',
+            onPressed: _confirmDeletePatient,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -134,23 +141,40 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Start Consultation CTA
-            ElevatedButton.icon(
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start New Consultation'),
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConsultationScreen(
-                      api: widget.api,
-                      doctor: widget.doctor,
-                      patient: p,
-                    ),
+            // Start Consultation CTA and Delete Action
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Start Consultation'),
+                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ConsultationScreen(
+                            api: widget.api,
+                            doctor: widget.doctor,
+                            patient: p,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline, color: AppColors.errorRed, size: 18),
+                  label: const Text('Delete', style: TextStyle(color: AppColors.errorRed, fontWeight: FontWeight.w700)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    side: const BorderSide(color: Color(0xFFFCA5A5)),
+                    backgroundColor: const Color(0xFFFEF2F2),
+                  ),
+                  onPressed: _confirmDeletePatient,
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 
@@ -252,18 +276,140 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
           const SizedBox(height: 4),
           Text(dateStr, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
           const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.description_outlined, size: 14),
-              label: const Text('View Full Report', style: TextStyle(fontSize: 11)),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
-              onPressed: () => ReportDetailsDialog.show(context, r, patient: widget.patient, doctor: widget.doctor),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.errorRed),
+                tooltip: 'Delete Report',
+                onPressed: () => _confirmDeleteReport(r['consultation_id']?.toString()),
+              ),
+              const SizedBox(width: 4),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.description_outlined, size: 14),
+                label: const Text('View Full Report', style: TextStyle(fontSize: 11)),
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                onPressed: () => ReportDetailsDialog.show(context, r, patient: widget.patient, doctor: widget.doctor),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeletePatient() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.errorRed),
+            SizedBox(width: 8),
+            Text('Delete Patient Record', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to permanently delete patient "${widget.patient.name}" and all their consultation records?\n\nThis action cannot be undone.',
+          style: const TextStyle(fontSize: 13, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete Patient'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    try {
+      await widget.api.deletePatient(widget.patient.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Patient "${widget.patient.name}" deleted successfully.'),
+          backgroundColor: AppColors.primaryGreenDeep,
+        ),
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete patient: $e'),
+          backgroundColor: AppColors.errorRed,
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteReport(String? consultationId) async {
+    if (consultationId == null || consultationId.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.delete_outline, color: AppColors.errorRed),
+            SizedBox(width: 8),
+            Text('Delete Medical Report', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to permanently delete this clinical consultation report?\n\nThis action cannot be undone.',
+          style: TextStyle(fontSize: 13, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    try {
+      await widget.api.deleteConsultation(consultationId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Medical report deleted successfully.'),
+          backgroundColor: AppColors.primaryGreenDeep,
+        ),
+      );
+      _loadReports();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete report: $e'),
+          backgroundColor: AppColors.errorRed,
+        ),
+      );
+    }
   }
 }
 

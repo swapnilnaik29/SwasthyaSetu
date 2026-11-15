@@ -115,6 +115,12 @@ class ApiService {
     return this.request(`/api/v1/patients/${id}`);
   }
 
+  async deletePatient(id) {
+    return this.request(`/api/v1/patients/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   async getPatientConsultations(patientId) {
     return this.request(`/api/v1/patients/${patientId}/consultations`);
   }
@@ -186,6 +192,12 @@ class ApiService {
 
   async getConsultation(id) {
     return this.request(`/api/v1/consultations/${id}`);
+  }
+
+  async deleteConsultation(id) {
+    return this.request(`/api/v1/consultations/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Turn processing: Audio file upload
