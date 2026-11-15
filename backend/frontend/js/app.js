@@ -626,6 +626,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   setupAudioCallbacks();
 
+  // The Info & Guide page is the first visible view when web interface starts
+  showView('info');
+
   await checkConnection();
   await loadDoctorSettings();
   await loadPatients();

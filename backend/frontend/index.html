@@ -26,17 +26,17 @@
 
       <!-- Quick Navigation Tabs (Finished Product Bar) -->
       <nav class="header-nav-pills" id="header-nav-tabs">
-        <button id="nav-btn-dashboard" class="nav-pill active" title="Go to Dashboard">
+        <button id="nav-btn-info" class="nav-pill active" title="Project Info & User Guide">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>About & Guide</span>
+        </button>
+        <button id="nav-btn-dashboard" class="nav-pill" title="Go to Dashboard">
           <i class="fa-solid fa-hospital-user"></i>
           <span>Dashboard</span>
         </button>
         <button id="nav-btn-onboard" class="nav-pill" title="Register New Patient">
           <i class="fa-solid fa-user-plus"></i>
           <span>Onboard</span>
-        </button>
-        <button id="nav-btn-info" class="nav-pill" title="Project Info & User Guide">
-          <i class="fa-solid fa-circle-info"></i>
-          <span>About</span>
         </button>
         <button id="nav-btn-consultation" class="nav-pill" style="display: none;" title="Active Consultation in Progress">
           <span class="pulse-dot"></span>
@@ -78,7 +78,7 @@
       <!-- ====================================================================
            VIEW 1: DASHBOARD
            ==================================================================== -->
-      <section id="view-dashboard" class="view-section active">
+      <section id="view-dashboard" class="view-section">
         <!-- Doctor Hero Profile Card -->
         <div class="doctor-hero-card">
           <div class="doctor-hero-left">
@@ -804,7 +804,7 @@
       <!-- ====================================================================
            VIEW 7: PROJECT INFO & USER GUIDE
            ==================================================================== -->
-      <section id="view-info" class="view-section">
+      <section id="view-info" class="view-section active">
         <!-- 3 Buttons on Top as requested: Go to Dashboard, GitHub repo, LinkedIn -->
         <div class="info-top-bar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
           <button id="btn-info-back-dash" class="btn btn-primary" onclick="showView('dashboard')" style="font-weight: 700;">
