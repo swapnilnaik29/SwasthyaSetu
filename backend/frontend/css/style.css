@@ -1456,3 +1456,38 @@ main.app-main {
     gap: 14px;
   }
 }
+
+/* ==========================================================================
+   INFO VIEW & USER GUIDE STYLING
+   ========================================================================== */
+#view-info {
+  max-width: 1050px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.info-top-bar {
+  transition: all var(--transition-fast);
+}
+
+.info-feature-card {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.info-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .info-top-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .info-top-bar button,
+  .info-top-bar a {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

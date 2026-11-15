@@ -34,6 +34,10 @@
           <i class="fa-solid fa-user-plus"></i>
           <span>Onboard</span>
         </button>
+        <button id="nav-btn-info" class="nav-pill" title="Project Info & User Guide">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>About</span>
+        </button>
         <button id="nav-btn-consultation" class="nav-pill" style="display: none;" title="Active Consultation in Progress">
           <span class="pulse-dot"></span>
           <span>Consultation</span>
@@ -49,6 +53,11 @@
             <option value="en-IN">English</option>
           </select>
         </div>
+
+        <!-- Info (i) Button -->
+        <button id="btn-header-info" class="icon-btn" title="About SwasthyaSetu & Guide">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
 
         <!-- Doctor Online Status Badge -->
         <div class="doctor-status-badge" id="header-doctor-badge" title="Attending Physician">
@@ -84,6 +93,10 @@
               </div>
             </div>
           </div>
+          <button id="btn-dashboard-info" class="btn btn-outline" style="background: rgba(255, 255, 255, 0.95); border: 1.5px solid var(--primary-green); color: var(--primary-green-deep); font-weight: 700; gap: 8px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); white-space: nowrap;" title="User Guide & Project Info">
+            <i class="fa-solid fa-circle-info" style="color: var(--primary-green); font-size: 16px;"></i>
+            <span>Project Guide & Info</span>
+          </button>
         </div>
 
         <!-- Search & New Patient Action Row -->
@@ -786,6 +799,255 @@
         <button id="btn-finish-consultation" class="btn btn-outline" style="width: 100%; padding: 14px;">
           <i class="fa-solid fa-house"></i> <span id="label-return-dashboard">Return to Dashboard</span>
         </button>
+      </section>
+
+      <!-- ====================================================================
+           VIEW 7: PROJECT INFO & USER GUIDE
+           ==================================================================== -->
+      <section id="view-info" class="view-section">
+        <!-- 3 Buttons on Top as requested: Go to Dashboard, GitHub repo, LinkedIn -->
+        <div class="info-top-bar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <button id="btn-info-back-dash" class="btn btn-primary" onclick="showView('dashboard')" style="font-weight: 700;">
+            <i class="fa-solid fa-arrow-left"></i> Go to Dashboard
+          </button>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <a href="https://github.com/swapnilnaik29/SwasthyaSetu" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #1e293b;">
+              <i class="fa-brands fa-github" style="font-size: 17px;"></i> GitHub Repository
+            </a>
+            <a href="https://www.linkedin.com/in/swapnilnaik29/" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #0a66c2; border-color: #93c5fd; background: #eff6ff;">
+              <i class="fa-brands fa-linkedin" style="font-size: 17px; color: #0a66c2;"></i> Swapnil Naik on LinkedIn
+            </a>
+          </div>
+        </div>
+
+        <!-- Project Overview & Brief -->
+        <div class="card" style="padding: 24px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f7fee7 100%); border: 1.5px solid #a7f3d0; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 14px;">
+            <div style="width: 56px; height: 56px; border-radius: 16px; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);">
+              <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h2 style="font-size: 22px; font-weight: 800; color: var(--primary-green-deep); margin: 0;">SwasthyaSetu • स्वास्थ्य सेतु</h2>
+                <span class="badge-chip badge-green" style="font-size: 11px;">Gnani.ai Internship Hackathon</span>
+              </div>
+              <p style="font-size: 14px; color: #047857; font-weight: 600; margin-top: 3px;">The Multilingual AI Clinical Bridge & Autonomous Medical Scribing Suite</p>
+            </div>
+          </div>
+          <p style="font-size: 14px; color: #1e293b; line-height: 1.6; margin-bottom: 10px;">
+            <strong>SwasthyaSetu (स्वास्थ्य सेतु)</strong> is a real-time, multilingual clinical communication and autonomous medical documentation platform built for Indian healthcare. In India, patients frequently articulate their symptoms in regional Indic languages (Hindi, Marathi, Gujarati, Bengali, Tamil, Telugu, Kannada, Malayalam, Punjabi, Odia), while doctors communicate and document electronically in canonical medical English.
+          </p>
+          <p style="font-size: 14px; color: #1e293b; line-height: 1.6; margin-bottom: 14px;">
+            SwasthyaSetu bridges this communication barrier by leveraging <strong>Gnani.ai Indic voice AI (Vachana TTS & Speech STT)</strong> and <strong>GPT-6 Luna clinical LLM reasoning</strong> to deliver instantaneous speech-to-speech interpretation, conversational voice triage, and autonomous SOAP medical reports with zero clinician burnout.
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-microphone-lines"></i> Gnani.ai Vachana TTS</span>
+            <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-language"></i> 11 Indic Languages</span>
+            <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-brain"></i> GPT-6 Luna Clinical LLM</span>
+            <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-notes-medical"></i> Automated SOAP Notes</span>
+            <span class="badge-chip" style="background: #ffffff; border: 1px solid #bbf7d0; color: #047857; font-size: 11px; font-weight: 700;"><i class="fa-solid fa-mobile-screen"></i> Web & Mobile Suite</span>
+          </div>
+        </div>
+
+        <!-- How to Use the Web Interface Guide -->
+        <div class="card" style="padding: 24px;">
+          <div class="section-header" style="margin-bottom: 18px;">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--primary-green-deep);">
+              <i class="fa-solid fa-circle-question" style="color: var(--primary-green); margin-right: 8px;"></i>
+              How to Use the Web Interface — Step-by-Step Guide
+            </h3>
+            <span class="badge-chip badge-green">5 Easy Steps</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Step 1 -->
+            <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid var(--primary-green);">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">1</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Launch Conversational AI Patient Onboarding</h4>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                  From the Dashboard, click <strong>"+ Onboard Patient"</strong>. Choose the patient's preferred regional language from the 11 interactive language bubbles. The virtual AI assistant (<strong>आरोग्य मित्र / Aarogya Mitra</strong>) speaks aloud and prompts the patient for Name, Age & Gender, Mobile Number, Chief Complaint & Duration, and Past History/Allergies.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid var(--primary-teal);">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-teal); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">2</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Real-Time AI Validation & English Triage Summary</h4>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                  As the patient speaks or answers are entered, the system validates the utterance in real-time, reprompting politely in their native language if off-topic. All responses are automatically canonicalized into clinical English on the live triage card. Click <strong>"Start Doctor Consultation"</strong> once intake is verified.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #0284c7;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: #0284c7; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">3</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Conduct Two-Way Bilingual Live Consultation</h4>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                  In the consultation room, toggle between <strong>"Conversation Mode"</strong> (turn-by-turn with instant translation and voice synthesis via Gnani.ai) or <strong>"Ambient Scribe"</strong> (passive room recording). Doctors speak English, patients hear their native language; patients speak native, doctors hear or read professional English.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid #7c3aed;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: #7c3aed; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">4</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Dictate Vitals & Generate Autonomous SOAP Report</h4>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                  Use the <strong>Doctor AI Scribe</strong> input box to dictate vitals (e.g. <em>"BP 125/80, pulse 74, weight 65 kg"</em>) or additional notes. Click <strong>"Generate AI Report"</strong> to autonomously structure the entire conversation into a standardized medical record with diagnosis, prescription medications, and follow-up advice.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div style="display: flex; gap: 14px; padding: 14px; background: #f8fafc; border-radius: var(--radius-md); border-left: 4px solid var(--primary-green);">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;">5</div>
+              <div>
+                <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Approve, Print Prescription, or Manage Records</h4>
+                <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                  Review and edit any field, then click <strong>"Approve & Sign Clinical Record"</strong>. From the patient profile, doctors can view full historical reports, print official clinic prescriptions with credentials, or permanently delete individual reports or patient records with full cascade cleanup.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Features of SwasthyaSetu Grid -->
+        <div>
+          <div class="section-header" style="margin-bottom: 14px;">
+            <h3 style="font-size: 17px; font-weight: 800; color: var(--primary-green-deep);">
+              <i class="fa-solid fa-cubes-stacked" style="color: var(--primary-green); margin-right: 8px;"></i>
+              Core Features of SwasthyaSetu
+            </h3>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <!-- Feature 1 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--green-subtle); color: var(--primary-green); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-headset"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Multilingual Voice Onboarding</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Fully localized conversational intake across 11 Indian languages. Speech synthesis and recognition tailored to regional vernacular with automatic question audio playback.
+              </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-comments"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Bilingual Speech-to-Speech</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Low-latency simultaneous interpretation between doctor and patient with authentic Indian voices (Deven, Devika, Omkar, Kaveri, Deepak, Nalini) via Gnani.ai.
+              </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #f3e8ff; color: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-microphone"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Ambient Clinical Scribe</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Continuous room recording mode that listens quietly in the background, diarizing speakers and auto-generating documentation without requiring button clicks.
+              </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-file-waveform"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">SOAP Clinical Structuring</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Extracts subjective complaints, objective vitals (BP, HR, temp, SpO2), assessment/diagnosis, and structured prescription medication tables.
+              </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #dcfce7; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Patient & Record Management</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Complete clinical registry with search by name/phone, report archives, printable clinic prescription layouts, and permanent cascade deletion capabilities.
+              </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="card" style="padding: 18px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                  <i class="fa-solid fa-server"></i>
+                </div>
+                <h4 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0;">Production-Ready Architecture</h4>
+              </div>
+              <p style="font-size: 13px; color: #475569; line-height: 1.5;">
+                Built on FastAPI with asynchronous SQLite ORM, static asset serving for Render cloud deployment, and paired with a production Flutter mobile app.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supported Indic Languages Showcase -->
+        <div class="card" style="padding: 20px;">
+          <h4 style="font-size: 14px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 10px;">
+            <i class="fa-solid fa-globe" style="color: var(--primary-green); margin-right: 6px;"></i>
+            11 Supported Indian Languages & Authentic Gnani Voices
+          </h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="badge-chip badge-green">हिन्दी (Hindi - hi-IN)</span>
+            <span class="badge-chip badge-green">मराठी (Marathi - mr-IN)</span>
+            <span class="badge-chip badge-green">ગુજરાતી (Gujarati - gu-IN)</span>
+            <span class="badge-chip badge-green">বাংলা (Bengali - bn-IN)</span>
+            <span class="badge-chip badge-green">தமிழ் (Tamil - ta-IN)</span>
+            <span class="badge-chip badge-green">తెలుగు (Telugu - te-IN)</span>
+            <span class="badge-chip badge-green">ಕನ್ನಡ (Kannada - kn-IN)</span>
+            <span class="badge-chip badge-green">മലയാളം (Malayalam - ml-IN)</span>
+            <span class="badge-chip badge-green">ਪੰਜਾਬੀ (Punjabi - pa-IN)</span>
+            <span class="badge-chip badge-green">ଓଡ଼ିଆ (Odia - or-IN)</span>
+            <span class="badge-chip badge-green">English (India - en-IN)</span>
+          </div>
+        </div>
+
+        <!-- Footer with Made with heart emoji by Swapnil -->
+        <div class="info-footer" style="text-align: center; margin-top: 10px; padding: 28px 16px; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+          <div style="font-size: 18px; font-weight: 800; color: var(--primary-green-deep); margin-bottom: 6px;">
+            Made with <span style="color: #ef4444; font-size: 20px;">❤️</span> by Swapnil
+          </div>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Developer: <strong>Swapnil Naik</strong> • Project Submission for <strong>Gnani.ai</strong> AI Internship Hackathon
+          </p>
+          <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="showView('dashboard')">
+              <i class="fa-solid fa-house"></i> Go to Dashboard
+            </button>
+            <a href="https://github.com/swapnilnaik29/SwasthyaSetu" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="text-decoration: none;">
+              <i class="fa-brands fa-github"></i> GitHub: swapnilnaik29/SwasthyaSetu
+            </a>
+            <a href="https://www.linkedin.com/in/swapnilnaik29/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="text-decoration: none; color: #0a66c2; border-color: #93c5fd; background: #eff6ff;">
+              <i class="fa-brands fa-linkedin"></i> LinkedIn: swapnilnaik29
+            </a>
+          </div>
+        </div>
       </section>
 
     </main>

@@ -532,7 +532,8 @@ function showView(viewName) {
     'view-patient-detail',
     'view-consultation',
     'view-draft-review',
-    'view-approval-success'
+    'view-approval-success',
+    'view-info'
   ];
 
   const targetId = {
@@ -542,7 +543,8 @@ function showView(viewName) {
     patientDetail: 'view-patient-detail',
     consultation: 'view-consultation',
     draftReview: 'view-draft-review',
-    approval: 'view-approval-success'
+    approval: 'view-approval-success',
+    info: 'view-info'
   }[viewName] || viewName;
 
   allViewIds.forEach(id => {
@@ -560,10 +562,12 @@ function showView(viewName) {
   const navDash = document.getElementById('nav-btn-dashboard');
   const navOnboard = document.getElementById('nav-btn-onboard');
   const navConsult = document.getElementById('nav-btn-consultation');
+  const navInfo = document.getElementById('nav-btn-info');
 
   if (navDash) navDash.classList.toggle('active', viewName === 'dashboard' || viewName === 'patientDetail');
   if (navOnboard) navOnboard.classList.toggle('active', viewName === 'onboard' || viewName === 'onboardPatient');
   if (navConsult) navConsult.classList.toggle('active', viewName === 'consultation' || viewName === 'draftReview' || viewName === 'approval');
+  if (navInfo) navInfo.classList.toggle('active', viewName === 'info');
 
   // Show/Hide active consultation pill
   if (navConsult) {
@@ -585,6 +589,9 @@ function showView(viewName) {
     }
   }
 }
+
+window.showView = showView;
+window.switchView = showView;
 
 // Modal Helpers
 function openModal(modalId) {
@@ -2271,6 +2278,10 @@ function setupEventListeners() {
   on('nav-btn-dashboard', 'click', () => showView('dashboard'));
   on('brand-header-link', 'click', () => showView('dashboard'));
   on('nav-btn-onboard', 'click', showOnboardingView);
+  on('nav-btn-info', 'click', () => showView('info'));
+  on('btn-header-info', 'click', () => showView('info'));
+  on('btn-dashboard-info', 'click', () => showView('info'));
+  on('btn-info-back-dash', 'click', () => showView('dashboard'));
   on('nav-btn-consultation', 'click', () => {
     if (state.activeConsultation) {
       showView('consultation');
