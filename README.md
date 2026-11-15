@@ -1,6 +1,5 @@
 # SwasthyaSetu (स्वास्थ्यसेतु)
 ### Multilingual Healthcare Communication & Ambient Clinical Scribe Platform
-**Gnani.ai AI Internship Hackathon Submission Project**
 
 [![Gnani.ai](https://img.shields.io/badge/Gnani.ai-Voice%20AI%20STT%20%7C%20TTS-059669?style=for-the-badge&logo=sound)](https://gnani.ai/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
@@ -288,9 +287,8 @@ All integration tests covering Turn-by-Turn consultations, Ambient Scribing, Gna
 
 ---
 
-## Submission Credits
+## Project Credits
 
 - **Project**: SwasthyaSetu (स्वास्थ्यसेतु)
-- **Hackathon**: Gnani.ai AI Internship Hackathon
 - **Developer**: Swapnil Naik
 - **Primary Voice AI**: [Gnani.ai](https://gnani.ai/) Voice Intelligence Engine

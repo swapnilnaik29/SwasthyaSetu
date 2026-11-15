@@ -218,7 +218,7 @@ class GPT6LunaTranslationService:
     ) -> Dict[str, Any]:
         """
         High-fidelity deterministic clinical translation engine.
-        Fully supports the official hackathon demonstration scenario, code-mixed speech,
+        Fully supports deterministic clinical consultation workflows, code-mixed speech,
         and standard clinical exchanges in Hindi, Marathi, and English.
         """
         clean_text = text.strip()

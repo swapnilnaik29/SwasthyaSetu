@@ -10,7 +10,7 @@ from app.services.speech.base import STTProvider, TTSProvider
 class MockSTTService(STTProvider):
     """
     Mock STT adapter for testing and offline development.
-    Produces deterministic transcripts for hackathon demonstration scenarios.
+    Produces deterministic transcripts for automated testing and offline scenarios.
     """
 
     def __init__(self):

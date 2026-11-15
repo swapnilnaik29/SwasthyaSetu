@@ -2283,7 +2283,6 @@ function setupEventListeners() {
   on('nav-btn-onboard', 'click', showOnboardingView);
   on('nav-btn-info', 'click', () => showView('info'));
   on('btn-header-info', 'click', () => showView('info'));
-  on('btn-dashboard-info', 'click', () => showView('info'));
   on('btn-info-back-dash', 'click', () => showView('dashboard'));
   on('nav-btn-consultation', 'click', () => {
     if (state.activeConsultation) {

@@ -6,7 +6,7 @@ from app.services.notifications.sms_base import SMSProvider
 
 class MockSMSProvider(SMSProvider):
     """
-    Mock SMS Provider for local development, hackathon demos, and automated testing.
+    Mock SMS Provider for local development, clinical demos, and automated testing.
     Verifies that no clinical diagnoses or prescription details are present in the message.
     """
 

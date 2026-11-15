@@ -1,5 +1,4 @@
 # SwasthyaSetu Backend API & Web Application
-**Gnani.ai AI Internship Hackathon Submission**
 
 High-performance FastAPI service powering SwasthyaSetu's multilingual clinical communication suite. It hosts the REST API (`/api/v1`) and serves the integrated web frontend directly at `/`.
 
@@ -60,9 +59,8 @@ This directory contains `render.yaml`, `Procfile`, and `runtime.txt`. You can de
 
 ---
 
-## Submission Credits
+## Project Credits
 
 - **Project**: SwasthyaSetu
-- **Hackathon**: Gnani.ai AI Internship Hackathon
 - **Developer**: Swapnil Naik
 
