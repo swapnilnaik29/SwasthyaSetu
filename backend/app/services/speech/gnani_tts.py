@@ -89,6 +89,33 @@ class GnaniTTSService(TTSProvider):
         "or": "Ananya",
     }
 
+    VALID_INDIAN_VOICES = {
+        # Indian Male voices
+        "deepak": "Deepak",
+        "omkar": "Omkar",
+        "deven": "Deven",
+        "nirav": "Nirav",
+        "tanmay": "Tanmay",
+        "saravanan": "Saravanan",
+        "chaitanya": "Chaitanya",
+        "gopal": "Gopal",
+        "manoj": "Manoj",
+        "amrit": "Amrit",
+        "subhas": "Subhas",
+        # Indian Female voices
+        "nalini": "Nalini",
+        "kaveri": "Kaveri",
+        "devika": "Devika",
+        "dhwani": "Dhwani",
+        "mithu": "Mithu",
+        "kavitha": "Kavitha",
+        "sandhya": "Sandhya",
+        "shweta": "Shweta",
+        "arya": "Arya",
+        "kaur": "Kaur",
+        "ananya": "Ananya",
+    }
+
     def __init__(self, api_key: Optional[str] = None, base_url: str = "https://api.vachana.ai"):
         self.api_key = api_key if api_key is not None else settings.GNANI_API_KEY
         self.base_url = base_url.rstrip("/")
@@ -101,13 +128,24 @@ class GnaniTTSService(TTSProvider):
         gender: str = "male",
     ) -> str:
         lang = language.strip().lower()
-        if requested_voice and requested_voice not in ["hi_male_1", "mr_male_1", "en_male_1", ""]:
-            return requested_voice
+        clean_req = (requested_voice or "").strip().lower()
 
-        is_female = bool(gender and gender.strip().lower() == "female")
+        is_female = bool(
+            (gender and gender.strip().lower() in ["female", "f", "woman", "स्त्री", "महिला"])
+            or "female" in clean_req
+            or "woman" in clean_req
+            or "स्त्री" in clean_req
+            or "महिला" in clean_req
+        )
         voices_map = self.SUPPORTED_FEMALE_VOICES if is_female else self.SUPPORTED_MALE_VOICES
         fallback_voice = "Devika" if is_female else "Deven"
 
+        # If a specific Indian voice was explicitly requested
+        for k, v in self.VALID_INDIAN_VOICES.items():
+            if k == clean_req:
+                return v
+
+        # Always select the native Indian voice corresponding to the target language and gender
         for code in ["mr", "hi", "gu", "bn", "ta", "te", "kn", "ml", "pa", "or", "en"]:
             if code in lang:
                 return voices_map.get(code, fallback_voice)
@@ -155,16 +193,8 @@ class GnaniTTSService(TTSProvider):
         voice: Optional[str] = None,
         gender: str = "male",
     ) -> bytes:
-        v_lower = (voice or "").lower()
-        openai_voices = ["nova", "shimmer", "echo", "onyx", "alloy", "fable"]
-        if any(ov in v_lower for ov in openai_voices) and settings.OPENAI_API_KEY:
-            try:
-                target_v = voice or ("nova" if gender == "female" else "echo")
-                return await self.synthesize_openai(text, voice=target_v)
-            except Exception as e:
-                logger.error(f"OpenAI TTS direct synthesis failed: {e}")
-
-        # Attempt Gnani TTS if configured and language supported
+        """Synthesize speech with Gnani authentic Indian voices prioritized first."""
+        # 1. ALWAYS prioritize Gnani Indic Indian Voice TTS first
         lang_short = language.split("-")[0].lower()
         if self.api_key and lang_short in ["hi", "mr", "en", "gu", "bn", "ta", "te", "kn", "ml", "pa", "or"]:
             try:
@@ -205,11 +235,13 @@ class GnaniTTSService(TTSProvider):
                 log_sanitized_event("gnani_tts_completed", audio_size_bytes=len(wav_audio))
                 return wav_audio
             except Exception as e:
-                logger.warning(f"Gnani TTS failed ({e}), falling back to OpenAI TTS...")
+                logger.warning(f"Gnani Indian Voice TTS failed ({e}), falling back to OpenAI TTS...")
 
-        # Robust OpenAI TTS Fallback
+        # 2. OpenAI Fallback only when Gnani is unavailable
         if settings.OPENAI_API_KEY:
-            fallback_voice = "nova" if (gender == "female" or "fem" in v_lower) else "echo"
+            v_lower = (voice or "").lower()
+            is_fem = (gender == "female" or "fem" in v_lower or "woman" in v_lower)
+            fallback_voice = "nova" if is_fem else "echo"
             return await self.synthesize_openai(text, voice=fallback_voice)
 
         raise RuntimeError("No TTS provider available to synthesize speech")

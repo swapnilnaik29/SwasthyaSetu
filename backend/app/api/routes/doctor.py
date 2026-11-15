@@ -18,6 +18,8 @@ async def get_or_create_default_doctor(db: AsyncSession) -> Doctor:
             credentials="MBBS, MD (General Medicine)",
             preferred_language="en-IN",
             spoken_languages="en-IN,mr-IN,hi-IN",
+            doctor_voice="Deven (Indian Male)",
+            patient_voice="Auto (Indian Voice - Matches Gender)",
         )
         db.add(doc)
         await db.commit()

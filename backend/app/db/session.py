@@ -58,11 +58,11 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
         from sqlalchemy import text
         try:
-            await conn.execute(text("ALTER TABLE doctors ADD COLUMN doctor_voice VARCHAR(50) DEFAULT 'Deven (Male)'"))
+            await conn.execute(text("ALTER TABLE doctors ADD COLUMN doctor_voice VARCHAR(50) DEFAULT 'Deven (Indian Male)'"))
         except Exception:
             pass
         try:
-            await conn.execute(text("ALTER TABLE doctors ADD COLUMN patient_voice VARCHAR(50) DEFAULT 'Auto (Matches Gender)'"))
+            await conn.execute(text("ALTER TABLE doctors ADD COLUMN patient_voice VARCHAR(50) DEFAULT 'Auto (Indian Voice - Matches Gender)'"))
         except Exception:
             pass
     logger.info("Local SQLite database initialized with high-performance WAL mode.")

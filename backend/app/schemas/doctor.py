@@ -8,8 +8,8 @@ class DoctorSettings(BaseModel):
     credentials: str = "MBBS, MD (General Medicine)"
     preferred_language: str = Field(default="en-IN")
     spoken_languages: Union[str, List[str]] = Field(default="en-IN,mr-IN")
-    doctor_voice: Optional[str] = "Deven (Male)"
-    patient_voice: Optional[str] = "Auto (Matches Gender)"
+    doctor_voice: Optional[str] = "Deven (Indian Male)"
+    patient_voice: Optional[str] = "Auto (Indian Voice - Matches Gender)"
 
     @field_validator("spoken_languages", mode="before")
     @classmethod
@@ -43,7 +43,7 @@ class DoctorOut(BaseModel):
     credentials: str
     preferred_language: str
     spoken_languages: Optional[str] = "en-IN,mr-IN"
-    doctor_voice: Optional[str] = "Deven (Male)"
-    patient_voice: Optional[str] = "Auto (Matches Gender)"
+    doctor_voice: Optional[str] = "Deven (Indian Male)"
+    patient_voice: Optional[str] = "Auto (Indian Voice - Matches Gender)"
     created_at: datetime
     updated_at: datetime

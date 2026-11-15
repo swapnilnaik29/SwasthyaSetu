@@ -22,6 +22,8 @@ void main() async {
       credentials: 'MBBS, MD (General Medicine)',
       preferredLanguage: 'en-IN',
       spokenLanguages: 'en-IN,mr-IN,hi-IN',
+      doctorVoice: 'Deven (Indian Male)',
+      patientVoice: 'Auto (Indian Voice - Matches Gender)',
     );
   }
 

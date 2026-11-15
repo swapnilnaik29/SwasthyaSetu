@@ -203,18 +203,27 @@ async def process_consultation_turn(
 
             target_gender = "female" if (is_patient_turn and patient_is_female) else "male"
 
-            chosen_voice = None
-            if doc:
-                if is_patient_turn:
-                    chosen_voice = getattr(doc, "patient_voice", "Auto")
+            # Patient & Doctor authentic Indian Voice selection
+            if is_patient_turn:
+                # Patient speaks -> Doctor listens in doctor's language
+                # Voice matches patient's gender using native Indian voice
+                if patient_is_female:
+                    target_gender = "female"
+                    chosen_voice = getattr(doc, "patient_voice", "female")
+                    if not chosen_voice or "auto" in chosen_voice.lower():
+                        chosen_voice = "female"
                 else:
-                    chosen_voice = getattr(doc, "doctor_voice", "Auto")
-
-            # Female patient voice must be feminine
-            if is_patient_turn and patient_is_female:
-                target_gender = "female"
-                if not chosen_voice or any(k in chosen_voice.lower() for k in ["auto", "male", "deepak", "omkar", "deven", "echo", "onyx"]):
-                    chosen_voice = "Nova"
+                    target_gender = "male"
+                    chosen_voice = getattr(doc, "patient_voice", "male")
+                    if not chosen_voice or "auto" in chosen_voice.lower():
+                        chosen_voice = "male"
+            else:
+                # Doctor speaks -> Patient listens in patient's language
+                # Doctor voice uses authentic Indian doctor voice
+                target_gender = "male"
+                chosen_voice = getattr(doc, "doctor_voice", "Deven")
+                if not chosen_voice or "auto" in chosen_voice.lower():
+                    chosen_voice = "Deven"
 
             tts_audio_bytes = await tts_service.synthesize(
                 text=recipient_translation,

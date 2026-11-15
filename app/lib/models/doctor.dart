@@ -13,8 +13,8 @@ class Doctor {
     required this.credentials,
     required this.preferredLanguage,
     required this.spokenLanguages,
-    this.doctorVoice = 'Deven (Male)',
-    this.patientVoice = 'Auto (Matches Gender)',
+    this.doctorVoice = 'Deven (Indian Male)',
+    this.patientVoice = 'Auto (Indian Voice - Matches Gender)',
   });
 
   factory Doctor.fromJson(Map<String, dynamic> json) {
@@ -24,8 +24,8 @@ class Doctor {
       credentials: json['credentials'] ?? 'MBBS, MD (General Medicine)',
       preferredLanguage: json['preferred_language'] ?? 'en-IN',
       spokenLanguages: json['spoken_languages'] ?? 'en-IN,mr-IN,hi-IN',
-      doctorVoice: json['doctor_voice'] ?? 'Deven (Male)',
-      patientVoice: json['patient_voice'] ?? 'Auto (Matches Gender)',
+      doctorVoice: json['doctor_voice'] ?? 'Deven (Indian Male)',
+      patientVoice: json['patient_voice'] ?? 'Auto (Indian Voice - Matches Gender)',
     );
   }
 
